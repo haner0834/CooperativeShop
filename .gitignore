@@ -1,0 +1,83 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.*.local
+
+# Node.js
+node_modules/
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+
+# Swift & Xcode
+*.xcworkspace
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+*.xcuserstate
+*.xcuserdata/
+DerivedData/
+build/
+.swiftpm/
+Package.resolved
+*.xcbkptlist
+
+# VS Code
+.vscode/
+.history/
+
+# Compiled files
+*.o
+*.so
+*.dll
+*.exe
+*.out
+
+# Archives
+*.zip
+*.tar
+*.gz
+*.rar
+*.7z
+
+# Misc
+*.bak
+*.tmp
+*.temp
+*.orig
+
+# Ignore by name
+secret.*
+private.*

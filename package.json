@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "@types/chokidar": "^1.7.5",
+    "@types/fs-extra": "^11.0.4",
+    "chokidar": "^4.0.3",
+    "csv-parser": "^3.2.0",
+    "csv-stringify": "^6.6.0",
+    "csv-writer": "^1.6.0",
+    "fs-extra": "^11.3.1"
+  },
+  "scripts": {
+    "generate-icons": "ts-node scripts/generate-icons",
+    "csv2json": "ts-node scripts/csv2json.ts",
+    "json2csv": "ts-node scripts/json2csv.ts"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  }
+}

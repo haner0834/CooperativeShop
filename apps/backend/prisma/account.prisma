@@ -1,0 +1,14 @@
+model Account {
+    id     String @id @default(cuid())
+    userId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    provider          String // "google" 或 "credentials" (代表學號密碼)
+    providerAccountId String // Google ID 或 學號
+
+    // 用來儲存雜湊後的密碼，只有 credentials provider 才需要
+    password String?
+    sessions AuthSession[]
+
+    @@unique([provider, providerAccountId])
+}
