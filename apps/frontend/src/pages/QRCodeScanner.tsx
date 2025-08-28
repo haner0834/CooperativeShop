@@ -12,6 +12,7 @@ import { CameraOff, Check, IdCard, Scan, School } from "@icons";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
 import { getDeviceId } from "../utils/device";
 import type { QrCodePayload } from "../types/qr";
+import { path } from "../utils/path";
 
 // == Installation Note ==
 // The 'html5-qrcode' library is being loaded from a CDN,
@@ -230,7 +231,7 @@ export default function App() {
     const body = JSON.stringify({
       data: decodedText,
     });
-    const res = await fetch("http://localhost:3000/api/qr/verify", {
+    const res = await fetch(path("/api/qr/verify"), {
       method: "POST",
       credentials: "include",
       headers: {

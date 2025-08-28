@@ -12,6 +12,7 @@ import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
 import { useModal } from "../widgets/ModalContext";
 import { useNavigate } from "react-router-dom";
+import { path } from "../utils/path";
 
 const MenuToggle = ({ onClick }: { onClick: () => void }) => {
   return (
@@ -133,7 +134,7 @@ const Home = () => {
   const [isNormal, setIsNormal] = useState(true);
 
   const getQrCode = async () => {
-    const res = await fetch("http://localhost:3000/api/qr/generate", {
+    const res = await fetch(path("/api/qr/generate"), {
       method: "GET",
       credentials: "include",
       headers: {
@@ -152,9 +153,7 @@ const Home = () => {
       throw new Error("Fuck, no student ID");
     }
 
-    const json = await authedFetch(
-      `http://localhost:3000/api/schools/${schoolId}`
-    );
+    const json = await authedFetch(path(`/api/schools/${schoolId}`));
 
     if (!json.success) {
       throw new Error("?");

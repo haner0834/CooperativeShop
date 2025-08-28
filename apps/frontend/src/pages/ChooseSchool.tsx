@@ -14,6 +14,7 @@ import {
 import { useModal } from "../widgets/ModalContext";
 import { getErrorMessage } from "../utils/errors";
 import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
+import { path } from "../utils/path";
 
 const SchoolCard = ({ school }: { school: School }) => {
   const navigate = useNavigate();
@@ -88,7 +89,7 @@ const ChooseSchool = () => {
 
   useEffect(() => {
     const a = async () => {
-      const res = await fetch("http://localhost:3000/api/schools/all", {
+      const res = await fetch(path("/api/schools/all"), {
         headers: {
           "Content-Type": "application/json",
         },

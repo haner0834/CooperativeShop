@@ -7,6 +7,7 @@ import type { School } from "../types/school";
 import { getErrorMessage } from "../utils/errors";
 import { Eye, EyeOff } from "@icons";
 import { useAuth } from "../auth/AuthContext";
+import { path } from "../utils/path";
 
 const GooglePlaceholder = () => {
   const [searchParams] = useSearchParams();
@@ -16,7 +17,9 @@ const GooglePlaceholder = () => {
   const loginWithGoogle = (schoolId: string) => {
     const deviceId = getDeviceId();
     // Let browser redirect automatically
-    location.href = `http://localhost:3000/api/auth/google?schoolId=${schoolId}&deviceId=${deviceId}`;
+    location.href = path(
+      `/api/auth/google?schoolId=${schoolId}&deviceId=${deviceId}`
+    );
   };
 
   useEffect(() => {
@@ -71,9 +74,7 @@ const CredentialLogin = () => {
     const schoolId = searchParams.get("school");
     if (!schoolId || !schools) return;
     const a = async () => {
-      const res = await fetch(
-        "http://localhost:3000/api/schools/all?provider=credential"
-      );
+      const res = await fetch(path("/api/schools/all?provider=credential"));
       const { success, data, error } = await res.json();
 
       if (success) {
@@ -105,7 +106,7 @@ const CredentialLogin = () => {
         name: mode === "login" ? undefined : name,
         password,
       });
-      const res = await fetch(`http://localhost:3000/api/auth/${mode}`, {
+      const res = await fetch(path(`/api/auth/${mode}`), {
         method: "POST",
         credentials: "include",
         headers: {

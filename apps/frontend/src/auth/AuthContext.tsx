@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { getDeviceId } from "../utils/device";
+import { path } from "../utils/path";
 
 // --- 1. 定義新的型別 ---
 
@@ -64,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshAccessToken = useCallback(async (): Promise<string> => {
     // 刷新 Token 時也需要 deviceId
-    const res = await fetch("http://localhost:3000/api/auth/refresh", {
+    const res = await fetch(path("/api/auth/refresh"), {
       // 請確認您的後端 Port
       method: "POST",
       credentials: "include",
@@ -94,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setIsLoading(true);
     try {
-      const res = await fetch("http://localhost:3000/api/auth/restore", {
+      const res = await fetch(path("/api/auth/restore"), {
         method: "POST",
         credentials: "include",
         headers: { "X-Device-ID": getDeviceId() },
@@ -123,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const switchAccount = async (targetUserId: string) => {
-    const res = await fetch("http://localhost:3000/api/auth/switch-account", {
+    const res = await fetch(path("/api/auth/switch-account"), {
       method: "POST",
       credentials: "include",
       headers: {
@@ -143,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     // 理想情況下，應該呼叫後端登出 API 來清除 session
-    const res = await fetch("http://localhost:3000/api/auth/logout", {
+    const res = await fetch(path("/api/auth/logout"), {
       method: "POST",
       credentials: "include",
       headers: {
