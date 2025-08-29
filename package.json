@@ -11,7 +11,8 @@
   "scripts": {
     "generate-icons": "ts-node scripts/generate-icons",
     "csv2json": "ts-node scripts/csv2json.ts",
-    "json2csv": "ts-node scripts/json2csv.ts"
+    "json2csv": "ts-node scripts/json2csv.ts",
+    "sync-assets": "ts-node scripts/sync-assets.ts"
   },
   "devDependencies": {
     "ts-node": "^10.9.2"

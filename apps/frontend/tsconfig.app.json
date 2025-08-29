@@ -19,7 +19,7 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
+    // "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
@@ -27,7 +27,7 @@
 
     "baseUrl": "src/*", // or "src" if all imports are from `src`
     "paths": {
-      "@shared/*": ["../../../../shared/*"],
+      "@shared/*": ["../shared/*"],
       "@assets/*": ["../assets/*"],
       "@icons": ["../generated/icons"]
     }

@@ -4,10 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "ts-node ../../scripts/sync-assets.ts",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prebuild": "ts-node ../../scripts/sync-assets.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.12",
