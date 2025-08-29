@@ -187,7 +187,7 @@ const SecondPage = () => {
       <p className="opacity-50 pt-4 px-4 text-center">
         200+ 店家合作，範圍涵蓋飲食、文具、咖啡廳與生活服務
       </p>
-      <div className="space-y-2 py-10">
+      <div className="space-y-2 py-10 w-screen">
         {schoolIcons.map((icons, index) => (
           <Marquee
             elements={icons}
