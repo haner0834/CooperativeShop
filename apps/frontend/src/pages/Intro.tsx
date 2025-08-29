@@ -396,6 +396,11 @@ const Footer = () => {
             <p className="text-sm opacity-60">Created by</p>
             <h6 className="text-lg font-bold">林禹澔</h6>
           </div>
+
+          <div>
+            <p className="text-sm opacity-60">贊助商（300廣告位）</p>
+            <h6 className="text-lg font-bold">方允可</h6>
+          </div>
         </div>
       </footer>
     </>
