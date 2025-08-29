@@ -4,12 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "predev": "ts-node ../../scripts/sync-assets.ts",
+    "predev": "ts-node-esm scripts/sync-assets.ts",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "prebuild": "ts-node ../../scripts/sync-assets.ts"
+    "prebuild": "node scripts/sync-assets.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.12",
@@ -33,6 +33,7 @@
     "eslint": "^9.33.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
+    "fs-extra": "^11.3.1",
     "globals": "^16.3.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.8.3",
