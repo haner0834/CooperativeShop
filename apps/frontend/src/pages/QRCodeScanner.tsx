@@ -87,11 +87,7 @@ const QrCodeScanner = forwardRef<QrCodeScannerHandle, QrCodeScannerProps>(
               onError?.(errorMessage);
 
             await html5QrCodeRef.current.start(
-              {
-                facingMode: {
-                  exact: "environment",
-                },
-              },
+              cameraId,
               { fps, qrbox },
               successCallback,
               errorCallback
@@ -301,6 +297,7 @@ export default function App() {
       <div className="w-full max-w-lg p-6 bg-base-100 rounded-xl shadow-lg">
         <QrCodeScanner
           ref={scannerRef}
+          qrbox={350}
           onResult={handleScanResult}
           onError={handleScanError}
           className=""
