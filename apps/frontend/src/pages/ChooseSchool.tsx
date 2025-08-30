@@ -75,6 +75,7 @@ const ChooseSchool = () => {
   const [filteredSchools, setFilteredSchools] = useState<School[]>([]);
   const [search, setSearch] = useState("");
   const { showModal } = useModal();
+  const navigate = useNavigate();
 
   const handleSearch = (newValue: string) => {
     setSearch(newValue);
@@ -129,7 +130,20 @@ const ChooseSchool = () => {
     setNavbarButtons([...baseButtons, menuToggleButton]);
     setNavbarTitle(undefined);
 
-    a();
+    showModal({
+      title: "此功能尚未開放，敬請期待！",
+      description: ":D",
+      buttons: [
+        {
+          label: "回主頁",
+          role: "primary",
+          style: "btn-primary",
+          onClick: () => navigate("/intro"),
+        },
+      ],
+    });
+
+    // a();
   }, []);
 
   return (

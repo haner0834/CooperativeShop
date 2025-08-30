@@ -45,7 +45,6 @@ const Marquee: React.FC<MarqueeProps> = ({
     // update scroll width everytime it changed
     const observer = new ResizeObserver(() => {
       if (contentRef.current) {
-        console.log("Changed", contentRef.current.scrollWidth);
         setContentWidth(contentRef.current.scrollWidth);
       }
     });
