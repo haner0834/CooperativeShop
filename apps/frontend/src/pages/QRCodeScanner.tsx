@@ -301,7 +301,7 @@ export default function App() {
       <div className="w-full max-w-lg p-6 bg-base-100 rounded-xl shadow-lg">
         <QrCodeScanner
           ref={scannerRef}
-          qrbox={350}
+          qrbox={300}
           onResult={handleScanResult}
           onError={handleScanError}
           className=""
