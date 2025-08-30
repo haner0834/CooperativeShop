@@ -218,7 +218,7 @@ const ThirdPage = () => {
     "更便利",
     "更快速",
   ];
-  const scrollHeightPerWord = 200;
+  const scrollHeightPerWord = 400;
 
   const gradientStyle = {
     background:
