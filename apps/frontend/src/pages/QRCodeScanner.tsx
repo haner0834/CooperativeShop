@@ -87,7 +87,11 @@ const QrCodeScanner = forwardRef<QrCodeScannerHandle, QrCodeScannerProps>(
               onError?.(errorMessage);
 
             await html5QrCodeRef.current.start(
-              cameraId,
+              {
+                facingMode: {
+                  exact: "environment",
+                },
+              },
               { fps, qrbox },
               successCallback,
               errorCallback
