@@ -1,10 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import { School } from "@prisma/client";
 
 export const prisma = new PrismaClient();
 
 async function main() {
-  const schoolsJson = require("../../../shared/jsons/schools.json");
+  const schoolsJson = require("../shared/jsons/schools.json");
   const schools: any[] = schoolsJson.map((school: any) => ({
     abbreviation: school.abbreviation,
     emailFormats: [school.emailFormat],

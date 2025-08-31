@@ -70,10 +70,7 @@ export const generateQRCodeImage = async (userId: string): Promise<Buffer> => {
   const rawData = JSON.stringify({ ...payload, signature });
   const dataForQr = encodeURIComponent(rawData);
 
-  const logoPath = path.join(
-    __dirname,
-    "../../../../shared/app-icons/logo-small.jpg"
-  );
+  const logoPath = path.join(__dirname, "../shared/app-icons/logo-small.jpg");
   if (!fs.existsSync(logoPath))
     throw new Error(`Logo file not found at: ${logoPath}`);
 
