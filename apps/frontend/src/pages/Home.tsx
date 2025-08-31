@@ -214,7 +214,9 @@ const Home = () => {
       <div className="bg-base-100 flex flex-col items-center justify-center w-sm p-4 rounded-box shadow-md">
         <button
           onClick={() => setIsNormal((prev) => !prev)}
-          className="text-2xl font-bold mb-2"
+          className={`text-2xl font-bold mb-2 ${
+            isNormal ? "" : "text-success"
+          }`}
         >
           {isNormal ? "會員證" : "狗牌"}
         </button>
