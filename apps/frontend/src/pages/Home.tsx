@@ -3,7 +3,6 @@ import {
   NavbarButtonTypeMap,
   useNavbarButtons,
 } from "../widgets/NavbarButtonsContext";
-import { getDeviceId } from "../utils/device";
 import { useAuth } from "../auth/AuthContext";
 import type { LoginMethod, School } from "../types/school";
 import { useAuthFetch } from "../auth/useAuthFetch";
@@ -13,6 +12,7 @@ import ResponsiveSheet from "../widgets/ResponsiveSheet";
 import { useModal } from "../widgets/ModalContext";
 import { useNavigate } from "react-router-dom";
 import { path } from "../utils/path";
+import QRDisplay from "../widgets/QRDisplay";
 
 const MenuToggle = ({ onClick }: { onClick: () => void }) => {
   return (
@@ -125,30 +125,24 @@ const SheetContent = ({
 
 const Home = () => {
   const { setNavbarButtons, setNavbarTitle } = useNavbarButtons();
-  const [imgUrl, setImgUrl] = useState("");
-  const { accessToken, switchAccount, activeUser } = useAuth();
+  const { switchAccount, activeUser } = useAuth();
   const { authedFetch } = useAuthFetch();
   const [school, setSchool] = useState<School | null>(null);
   const [isSheetOn, setIsSheetOn] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isNormal, setIsNormal] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [qrData, setQrData] = useState<string | null>(null);
 
   const getQrCode = async () => {
     setIsLoading(true);
-    const res = await fetch(path("/api/qr/generate"), {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-        "X-Device-ID": getDeviceId(),
-      },
-    });
+    const { success, data } = await authedFetch(path("/api/qr/generate-data"));
+    if (!success) {
+      setIsLoading(false);
+      throw new Error("??");
+    }
 
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    setImgUrl(url);
+    setQrData(data);
 
     const schoolId = activeUser?.schoolId;
     if (!schoolId) {
@@ -215,26 +209,20 @@ const Home = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-blue-300">
-      <div className="bg-base-100 flex flex-col items-center justify-center max-w-sm min-w-xs mx-10 p-4 px-8 rounded-3xl shadow-md">
+      <div className="bg-base-100 flex flex-col items-center justify-center max-w-sm min-w-xs mx-10 p-4 px-8 rounded-box shadow-md">
         <button
           onClick={() => setIsNormal((prev) => !prev)}
-          className={`text-2xl font-bold mb-4 ${
-            isNormal ? "" : "text-success"
-          }`}
+          className={`text-lg font-bold mb-2 ${isNormal ? "" : "text-success"}`}
         >
           {isNormal ? "會員證" : "狗牌"}
         </button>
 
-        {isLoading ? (
+        {isLoading || !qrData ? (
           <div className="w-full flex justify-center">
             <span className="loading"></span>
           </div>
         ) : (
-          <img
-            src={imgUrl || "fuck"}
-            alt="QR Code"
-            className="w-full rounded-2xl"
-          />
+          <QRDisplay data={qrData} className="rounded-field overflow-hidden" />
         )}
 
         <div className="divider" />
