@@ -1,10 +1,9 @@
-import express, { Request, Response, NextFunction } from "express";
+import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import passport from "passport";
 import { responseExtender } from "./middleware/response.middleware";
 import { configurePassport } from "./config/passport.config";
-import { AppError } from "./types/error.types";
 import apiRoutes from "./routes";
 import { globalErrorHandler } from "./middleware/errorHandler.middleware";
 import { env } from "./utils/env.utils";

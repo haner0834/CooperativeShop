@@ -1,5 +1,4 @@
 import { Router } from "express";
-import passport from "passport";
 import * as authController from "../controllers/auth.controller";
 import { protect } from "../middleware/auth.middleware";
 

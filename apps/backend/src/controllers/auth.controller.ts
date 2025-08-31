@@ -206,7 +206,7 @@ export const googleCallbackSuccess = async (
     if (!deviceId) {
       throw new BadRequestError("Device ID is required");
     }
-    const data = await handleAuthSuccess(res, user, deviceId);
+    await handleAuthSuccess(res, user, deviceId);
     const frontendUrl = env("FRONTEND_URL", "http://localhost:5173/home");
     res.redirect(frontendUrl);
   } catch (error) {
