@@ -8,28 +8,28 @@ import { AppError } from "./types/error.types";
 import apiRoutes from "./routes";
 import { globalErrorHandler } from "./middleware/errorHandler.middleware";
 import { env } from "./utils/env.utils";
+import { basicLimiter } from "./middleware/rateLimit.middleware";
 
 const app = express();
 
-// --- 基礎設定 ---
-// 1. CORS: 允許跨域請求，credentials: true 允許 cookie 傳遞
 app.use(
   cors({
-    origin: "http://localhost:5173", // 換成您的前端 URL
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );
 
-// 2. Body Parsers: 解析 JSON 和 Cookie
 app.use(express.json());
 app.use(cookieParser());
 
-// 3. Response Extender: 掛載您自訂的 res.success/fail 方法
+app.set("trust proxy", 1);
+
 app.use(responseExtender);
 
-// 4. Passport: 初始化認證模組
 app.use(passport.initialize());
 configurePassport();
+
+app.use(basicLimiter);
 
 // --- 路由 ---
 app.use("/api", apiRoutes);
@@ -39,6 +39,6 @@ app.use(globalErrorHandler);
 
 const PORT = env("PORT", "3000");
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on ${PORT}`);
   console.log(`--- NEW Endpoint ---`);
 });
