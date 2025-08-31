@@ -7,7 +7,6 @@ import {
 } from "../types/error.types";
 import prisma from "../config/db.config";
 import QRCodeStyling from "qr-code-styling";
-import path from "path";
 import fs from "fs";
 import nodeCanvas from "canvas";
 import { JSDOM } from "jsdom";
@@ -70,12 +69,6 @@ export const generateQRCodeImage = async (userId: string): Promise<Buffer> => {
   const rawData = JSON.stringify({ ...payload, signature });
   const dataForQr = encodeURIComponent(rawData);
 
-  const logoPath = path.join(process.cwd(), "shared/app-icons/logo-small.jpg");
-  if (!fs.existsSync(logoPath))
-    throw new Error(`Logo file not found at: ${logoPath}`);
-
-  const logoBuffer = fs.readFileSync(logoPath);
-
   const qrCode = new QRCodeStyling({
     width: 600,
     height: 600,
@@ -94,7 +87,7 @@ export const generateQRCodeImage = async (userId: string): Promise<Buffer> => {
         ],
       },
     },
-    image: logoBuffer as any,
+    image: "https://cooperativeshops.org/logo-small.jpg",
     imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 15 },
     backgroundOptions: { color: "#ffffff" },
     cornersSquareOptions: { type: "extra-rounded", color: "#0056d6" },

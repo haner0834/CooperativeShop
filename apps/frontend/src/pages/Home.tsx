@@ -132,8 +132,10 @@ const Home = () => {
   const [isSheetOn, setIsSheetOn] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isNormal, setIsNormal] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getQrCode = async () => {
+    setIsLoading(true);
     const res = await fetch(path("/api/qr/generate"), {
       method: "GET",
       credentials: "include",
@@ -156,11 +158,13 @@ const Home = () => {
     const json = await authedFetch(path(`/api/schools/${schoolId}`));
 
     if (!json.success) {
+      setIsLoading(false);
       throw new Error("?");
     }
 
     setSchool(json.data);
     localStorage.setItem("isLoggedIn", "true");
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -221,11 +225,17 @@ const Home = () => {
           {isNormal ? "會員證" : "狗牌"}
         </button>
 
-        <img
-          src={imgUrl || "fuck"}
-          alt="QR Code"
-          className="w-full rounded-2xl"
-        />
+        {isLoading ? (
+          <div className="w-full flex justify-center">
+            <span className="loading"></span>
+          </div>
+        ) : (
+          <img
+            src={imgUrl || "fuck"}
+            alt="QR Code"
+            className="w-full rounded-2xl"
+          />
+        )}
 
         <div className="divider" />
 
