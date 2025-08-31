@@ -1,5 +1,4 @@
 import { createHmac } from "crypto";
-import { User, Account, School } from "@prisma/client";
 import { env } from "../utils/env.utils";
 import {
   NotFoundError,

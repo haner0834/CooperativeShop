@@ -1,7 +1,6 @@
 import { Prisma } from "@prisma/client";
 import prisma from "../config/db.config";
 import { BadRequestError, NotFoundError } from "../types/error.types";
-import { equal } from "assert";
 
 export const getAvailableSchools = async (
   provider?: "google" | "credential"
