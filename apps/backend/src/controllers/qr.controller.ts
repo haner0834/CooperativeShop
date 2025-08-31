@@ -25,6 +25,24 @@ export const generateUserQrCode = async (
   }
 };
 
+export const generateUserQrCodeData = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = req.bitch;
+    if (!user) {
+      throw new InternalError("Middleware doesn't work well. Fuck u <3");
+    }
+    const qrData = await qrService.generateQRCodeData(user.id);
+
+    res.success(qrData);
+  } catch (error) {
+    next(error);
+  }
+};
+
 /**
  * [Public] 驗證掃描到的 QR Code 資料
  */

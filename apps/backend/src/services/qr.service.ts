@@ -43,12 +43,7 @@ const generateSignature = (
   return hmac.digest("hex");
 };
 
-/**
- * 生成使用者 QR Code 圖片
- * @param userId 登入的使用者 ID
- * @returns {Promise<Buffer>} QR Code 圖片的 Buffer
- */
-export const generateQRCodeImage = async (userId: string): Promise<Buffer> => {
+export const generateQRCodeData = async (userId: string): Promise<string> => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: { school: true },
@@ -68,6 +63,17 @@ export const generateQRCodeImage = async (userId: string): Promise<Buffer> => {
 
   const rawData = JSON.stringify({ ...payload, signature });
   const dataForQr = encodeURIComponent(rawData);
+
+  return dataForQr;
+};
+
+/**
+ * 生成使用者 QR Code 圖片
+ * @param userId 登入的使用者 ID
+ * @returns {Promise<Buffer>} QR Code 圖片的 Buffer
+ */
+export const generateQRCodeImage = async (userId: string): Promise<Buffer> => {
+  const dataForQr = await generateQRCodeData(userId);
 
   const qrCode = new QRCodeStyling({
     width: 600,
