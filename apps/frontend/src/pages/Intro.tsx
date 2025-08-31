@@ -422,6 +422,18 @@ const Intro = () => {
     setTimeout(() => {
       document.documentElement.setAttribute("data-theme", "light");
     }, 0);
+
+    return () => {
+      const storedTheme = localStorage.getItem("theme");
+      const isDarkMode =
+        storedTheme === "dark" ||
+        (!storedTheme &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches);
+      document.documentElement.setAttribute(
+        "data-theme",
+        isDarkMode ? "dark" : "light"
+      );
+    };
   }, []);
 
   return (
