@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "prebuild": "node scripts/sync-shared.js",
+    "prebuild": "",
     "build": "tsc",
     "start": "node dist/src/server.js",
     "dev": "ts-node src/server.ts"
