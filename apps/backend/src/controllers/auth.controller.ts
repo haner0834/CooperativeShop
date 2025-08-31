@@ -63,7 +63,8 @@ const handleAuthSuccess = async (
   const switchableAccounts = sessions.map((s) => ({
     id: s.account.user.id,
     name: s.account.user.name,
-    email: s.account.user.email,
+    providerAccountId: s.account.providerAccountId,
+    schoolId: s.account.user.studentId,
   }));
 
   return {
