@@ -74,6 +74,8 @@ export const generateQRCodeImage = async (userId: string): Promise<Buffer> => {
   if (!fs.existsSync(logoPath))
     throw new Error(`Logo file not found at: ${logoPath}`);
 
+  const logoBuffer = fs.readFileSync(logoPath);
+
   const qrCode = new QRCodeStyling({
     width: 600,
     height: 600,
@@ -92,7 +94,7 @@ export const generateQRCodeImage = async (userId: string): Promise<Buffer> => {
         ],
       },
     },
-    image: logoPath,
+    image: logoBuffer as any,
     imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 15 },
     backgroundOptions: { color: "#ffffff" },
     cornersSquareOptions: { type: "extra-rounded", color: "#0056d6" },
