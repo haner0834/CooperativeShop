@@ -210,25 +210,26 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="pt-18 min-h-screen flex flex-col items-center justify-center bg-blue-300">
-      <div className="bg-base-100 flex flex-col items-center justify-center w-sm p-4 rounded-box shadow-md">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-blue-300">
+      <div className="bg-base-100 flex flex-col items-center justify-center max-w-sm min-w-xs mx-10 p-4 px-8 rounded-3xl shadow-md">
         <button
           onClick={() => setIsNormal((prev) => !prev)}
-          className={`text-2xl font-bold mb-2 ${
+          className={`text-2xl font-bold mb-4 ${
             isNormal ? "" : "text-success"
           }`}
         >
           {isNormal ? "會員證" : "狗牌"}
         </button>
+
         <img
           src={imgUrl || "fuck"}
           alt="QR Code"
-          className="w-full rounded-field"
+          className="w-full rounded-2xl"
         />
 
         <div className="divider" />
 
-        <div className="font-mono w-full space-y-4 p-4">
+        <div className="font-mono w-full space-y-4 pb-2">
           <button
             onClick={toggleNameVisibility}
             className="w-full flex justify-between"
