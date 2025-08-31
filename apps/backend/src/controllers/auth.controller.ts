@@ -184,7 +184,7 @@ export const googleCallback = (
       const errorMsg = encodeURIComponent(info?.message || "Login failed");
       const errorCode = encodeURIComponent(info?.code || "UNKNOWN_ERROR");
       return res.redirect(
-        `http://localhost:5173/login-failed?code=${errorCode}&message=${errorMsg}`
+        `/login-failed?code=${errorCode}&message=${errorMsg}`
       );
     }
     // NOTE: Need to specify again as the `req` here is only `req` without `passport` middleware.
@@ -207,12 +207,12 @@ export const googleCallbackSuccess = async (
       throw new BadRequestError("Device ID is required");
     }
     await handleAuthSuccess(res, user, deviceId);
-    const frontendUrl = env("FRONTEND_URL", "http://localhost:5173/home");
+    const frontendUrl = env("FRONTEND_URL", "/home");
     res.redirect(frontendUrl);
   } catch (error) {
     if (error instanceof AppError) {
       res.redirect(
-        `http://localhost:5173/login-failed?code=${error.code}&message=${error.message}&status=${error.statusCode}`
+        `/login-failed?code=${error.code}&message=${error.message}&status=${error.statusCode}`
       );
       return;
     }
