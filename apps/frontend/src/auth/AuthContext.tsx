@@ -21,7 +21,9 @@ type UserPayload = {
 export type SwitchableAccount = {
   id: string;
   name: string;
-  email: string | null;
+  providerAccountId: string;
+  email: string;
+  schoolId: string;
 };
 
 // AuthContext 的完整型別
