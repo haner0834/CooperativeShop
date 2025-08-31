@@ -130,7 +130,7 @@ const Home = () => {
   const { authedFetch } = useAuthFetch();
   const [school, setSchool] = useState<School | null>(null);
   const [isSheetOn, setIsSheetOn] = useState(false);
-  const [isNameVisible, setIsNameVisible] = useState(true);
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [isNormal, setIsNormal] = useState(true);
 
   const getQrCode = async () => {
@@ -168,9 +168,9 @@ const Home = () => {
   }, []);
 
   const toggleNameVisibility = () => {
-    const prev = localStorage.getItem("isNameVisible");
-    localStorage.setItem("isNameVisible", prev === "true" ? "false" : "true");
-    setIsNameVisible((prev) => !prev);
+    const prev = localStorage.getItem("isAnonymous");
+    localStorage.setItem("isAnonymous", prev === "true" ? "false" : "true");
+    setIsAnonymous((prev) => !prev);
   };
 
   const handleSwitch = async (id: string) => {
@@ -206,7 +206,7 @@ const Home = () => {
     setNavbarButtons([...baseButtons, menuToggleButton]);
     setNavbarTitle(undefined);
 
-    setIsNameVisible(localStorage.getItem("isNameVisible") === "true");
+    setIsAnonymous(localStorage.getItem("isAnonymous") === "true");
   }, []);
 
   return (
@@ -239,7 +239,7 @@ const Home = () => {
               <p>名稱</p>
             </div>
             <p className="transition-transform">
-              {isNameVisible ? activeUser?.name : "匿名"}
+              {isAnonymous ? "匿名" : activeUser?.name}
             </p>
           </button>
 

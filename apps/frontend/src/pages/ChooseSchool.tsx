@@ -75,7 +75,7 @@ const ChooseSchool = () => {
   const [filteredSchools, setFilteredSchools] = useState<School[]>([]);
   const [search, setSearch] = useState("");
   const { showModal } = useModal();
-  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSearch = (newValue: string) => {
     setSearch(newValue);
@@ -90,6 +90,7 @@ const ChooseSchool = () => {
 
   useEffect(() => {
     const a = async () => {
+      setIsLoading(true);
       const res = await fetch(path("/api/schools/all"), {
         headers: {
           "Content-Type": "application/json",
@@ -101,9 +102,11 @@ const ChooseSchool = () => {
         showModal({
           title: "Unexpected error occured.",
           description: getErrorMessage(json.error.code),
+          showDismissButton: true,
         });
       }
 
+      setIsLoading(false);
       setSchools(
         json.data.map((school: any) => ({
           id: school.id,
@@ -135,7 +138,7 @@ const ChooseSchool = () => {
 
   return (
     <div className="min-h-screen bg-base-300 pt-22 flex flex-col p-4">
-      <div className="max-w-2xl mx-auto w-full">
+      <div className="max-w-2xl mx-auto w-full flex flex-col flex-1">
         <label className="input w-full">
           <svg
             className="h-[1em] opacity-50"
@@ -168,15 +171,22 @@ const ChooseSchool = () => {
           </p>
         )}
 
-        <ul
-          className={`grid grid-cols-2 sm:grid-cols-3 gap-4 ${
-            search ? "" : "pt-4"
-          }`}
-        >
-          {(search ? filteredSchools : schools).map((school) => (
-            <SchoolCard key={school.id} school={school} />
-          ))}
-        </ul>
+        {!isLoading ? (
+          <ul
+            className={`grid grid-cols-2 sm:grid-cols-3 gap-4 ${
+              search ? "" : "pt-4"
+            }`}
+          >
+            {(search ? filteredSchools : schools).map((school) => (
+              <SchoolCard key={school.id} school={school} />
+            ))}
+          </ul>
+        ) : (
+          // I know this is ugly solution but it's fucking 25/08/31, 8:48 P.M. BROOOO
+          <div className="w-full flex-1 items-center justify-center flex">
+            <span className="loading"></span>
+          </div>
+        )}
       </div>
     </div>
   );
