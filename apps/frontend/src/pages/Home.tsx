@@ -90,7 +90,7 @@ const SheetContent = ({
                 <div className="">
                   <p className="w-full font-medium">{account.name}</p>
                   <p className="text-xs opacity-50">
-                    {account.email || "學號登入"}
+                    {account.email || account.providerAccountId || "Unknown"}
                   </p>
                 </div>
               </div>
