@@ -15,8 +15,15 @@ import { useModal } from "../widgets/ModalContext";
 import { getErrorMessage } from "../utils/errors";
 import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
 import { path } from "../utils/path";
+import { useAuth, type SwitchableAccount } from "../auth/AuthContext";
 
-const SchoolCard = ({ school }: { school: School }) => {
+const SchoolCard = ({
+  school,
+  switchableAccounts,
+}: {
+  school: School;
+  switchableAccounts: SwitchableAccount[];
+}) => {
   const navigate = useNavigate();
   const toPath = () =>
     navigate(`/login/${school.loginMethod}?school=${school.id}`);
@@ -43,7 +50,11 @@ const SchoolCard = ({ school }: { school: School }) => {
         className="bg-base-100 w-full h-20 rounded-xl flex justify-center items-center px-4 gap-2"
       >
         <SchoolIcon
-          className={school.abbreviation === "kmsh" ? "text-primary" : ""}
+          className={
+            switchableAccounts.some((a) => a.schoolId === school.abbreviation)
+              ? "text-primary"
+              : ""
+          }
         />
         <p className="font-semibold">{school.name}</p>
       </div>
@@ -76,6 +87,7 @@ const ChooseSchool = () => {
   const [search, setSearch] = useState("");
   const { showModal } = useModal();
   const [isLoading, setIsLoading] = useState(false);
+  const { switchableAccounts } = useAuth();
 
   const handleSearch = (newValue: string) => {
     setSearch(newValue);
@@ -107,14 +119,7 @@ const ChooseSchool = () => {
       }
 
       setIsLoading(false);
-      setSchools(
-        json.data.map((school: any) => ({
-          id: school.id,
-          abbreviation: school.abbreviation,
-          loginMethod: school.studentIdFormat ? "credential" : "google",
-          name: school.name,
-        }))
-      );
+      setSchools(json.data);
     };
 
     const baseButtons: NavbarButton[] = (
@@ -178,7 +183,11 @@ const ChooseSchool = () => {
             }`}
           >
             {(search ? filteredSchools : schools).map((school) => (
-              <SchoolCard key={school.id} school={school} />
+              <SchoolCard
+                key={school.id}
+                school={school}
+                switchableAccounts={switchableAccounts}
+              />
             ))}
           </ul>
         ) : (
