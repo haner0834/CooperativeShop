@@ -1,15 +1,22 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, School } from "@prisma/client";
 import prisma from "../config/db.config";
 import { BadRequestError, NotFoundError } from "../types/error.types";
 
+export interface SchoolDTO {
+  id: string;
+  name: string;
+  abbreviation: string;
+  loginMethod: string;
+}
+
 export const getAvailableSchools = async (
   provider?: "google" | "credential"
-) => {
+): Promise<SchoolDTO[]> => {
+  let schools: School[] = [];
   if (!provider) {
-    const schools = await prisma.school.findMany();
-    return schools;
+    schools = await prisma.school.findMany();
   } else if (provider === "google") {
-    return await prisma.school.findMany({
+    schools = await prisma.school.findMany({
       where: {
         emailFormats: {
           isEmpty: false,
@@ -17,7 +24,7 @@ export const getAvailableSchools = async (
       },
     });
   } else if (provider === "credential") {
-    return await prisma.school.findMany({
+    schools = await prisma.school.findMany({
       where: {
         studentIdFormat: {
           not: Prisma.JsonNull,
@@ -27,14 +34,26 @@ export const getAvailableSchools = async (
   } else {
     throw new BadRequestError("Invalid login type");
   }
+
+  return schools.map((school) => ({
+    id: school.id,
+    name: school.name,
+    abbreviation: school.abbreviation,
+    loginMethod: school.studentIdFormat ? "credential" : "google",
+  }));
 };
 
-export const getSchoolById = async (id: string) => {
+export const getSchoolById = async (id: string): Promise<SchoolDTO> => {
   const school = await prisma.school.findUnique({
     where: { id },
   });
 
   if (!school) throw new NotFoundError("SCHOOL");
 
-  return school;
+  return {
+    id: school.id,
+    name: school.name,
+    abbreviation: school.abbreviation,
+    loginMethod: school.studentIdFormat ? "credential" : "google",
+  };
 };
