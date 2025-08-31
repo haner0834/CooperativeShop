@@ -76,9 +76,9 @@ const QrCodeScanner = forwardRef<QrCodeScannerHandle, QrCodeScannerProps>(
         try {
           const devices = await Html5Qrcode.getCameras();
           if (devices && devices.length) {
-            const cameraId =
-              devices.find((d) => d.label.toLowerCase().includes("back"))?.id ||
-              devices[0].id;
+            // const cameraId =
+            //   devices.find((d) => d.label.toLowerCase().includes("back"))?.id ||
+            //   devices[0].id;
             const successCallback: QrCodeSuccessCallback = (
               decodedText,
               decodedResult
