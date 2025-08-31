@@ -20,10 +20,6 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     return (
       <div className="pt-16 w-screen h-screen justify-center flex items-center bg-base-300">
         <span className="loading loading-spinner loading-lg text-primary"></span>
-        <p>
-          {hasAttemptedRestore ? "true" : "false"},{" "}
-          {isLoading ? "true" : "false"}
-        </p>
       </div>
     );
   }
