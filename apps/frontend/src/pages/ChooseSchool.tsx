@@ -130,20 +130,7 @@ const ChooseSchool = () => {
     setNavbarButtons([...baseButtons, menuToggleButton]);
     setNavbarTitle(undefined);
 
-    showModal({
-      title: "此功能尚未開放，敬請期待！",
-      description: ":D",
-      buttons: [
-        {
-          label: "回主頁",
-          role: "primary",
-          style: "btn-primary",
-          onClick: () => navigate("/intro"),
-        },
-      ],
-    });
-
-    // a();
+    a();
   }, []);
 
   return (
