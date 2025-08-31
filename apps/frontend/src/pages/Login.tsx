@@ -128,6 +128,7 @@ const CredentialLogin = () => {
       }
       const { accessToken } = data;
       setAccessToken(accessToken);
+      localStorage.setItem("isLoggedIn", "true");
       await new Promise((f) => setTimeout(f, 1000));
 
       navigate("/", { replace: true });
