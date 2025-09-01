@@ -13,6 +13,8 @@ const GooglePlaceholder = () => {
   const [searchParams] = useSearchParams();
   const [seconds, setSeconds] = useState(0);
   const [schoolId, setSchoolId] = useState<string | null>(null);
+  const { showModal } = useModal();
+  const navigate = useNavigate();
 
   const loginWithGoogle = (schoolId: string) => {
     const deviceId = getDeviceId();
@@ -24,7 +26,47 @@ const GooglePlaceholder = () => {
 
   useEffect(() => {
     const id = searchParams.get("school");
-    if (!id) return;
+    if (!id) {
+      showModal({
+        title: "Missing School ID",
+        description:
+          "Whatever you did, back to schools listing page and choose it again. If it doesn't work again, please press the 'Report' button below.",
+        buttons: [
+          {
+            label: "Report",
+            onClick: () =>
+              (location.href =
+                "https://www.instagram.com/cooperativeshops_2026/"),
+          },
+          {
+            label: "Back",
+            role: "primary",
+            style: "btn-primary",
+            onClick: () => navigate("/choose-school"),
+          },
+        ],
+      });
+      return;
+    }
+
+    // 取得 User Agent 字串，並轉為小寫以便比對
+    var ua = navigator.userAgent.toLowerCase();
+
+    // 判斷是否為已知的 In-App Browser
+    // FBAV/FBiOS 是 Facebook 的特徵, line 是 LINE 的特徵
+    var isUnsupportedBrowser =
+      /fbsv|fbia|fban|fbav|fbbv|fbid|fbios|line|micromessenger/.test(ua);
+
+    if (isUnsupportedBrowser) {
+      showModal({
+        title: "需要在外部瀏覽器開啟",
+        description:
+          "請點選右上角「⋯」，選擇「在瀏覽器中開啟」（建議使用 Safari 或 Chrome）。",
+        showDismissButton: true,
+      });
+      return;
+    }
+
     setSchoolId(id);
     loginWithGoogle(id);
   }, []);
