@@ -62,7 +62,14 @@ const GooglePlaceholder = () => {
         title: "需要在外部瀏覽器開啟",
         description:
           "請點選右上角「⋯」，選擇「在瀏覽器中開啟」（建議使用 Safari 或 Chrome）。",
-        showDismissButton: true,
+        buttons: [
+          {
+            label: "返回",
+            role: "primary",
+            style: "btn-primary",
+            onClick: () => navigate("/choose-school"),
+          },
+        ],
       });
       return;
     }
