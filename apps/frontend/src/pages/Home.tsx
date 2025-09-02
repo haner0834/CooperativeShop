@@ -134,16 +134,7 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [qrData, setQrData] = useState<string | null>(null);
 
-  const getQrCode = async () => {
-    setIsLoading(true);
-    const { success, data } = await authedFetch(path("/api/qr/generate-data"));
-    if (!success) {
-      setIsLoading(false);
-      throw new Error("??");
-    }
-
-    setQrData(data);
-
+  const getStudentData = async () => {
     const schoolId = activeUser?.schoolId;
     if (!schoolId) {
       throw new Error("Fuck, no student ID");
@@ -158,11 +149,24 @@ const Home = () => {
 
     setSchool(json.data);
     localStorage.setItem("isLoggedIn", "true");
-    setIsLoading(false);
+  };
+
+  const getQrCode = async () => {
+    const { success, data } = await authedFetch(path("/api/qr/generate-data"));
+    if (!success) {
+      setIsLoading(false);
+      throw new Error("??");
+    }
+
+    setQrData(data);
   };
 
   useEffect(() => {
+    setIsLoading(true);
     getQrCode();
+
+    getStudentData();
+    setIsLoading(false);
   }, []);
 
   const toggleNameVisibility = () => {
