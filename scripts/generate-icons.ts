@@ -2,19 +2,6 @@ import fs from "fs-extra";
 import path from "path";
 import chokidar from "chokidar";
 
-// const iconsDir = path.resolve("apps/frontend/src/generated/icons");
-// const outFile = path.resolve("apps/frontend/src/generated/icons.tsx");
-
-// const files = fs.readdirSync(iconsDir).filter((f) => f.endsWith(".tsx"));
-
-// const exportss = files.map((f) => {
-//   const name = path.basename(f, ".tsx");
-//   return `export { default as ${name} } from './icons/${name}';`;
-// });
-
-// fs.writeFileSync(outFile, exportss.join("\n") + "\n");
-// console.log(`✅ Generated ${outFile}`);
-
 const ICONS_DIR = path.resolve(__dirname, "../shared/icons");
 const OUTPUT_DIR = path.resolve(__dirname, "../apps/frontend/src/generated");
 const OUTPUT_FILE = path.join(OUTPUT_DIR, "icons.tsx");
@@ -46,29 +33,18 @@ async function generateIconsIndex() {
       const ext = path.extname(f).toLowerCase();
 
       if (ext === ".svg") {
-        // 直接導入 SVG 組件
+        // SVG 仍然用 React component
         imports.push(`import ${name}Icon from '@shared/icons/${f}?react';`);
         components.push(`
 export const ${name} = (props: React.SVGProps<SVGSVGElement>) => {
   return <${name}Icon {...props} />;
 };`);
-        // imports.push(`export { default as ${name} } from './icons/${name}'`);
       } else {
-        // 圖片文件使用懶加載（保持原邏輯）
+        // 圖片文件直接 import URL
+        imports.push(`import ${name}Url from '@shared/icons/${f}';`);
         components.push(`
 export const ${name} = (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
-  const Comp = React.lazy(() =>
-    import('@shared/icons/${f}').then(mod => {
-      const ImgComp = (p: React.ImgHTMLAttributes<HTMLImageElement>) => <img src={mod.default} {...p} />;
-      ImgComp.displayName = "${name}";
-      return { default: ImgComp };
-    })
-  );
-  return (
-    <React.Suspense fallback={null}>
-      <Comp {...props} />
-    </React.Suspense>
-  );
+  return <img src={${name}Url} {...props} />;
 };`);
       }
     }
@@ -80,7 +56,7 @@ ${components.join("\n\n")}
 `;
 
     await fs.writeFile(OUTPUT_FILE, content, "utf8");
-    console.log("✅ Icons index generated (direct SVG import) at", OUTPUT_FILE);
+    console.log("✅ Icons index generated at", OUTPUT_FILE);
   } catch (err) {
     console.error("Error generating icons index:", err);
   }
