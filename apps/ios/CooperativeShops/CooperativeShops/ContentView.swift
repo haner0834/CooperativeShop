@@ -14,7 +14,7 @@ struct ContentView: View {
     @State private var verifiedData: QRData? = nil
     @State private var tourchActive = false
     @State private var id = UUID()
-    @State private var isLoading = false
+    @State private var isLoading = true
     
     var body: some View {
         VStack {
