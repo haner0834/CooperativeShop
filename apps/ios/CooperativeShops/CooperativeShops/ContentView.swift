@@ -28,12 +28,29 @@ struct ContentView: View {
             .padding(.horizontal)
             
             ZStack(alignment: .bottom) {
+                if !isScanning {
+                    VStack {
+                        Spacer()
+                        
+                        Image(systemName: "video.slash.fill")
+                            .font(.title2)
+                        
+                        Text("相機已關閉")
+                            .fontWeight(.medium)
+                            .opacity(0.5)
+                        
+                        Spacer()
+                    }
+                    .frame(maxHeight: .infinity)
+                }
+                
                 QRScannerSwiftUIView(
                     configuration: .init(
                         animationDuration: 0.3,
                         isBlurEffectEnabled: true
                     ),
                     isScanning: $isScanning,
+                    torchActive: $tourchActive,
                     onSuccess: { qrData in
                         isScanning = false
                         
@@ -64,6 +81,21 @@ struct ContentView: View {
                         }
                     }
                     .frame(width: 70, height: 70)
+                }
+                .frame(maxWidth: .infinity)
+                .overlay(alignment: .trailing) {
+                    Button {
+                        tourchActive.toggle()
+                    } label: {
+                        Image(systemName: tourchActive ? "flashlight.slash": "flashlight.on.fill")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(.ultraThinMaterial)
+                            .clipShape(.rect(cornerRadius: 50))
+                    }
+                    .buttonStyle(.plain)
+                    .environment(\.colorScheme, tourchActive ? .light: .dark)
+                    .frame(width: 50, height: 50)
+                    .padding()
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.bottom, 50)
