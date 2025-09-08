@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import * as qrService from "../services/qr.service";
 import { AuthRequest } from "../types/auth.types";
-import { BadRequestError, InternalError } from "../types/error.types";
+import { AppError, BadRequestError, InternalError } from "../types/error.types";
 
 /**
  * [Authenticated] 生成當前登入使用者的 QR Code
@@ -55,8 +55,17 @@ export const verifyUserQrCode = async (
     const { data } = req.body;
 
     // check if data exist first
-    const decoded = decodeURIComponent(data);
-    const qrData = JSON.parse(decoded);
+    let qrData: qrService.QrCodePayload;
+    try {
+      if (typeof data !== "string") {
+        throw new BadRequestError("QR code data is missing or not a string");
+      }
+
+      const decoded = decodeURIComponent(data);
+      qrData = JSON.parse(decoded);
+    } catch (err) {
+      return next(new AppError("INVALID_QR", "Invalid QR code payload", 400));
+    }
 
     const {
       signature,

@@ -2,37 +2,42 @@
   {
     "name": "南科實中",
     "abbreviation": "nnkieh",
-    "emailFormat": "@ms.nnkieh.tn.edu.tw",
+    "emailFormat": ["@ms.nnkieh.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "南大附中",
     "abbreviation": "tntcshsa",
-    "emailFormat": "@gm.tntcsh.tn.edu.tw",
-    "studentIdFormat": null
+    "emailFormat": [],
+    "studentIdFormat": {
+      "length": 6,
+      "prefix": "",
+      "suffix": "",
+      "regex": "^(4|3|2|1)1(0?[1-9]|1[0-5])\\d{3}$"
+    }
   },
   {
     "name": "曾文農工",
     "abbreviation": "twais",
-    "emailFormat": "@twivs.tn.edu.tw",
+    "emailFormat": ["@twivs.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "北門農工",
     "abbreviation": "pmai",
-    "emailFormat": "",
+    "emailFormat": ["@goo.pmai.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "曾文家商",
     "abbreviation": "twvs",
-    "emailFormat": "@ms2.twvs.tn.edu.tw",
+    "emailFormat": ["@ms2.twvs.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "臺南高商",
     "abbreviation": "tncvs",
-    "emailFormat": "",
+    "emailFormat": [],
     "studentIdFormat": {
       "length": 6,
       "prefix": "",
@@ -43,55 +48,60 @@
   {
     "name": "新營高工",
     "abbreviation": "hyivs",
-    "emailFormat": "@gm.hyivs.tn.edu.tw",
-    "studentIdFormat": null
+    "emailFormat": [],
+    "studentIdFormat": {
+      "length": 6,
+      "prefix": "",
+      "suffix": "",
+      "regex": "^(4|3|2|1)(11|14|15|16|17|18|32|36|37|39)\\d{3}$"
+    }
   },
   {
     "name": "新化高工",
     "abbreviation": "hhvs",
-    "emailFormat": "@sgm.hhvs.tn.edu.tw",
+    "emailFormat": ["@sgm.hhvs.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "瀛海高中",
     "abbreviation": "yhsh",
-    "emailFormat": "@gm.yhsh.tn.edu.tw",
+    "emailFormat": ["@gm.yhsh.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "台南二中",
     "abbreviation": "tnssh",
-    "emailFormat": "@stu.tnssh.tn.edu.tw",
+    "emailFormat": ["@stu.tnssh.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "南光高中",
     "abbreviation": "nkhs",
-    "emailFormat": "@nkhs.tn.edu.tw",
+    "emailFormat": ["@nkhs.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "長榮高中",
     "abbreviation": "cjshs",
-    "emailFormat": "@st.cjshs.tn.edu.tw",
+    "emailFormat": ["@st.cjshs.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "新豐高中",
     "abbreviation": "sfsh",
-    "emailFormat": "@sfsh.tn.edu.tw",
+    "emailFormat": ["@sfsh.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "北門高中",
     "abbreviation": "bmsh",
-    "emailFormat": "@bmsh.tn.edu.tw",
+    "emailFormat": ["@bmsh.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "新營高中",
     "abbreviation": "hysh",
-    "emailFormat": "",
+    "emailFormat": [],
     "studentIdFormat": {
       "length": 6,
       "prefix": "",
@@ -102,67 +112,77 @@
   {
     "name": "新化高中",
     "abbreviation": "hhsh",
-    "emailFormat": "@stu.hhsh.tn.edu.tw",
+    "emailFormat": ["@stu.hhsh.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "大灣高中",
     "abbreviation": "dwsh",
-    "emailFormat": "@stu.dwhs.tn.edu.tw",
+    "emailFormat": ["@stu.dwhs.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "南寧高中",
     "abbreviation": "nnsh",
-    "emailFormat": "@nnjh.tn.edu.tw",
+    "emailFormat": ["@nnjh.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "土城高中",
     "abbreviation": "tcjh",
-    "emailFormat": "@tcjh.tn.edu.tw",
+    "emailFormat": ["@tcjh.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "永仁高中",
     "abbreviation": "yrhs",
-    "emailFormat": "@yrhs.tn.edu.tw",
+    "emailFormat": ["@yrhs.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "興國高中",
     "abbreviation": "hkhs",
-    "emailFormat": "@hkhs.tn.edu.tw",
+    "emailFormat": ["@hkhs.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "港明高中",
     "abbreviation": "kmsh",
-    "emailFormat": "@web.kmsh.tn.edu.tw",
+    "emailFormat": ["@web.kmsh.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "台南海事",
     "abbreviation": "tnvs",
-    "emailFormat": "@gapps.tnvs.tn.edu.tw",
-    "studentIdFormat": null
+    "emailFormat": [],
+    "studentIdFormat": {
+      "length": 6,
+      "prefix": "",
+      "suffix": "",
+      "regex": "^(4|3|2|1)1(11|21|22|31|32|41|51|52|61|62|71|81)\\d{2}$"
+    }
   },
   {
     "name": "黎明高中",
     "abbreviation": "lmsh",
-    "emailFormat": "@lmsh.tn.edu.tw",
-    "studentIdFormat": null
+    "emailFormat": [],
+    "studentIdFormat": {
+      "length": null,
+      "prefix": "",
+      "suffix": "",
+      "regex": "^(1(14|13|12)0\\d{3}|(4|3|2|1)10\\d{3})$"
+    }
   },
   {
     "name": "明達高中",
     "abbreviation": "mdsh",
-    "emailFormat": "@mdsh.tn.edu.tw",
+    "emailFormat": ["@mdsh.tn.edu.tw"],
     "studentIdFormat": null
   },
   {
     "name": "家齊高中",
     "abbreviation": "ccsh",
-    "emailFormat": "@ms2.ccsh.tn.edu.tw",
+    "emailFormat": ["@ms2.ccsh.tn.edu.tw"],
     "studentIdFormat": null
   }
 ]
