@@ -6,11 +6,11 @@ export const prisma = new PrismaClient();
 async function main() {
   const schoolsJson = require(path.join(
     process.cwd(),
-    "shared/app-icons/logo-small.jpg"
+    "shared/jsons/schools.json"
   ));
   const schools: any[] = schoolsJson.map((school: any) => ({
     abbreviation: school.abbreviation,
-    emailFormats: [school.emailFormat],
+    emailFormats: school.emailFormat,
     name: school.name,
     studentIdFormat: school.studentIdFormat,
   }));
@@ -18,7 +18,7 @@ async function main() {
   for (const s of schools) {
     await prisma.school.upsert({
       where: { abbreviation: s.abbreviation },
-      update: {},
+      update: s,
       create: s,
     });
   }
