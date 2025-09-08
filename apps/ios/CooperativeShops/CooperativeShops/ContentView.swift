@@ -11,10 +11,10 @@ import QRScanner
 struct ContentView: View {
     @State private var isScanning = true
     @State private var showSheet = false
-    @State private var verifiedData: QRData? = nil
     @State private var tourchActive = false
     @State private var id = UUID()
-    @State private var isLoading = true
+    @State private var isLoading = false
+    @State private var apiResponse: ApiResponse<QRData>? = nil
     
     var body: some View {
         VStack {
@@ -73,12 +73,10 @@ struct ContentView: View {
             .ignoresSafeArea()
             .frame(maxHeight: .infinity)
             .sheet(isPresented: $showSheet) {
-                verifiedData = nil
+                apiResponse = nil
             } content: {
                 VStack {
-                    if let verifiedData {
-                        SheetContent(verifiedData: verifiedData)
-                    }else if isLoading {
+                    if isLoading {
                         LoadingCircleView()
                             .tint(.black)
                             .frame(width: 30, height: 30)
@@ -88,11 +86,13 @@ struct ContentView: View {
                             .font(.callout)
                             .fontWeight(.medium)
                             .opacity(0.6)
+                    }else if let apiResponse = apiResponse {
+                        SheetContent(apiResponse: apiResponse)
                     }else {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.yellow)
-                        
-                        Text("Invalid QR Code")
+                        Text("Unknown Result")
+                            .font(.callout)
+                            .fontWeight(.medium)
+                            .opacity(0.6)
                     }
                 }
                 .presentationDetents([.fraction(0.27)])
@@ -134,16 +134,17 @@ struct ContentView: View {
     
     func handleVerify(qrData: String) {
         Task {
-            isLoading = true
+            await MainActor.run {
+                isLoading = true
+            }
             
             let response = await verifyQrCode(qrData: qrData)
             
-            guard let response else { return }
-            guard (response.success) else { return }
-            
-            verifiedData = response.data
-            
-            isLoading = false
+            await MainActor.run {
+                apiResponse = response
+                
+                isLoading = false
+            }
         }
     }
 }
