@@ -8,6 +8,7 @@ import apiRoutes from "./routes";
 import { globalErrorHandler } from "./middleware/errorHandler.middleware";
 import { env } from "./utils/env.utils";
 import { basicLimiter } from "./middleware/rateLimit.middleware";
+import { jsonContentTypeCheck } from "./middleware/jsonChecker.middleware";
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(
   })
 );
 
+app.use(jsonContentTypeCheck);
 app.use(express.json());
 app.use(cookieParser());
 
