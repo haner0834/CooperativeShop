@@ -19,13 +19,13 @@ app.use(
   })
 );
 
+app.use(responseExtender);
+
 app.use(jsonContentTypeCheck);
 app.use(express.json());
 app.use(cookieParser());
 
 app.set("trust proxy", 1);
-
-app.use(responseExtender);
 
 app.use(passport.initialize());
 configurePassport();

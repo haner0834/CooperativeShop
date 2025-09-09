@@ -17,6 +17,11 @@ export const jsonContentTypeCheck = (
     return next();
   }
 
+  // skip check if the req has no content
+  if (req.headers["content-length"] === "0") {
+    return next();
+  }
+
   const contentType = req.get("Content-Type");
 
   // 檢查 Content-Type header 是否存在且包含 'application/json'
