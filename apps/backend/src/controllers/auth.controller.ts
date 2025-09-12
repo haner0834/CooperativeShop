@@ -434,5 +434,6 @@ export const googleLogin = async (
   passport.authenticate("google", {
     scope: ["profile", "email"],
     state, // 將編碼後的 state 傳給 Google
+    prompt: "select_account",
   })(req, res, next);
 };
