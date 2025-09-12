@@ -2,7 +2,12 @@ import { PrismaClient, School, User } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { validateStudentId } from "../validators/studentId.validator";
 import { validateEmailAndStudentId } from "../validators/email.validator";
-import { AppError, AuthError, BadRequestError } from "../types/error.types";
+import {
+  AppError,
+  AuthError,
+  BadRequestError,
+  InternalError,
+} from "../types/error.types";
 
 const prisma = new PrismaClient();
 const SALT_ROUNDS = 10;
@@ -33,10 +38,14 @@ export const registerWithStudentId = async (data: {
   const school = await prisma.school.findUnique({
     where: { id: data.schoolId },
   });
-  if (!school) throw new Error("School not found.");
+  if (!school) throw new InternalError("School not found.");
 
   if (!validateStudentId(data.studentId, school.studentIdFormat)) {
-    throw new Error("Invalid Student ID format.");
+    throw new AppError(
+      "INVALID_STUDENT_ID_FORMAT",
+      "Invalid Student ID format.",
+      400
+    );
   }
 
   const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);

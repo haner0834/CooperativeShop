@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import { env } from "./env.utils";
+import { InternalError } from "../types/error.types";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 12;
@@ -10,7 +11,7 @@ const KEY_LENGTH = 32;
 const KEK_HEX = env("KEK_HEX");
 
 if (!KEK_HEX || Buffer.from(KEK_HEX, "hex").length !== KEY_LENGTH) {
-  throw new Error(
+  throw new InternalError(
     "KEY_ENCRYPTION_KEY is not defined in .env or is not a 32-byte hex string."
   );
 }
