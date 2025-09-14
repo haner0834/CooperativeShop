@@ -1,17 +1,27 @@
 package org.cooperativeshops.aos
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.activity.*
+import androidx.activity.compose.*
+//import androidx.activity.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.*
+import androidx.compose.foundation.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import org.cooperativeshops.aos.ui.theme.CooperativeShopsTheme
+import androidx.compose.ui.tooling.preview.*
+import androidx.compose.ui.unit.*
+import org.cooperativeshops.aos.ui.theme.*
+//import androidx.compose.runtime.*
+import androidx.compose.ui.draw.*
+import androidx.compose.ui.layout.*
+import androidx.compose.ui.res.painterResource
+
+data class QRData(val userId: String, val schoolId: String, val schoolName: String)
+data class ApiError(val code: String, val message: String)
+data class ApiResponse<T>(val success: Boolean, val data: T?, val error: ApiError?)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,16 +42,33 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+    var count by remember { mutableIntStateOf(0) }
+    Row(modifier = Modifier.padding(30.dp)) {
+        Image(
+            painter = painterResource(id = R.drawable.logo_light),
+            contentDescription = "描述文字",
+            modifier = Modifier.height(60.dp),
+            contentScale = ContentScale.Fit
+        )
+
+        Button(
+            onClick = { count ++},
+            modifier = Modifier.padding(),
+            shape = RoundedCornerShape(5.dp)
+        ) {
+            Text("$count")
+        }
+    }
 }
 
-@Preview(showBackground = true)
+@Preview(
+    name = "Pixel 4",
+    showBackground = true,
+    device = Devices.PIXEL_4
+)
 @Composable
 fun GreetingPreview() {
     CooperativeShopsTheme {
-        Greeting("Android")
+        Greeting("genius")
     }
 }
