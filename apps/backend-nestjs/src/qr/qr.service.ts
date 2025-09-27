@@ -23,7 +23,7 @@ export interface QrCodePayload {
 @Injectable()
 export class QrService implements LoggableClass {
   constructor(private prisma: PrismaService) {}
-  logger: Logger | LoggerService;
+  readonly logger = new Logger(QrService.name);
 
   private readonly SIGNATURE_SECRET = env('SIGNATURE_SECRET');
 
