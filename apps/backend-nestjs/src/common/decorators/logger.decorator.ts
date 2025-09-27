@@ -1,4 +1,5 @@
 import { Logger, LoggerService } from '@nestjs/common';
+import { AppException } from 'src/types/error.types';
 
 /**
  * Logger 裝飾器的配置選項
@@ -165,10 +166,16 @@ export function Log(options: LogOptions = {}): MethodDecorator {
         const duration = Date.now() - startTime;
 
         // 準備錯誤日誌資料
+        const known = error instanceof AppException;
         const errorLogData: any = {
           timestamp,
+          known,
           error: error?.message || 'Unknown error',
         };
+        if (known) {
+          errorLogData.code = error.code;
+          errorLogData.message = error.message;
+        }
 
         if (logDuration) {
           errorLogData.duration = `${duration}ms`;
