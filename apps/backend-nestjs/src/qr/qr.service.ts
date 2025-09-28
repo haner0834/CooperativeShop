@@ -42,7 +42,6 @@ export class QrService {
     return hmac.digest('hex');
   }
 
-  @Log()
   async generateQRCodeData(userId: string): Promise<string> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -72,7 +71,6 @@ export class QrService {
    * @param userId 登入的使用者 ID
    * @returns {Promise<Buffer>} QR Code 圖片的 Buffer
    */
-  @Log()
   async generateQRCodeImage(userId: string): Promise<Buffer> {
     const dataForQr = await this.generateQRCodeData(userId);
 
@@ -121,7 +119,6 @@ export class QrService {
    * @param data 掃描到的 payload
    * @returns {Promise<Omit<QrCodePayload, 'signature'>>} 驗證成功後回傳的使用者公開資料
    */
-  @Log()
   async verifyQRCodeData(
     data: QrCodePayload,
   ): Promise<Omit<QrCodePayload, 'signature'>> {
