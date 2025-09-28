@@ -13,7 +13,7 @@ import { PrismaModule } from './prisma/prisma.module';
     AuthModule,
     SchoolsModule,
     QrModule,
-    WinstonModule.forRoot(winstonLoggerOption),
+    // WinstonModule.forRoot(winstonLoggerOption),
     PrismaModule,
   ],
   controllers: [AppController],

@@ -10,7 +10,7 @@ import QRCodeStyling from 'qr-code-styling';
 import fs from 'fs';
 import nodeCanvas from 'canvas';
 import { JSDOM } from 'jsdom';
-import { Log, LoggableClass } from 'src/common/decorators/logger.decorator';
+import { Log } from 'src/common/decorators/logger.decorator';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 export interface QrCodePayload {
@@ -21,9 +21,8 @@ export interface QrCodePayload {
 }
 
 @Injectable()
-export class QrService implements LoggableClass {
+export class QrService {
   constructor(private prisma: PrismaService) {}
-  readonly logger = new Logger(QrService.name);
 
   private readonly SIGNATURE_SECRET = env('SIGNATURE_SECRET');
 
