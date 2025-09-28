@@ -89,7 +89,7 @@ export function Log(options: LogOptions = {}): MethodDecorator {
     const logContext = `${prefix ? `[${prefix}]` : ''}${className}.${methodName}`;
 
     descriptor.value = async function (...args: any[]) {
-      const logger = new Logger(logContext); // ✅ 全域 logger，不再依賴 this.logger
+      const logger = new Logger(logContext);
       const startTime = Date.now();
 
       try {
