@@ -7,7 +7,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { ApiError } from 'src/types/api.types';
 import { AppError } from 'src/types/error.types';
 
@@ -25,6 +25,18 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     let errorCode: string;
     let errorMessage: string;
 
+    const meta = {
+      path: request.url,
+      method: request.method,
+      params: request.params,
+      query: request.query,
+      body: this.redact(request.body),
+      headers: {
+        'content-type': request.headers['content-type'],
+        'user-agent': request.headers['user-agent'],
+      },
+    };
+
     if (exception instanceof AppError) {
       statusCode = exception.getStatus();
       errorCode = exception.code;
@@ -35,7 +47,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           ? (responseBody as any).message || exception.message
           : exception.message;
 
-      this.logger.warn(`[${errorCode}] ${errorMessage}`, { path: request.url });
+      this.logger.warn(`[${errorCode}] ${errorMessage}`, meta);
     } else if (exception instanceof HttpException) {
       statusCode = exception.getStatus();
       errorCode = this.getErrorCodeByStatus(statusCode);
@@ -50,17 +62,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         errorMessage = exception.message;
       }
 
-      this.logger.warn(`[${errorCode}] ${errorMessage}`, { path: request.url });
+      this.logger.warn(`[${errorCode}] ${errorMessage}`, meta);
     } else {
       statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
       errorCode = 'INTERNAL_SERVER_ERROR';
       errorMessage = 'Internal server error';
 
       // Winston can handle objects as meta
-      this.logger.error('Unhandled exception', {
-        exception,
-        path: request.url,
-      });
+      this.logger.error('Unhandled exception', { exception, ...meta });
     }
 
     const errorResponse: ApiError = {
@@ -83,5 +92,28 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       500: 'INTERNAL_SERVER_ERROR',
     };
     return statusMap[statusCode] || 'UNKNOWN_ERROR';
+  }
+
+  private redact(obj: any): any {
+    if (!obj || typeof obj !== 'object') return obj;
+    const clone: any = Array.isArray(obj) ? [] : {};
+    for (const key of Object.keys(obj)) {
+      const sensitiveFields = [
+        'password',
+        'token',
+        'secret',
+        'key',
+        'authorization',
+        'refreshToken',
+        'accessToken',
+        'signature',
+      ];
+      if (sensitiveFields.includes(key.toLowerCase())) {
+        clone[key] = '[REDACTED]';
+      } else {
+        clone[key] = obj[key];
+      }
+    }
+    return clone;
   }
 }
