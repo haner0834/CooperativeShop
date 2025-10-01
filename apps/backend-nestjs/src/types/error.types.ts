@@ -3,7 +3,7 @@
 
 import { HttpException } from '@nestjs/common';
 
-export class AppException extends HttpException {
+export class AppError extends HttpException {
   public readonly code: string;
 
   constructor(code: string, message: string, statusCode: number) {
@@ -12,7 +12,7 @@ export class AppException extends HttpException {
   }
 }
 
-export class NotFoundError extends AppException {
+export class NotFoundError extends AppError {
   constructor(resourceName = '', message = 'Resource not found.') {
     super(
       `${resourceName ? resourceName.toUpperCase() + '_' : ''}NOT_FOUND`,
@@ -22,31 +22,31 @@ export class NotFoundError extends AppException {
   }
 }
 
-export class UnauthorizedError extends AppException {
+export class UnauthorizedError extends AppError {
   constructor(message = 'Authentication failed.') {
     super('UNAUTHORIZED', message, 401);
   }
 }
 
-export class BadRequestError extends AppException {
+export class BadRequestError extends AppError {
   constructor(message = 'Bad request.') {
     super('BAD_REQUEST', message, 400);
   }
 }
 
-export class InternalError extends AppException {
+export class InternalError extends AppError {
   constructor(message = 'Internal server error.') {
     super('INTERNAL_SERVER_ERROR', message, 500);
   }
 }
 
-export class PermissionError extends AppException {
+export class PermissionError extends AppError {
   constructor(message = 'No permission to access the data.') {
     super('NO_PERMISSION', message, 403);
   }
 }
 
-export class AuthError extends AppException {
+export class AuthError extends AppError {
   constructor(code: string, message: string, statusCode = 403) {
     super(code, message, statusCode);
     this.name = 'AuthError';

@@ -1,4 +1,204 @@
-import { Controller } from '@nestjs/common';
+// src/auth/auth.controller.ts
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Req,
+  Res,
+  Headers,
+  UseGuards,
+  Query,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import express from 'express';
+import { AuthService } from './services/auth.service';
+import { TokenService } from './services/token.service';
+import { Log } from 'src/common/decorators/logger.decorator';
+import { JwtAccessGuard } from './guards/jwt-access.guard';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { GoogleOAuthGuard } from './guards/google-oauth.guard';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import {
+  RegisterDto,
+  LoginDto,
+  SwitchAccountDto,
+  GoogleLoginQueryDto,
+} from './dto/auth.dto';
+import type { UserPayload } from './types/auth.types';
+import type { User } from '@prisma/client';
+import { BadRequestError, UnauthorizedError } from 'src/types/error.types';
+
+const httpOnlyCookieOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'lax',
+  path: '/api/auth',
+} as const;
 
 @Controller('auth')
-export class AuthController {}
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  async handleAuthSuccess(res: express.Response, user: User, deviceId: string) {
+    const { cookieMaxAge, ...data } = await this.authService.authSuccess(
+      user,
+      deviceId,
+    );
+    res.cookie('refreshToken', data, {
+      ...httpOnlyCookieOptions,
+      maxAge: cookieMaxAge,
+    });
+  }
+
+  @Post('register')
+  @Log()
+  @HttpCode(HttpStatus.CREATED)
+  async register(
+    @Body() registerDto: RegisterDto,
+    @Headers('x-device-id') deviceId: string,
+    @Res({ passthrough: true }) res: express.Response,
+  ) {
+    const user = await this.authService.registerWithStudentId(registerDto);
+    const data = await this.handleAuthSuccess(res, user, deviceId);
+
+    return data;
+  }
+
+  @Post('login')
+  @Log()
+  @HttpCode(HttpStatus.OK)
+  async login(
+    @Body() loginDto: LoginDto,
+    @Headers('x-device-id') deviceId: string,
+    @Res({ passthrough: true }) res: express.Response,
+  ) {
+    const user = await this.authService.loginWithStudentId(loginDto);
+    const data = await this.handleAuthSuccess(res, user, deviceId);
+
+    return data;
+  }
+
+  @Post('logout')
+  @Log()
+  @UseGuards(JwtRefreshGuard)
+  @HttpCode(HttpStatus.OK)
+  async logout(
+    @Req() req: express.Request,
+    @Headers('x-device-id') deviceId: string,
+    @Res({ passthrough: true }) res: express.Response,
+    @CurrentUser() user: UserPayload,
+  ) {
+    const refreshToken = req.cookies?.refreshToken;
+    if (!refreshToken) throw new UnauthorizedError();
+
+    await this.authService.logout(refreshToken, deviceId);
+
+    res.cookie('refreshToken', '', {
+      ...httpOnlyCookieOptions,
+      maxAge: 0,
+    });
+
+    return { message: 'Logged out successfully.' };
+  }
+
+  @Post('refresh')
+  @Log()
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(
+    @Req() req: express.Request,
+    @Headers('x-device-id') deviceId: string,
+    @Res({ passthrough: true }) res: express.Response,
+  ) {
+    const refreshToken = req.cookies?.refreshToken;
+
+    const result = await this.authService.rotateRefreshToken(
+      refreshToken,
+      deviceId,
+    );
+
+    res.cookie('refreshToken', result.refreshToken, {
+      ...httpOnlyCookieOptions,
+      maxAge: result.cookieMaxAge,
+    });
+
+    return { accessToken: result.accessToken };
+  }
+
+  @Get('restore')
+  @Log()
+  @HttpCode(HttpStatus.OK)
+  async restoreSession(
+    @Req() req: express.Request,
+    @Headers('x-device-id') deviceId: string,
+    @Res({ passthrough: true }) res: express.Response,
+  ) {
+    const refreshToken = req.cookies?.refreshToken;
+    if (!deviceId) throw new BadRequestError('Missing device ID');
+
+    const user = await this.authService.restoreSession(refreshToken, deviceId);
+
+    if (user) {
+      const data = this.handleAuthSuccess(res, user, deviceId);
+      return data;
+    }
+  }
+
+  @Post('switch-account')
+  @Log()
+  @UseGuards(JwtAccessGuard)
+  @HttpCode(HttpStatus.OK)
+  async switchAccount(
+    @Body() switchAccountDto: SwitchAccountDto,
+    @Headers('x-device-id') deviceId: string,
+    @Res({ passthrough: true }) res: express.Response,
+    @CurrentUser() currentUser: UserPayload,
+  ) {
+    const result = await this.authService.switchAccount(
+      switchAccountDto.targetUserId,
+      deviceId,
+    );
+
+    res.cookie('refreshToken', result.refreshToken, {
+      ...httpOnlyCookieOptions,
+      maxAge: result.cookieMaxAge,
+    });
+
+    return {
+      accessToken: result.accessToken,
+      user: result.user,
+    };
+  }
+
+  @Get('google')
+  @Log()
+  @UseGuards(GoogleOAuthGuard)
+  async googleLogin(@Query() query: GoogleLoginQueryDto) {
+    // Guard 會處理重定向到 Google
+    // 這個方法實際上不會被執行，但需要存在
+  }
+
+  @Get('google/callback')
+  @Log()
+  @UseGuards(GoogleOAuthGuard)
+  async googleCallback(
+    @Req() req: express.Request,
+    @Res() res: express.Response,
+  ) {
+    try {
+      const user = req.user as any;
+      const deviceId = user.deviceId;
+
+      const data = await this.handleAuthSuccess(res, user, deviceId);
+
+      // 重定向到前端
+      const frontendUrl = process.env.FRONTEND_URL || '/home';
+      res.redirect(frontendUrl);
+    } catch (error) {
+      const errorMsg = encodeURIComponent(error.message || 'Login failed');
+      const errorCode = encodeURIComponent(error.code || 'UNKNOWN_ERROR');
+      res.redirect(`/login-failed?code=${errorCode}&message=${errorMsg}`);
+    }
+  }
+}

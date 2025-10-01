@@ -1,13 +1,21 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { WINSTON_MODULE_PROVIDER, WinstonModule } from 'nest-winston';
-import { SuccessResponseInterceptor } from './common/interceptors/response-success.interceptor';
-import { GlobalExceptionFilter } from './common/interceptors/response-errpr.interceptor';
+import { WinstonModule } from 'nest-winston';
 import { winstonLoggerOption } from './config/winston.config';
+import { Logger, RequestMethod } from '@nestjs/common';
+import { GlobalExceptionFilter } from './common/interceptors/response-errpr.interceptor';
+import { SuccessResponseInterceptor } from './common/interceptors/response-success.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: WinstonModule.createLogger(winstonLoggerOption),
+  });
+
+  app.setGlobalPrefix('api', {
+    exclude: [
+      { path: 'auth/google/callback', method: RequestMethod.GET },
+      { path: 'health', method: RequestMethod.GET },
+    ],
   });
 
   // To behav like what I did in express's response

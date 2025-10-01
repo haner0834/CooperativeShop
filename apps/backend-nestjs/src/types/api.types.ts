@@ -1,5 +1,5 @@
-import { Response } from "express";
-import { AuthRequest } from "./auth.types";
+import { Response } from 'express';
+import { AuthRequest } from '../auth/types/auth.types';
 
 export type ApiSuccess<T> = {
   success: true;
