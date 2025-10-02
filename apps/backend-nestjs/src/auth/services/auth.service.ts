@@ -28,7 +28,7 @@ export class AuthService {
     private readonly tokenService: TokenService,
   ) {}
 
-  private readonly SALT_ROUNDS = Number(env('SALT_ROUNDS'));
+  private readonly SALT_ROUNDS = 10;
 
   async authSuccess(user: User, deviceId: string) {
     if (!deviceId) {
