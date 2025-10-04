@@ -85,11 +85,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
       return user;
     } catch (error) {
-      console.error(`An error [${error.message}] occurred.`);
-
-      // 在 NestJS 中，你可以選擇拋出異常或返回 false
-      // 拋出異常會被 exception filter 處理
-      throw error;
+      done(error, undefined);
     }
   }
 }

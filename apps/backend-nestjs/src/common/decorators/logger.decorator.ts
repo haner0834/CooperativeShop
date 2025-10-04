@@ -23,6 +23,18 @@ interface LogOptions {
 function defaultArgsFilter(args: any[]): any[] {
   return args.map((arg) => {
     if (typeof arg === 'object' && arg !== null) {
+      if (
+        arg instanceof Request ||
+        arg instanceof Response ||
+        (arg &&
+          typeof arg === 'object' &&
+          (arg.constructor?.name === 'Socket' ||
+            arg.constructor?.name === 'ServerResponse' ||
+            arg.constructor?.name === 'IncomingMessage'))
+      ) {
+        return `[Filtered ${arg.constructor?.name}]`;
+      }
+
       const filtered = { ...arg };
       const sensitiveFields = [
         'password',

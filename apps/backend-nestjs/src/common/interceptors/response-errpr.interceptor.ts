@@ -68,8 +68,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       errorCode = 'INTERNAL_SERVER_ERROR';
       errorMessage = 'Internal server error';
 
+      const exceptionInfo = {
+        message: (exception as any)?.message,
+        name: (exception as any)?.name,
+        stack: (exception as any)?.stack,
+      };
+
       // Winston can handle objects as meta
-      this.logger.error('Unhandled exception', { exception, ...meta });
+      this.logger.error('Unhandled exception', { exceptionInfo, ...meta });
     }
 
     const errorResponse: ApiError = {

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import * as ms from 'ms';
+import ms from 'ms';
 import {
   UserPayload,
   Tokens,

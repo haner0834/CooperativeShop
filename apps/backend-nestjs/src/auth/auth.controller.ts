@@ -29,6 +29,8 @@ import {
 import type { UserPayload } from './types/auth.types';
 import type { User } from '@prisma/client';
 import { BadRequestError, UnauthorizedError } from 'src/types/error.types';
+import { AuthGuard } from '@nestjs/passport';
+import { env } from 'src/common/utils/env.utils';
 
 const httpOnlyCookieOptions = {
   httpOnly: true,
@@ -46,14 +48,14 @@ export class AuthController {
       user,
       deviceId,
     );
-    res.cookie('refreshToken', data, {
+    res.cookie('refreshToken', data.refreshToken, {
       ...httpOnlyCookieOptions,
       maxAge: cookieMaxAge,
     });
+    return data;
   }
 
   @Post('register')
-  @Log()
   @HttpCode(HttpStatus.CREATED)
   async register(
     @Body() registerDto: RegisterDto,
@@ -67,7 +69,6 @@ export class AuthController {
   }
 
   @Post('login')
-  @Log()
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() loginDto: LoginDto,
@@ -81,7 +82,6 @@ export class AuthController {
   }
 
   @Post('logout')
-  @Log()
   @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.OK)
   async logout(
@@ -104,7 +104,6 @@ export class AuthController {
   }
 
   @Post('refresh')
-  @Log()
   @HttpCode(HttpStatus.OK)
   async refreshToken(
     @Req() req: express.Request,
@@ -126,8 +125,7 @@ export class AuthController {
     return { accessToken: result.accessToken };
   }
 
-  @Get('restore')
-  @Log()
+  @Post('restore')
   @HttpCode(HttpStatus.OK)
   async restoreSession(
     @Req() req: express.Request,
@@ -146,7 +144,6 @@ export class AuthController {
   }
 
   @Post('switch-account')
-  @Log()
   @UseGuards(JwtAccessGuard)
   @HttpCode(HttpStatus.OK)
   async switchAccount(
@@ -172,16 +169,17 @@ export class AuthController {
   }
 
   @Get('google')
-  @Log()
   @UseGuards(GoogleOAuthGuard)
-  async googleLogin(@Query() query: GoogleLoginQueryDto) {
+  async googleLogin(
+    @Query() query: GoogleLoginQueryDto,
+    @Res() res: express.Response,
+  ) {
     // Guard 會處理重定向到 Google
     // 這個方法實際上不會被執行，但需要存在
   }
 
   @Get('google/callback')
-  @Log()
-  @UseGuards(GoogleOAuthGuard)
+  @UseGuards(AuthGuard('google'))
   async googleCallback(
     @Req() req: express.Request,
     @Res() res: express.Response,
@@ -193,12 +191,15 @@ export class AuthController {
       const data = await this.handleAuthSuccess(res, user, deviceId);
 
       // 重定向到前端
-      const frontendUrl = process.env.FRONTEND_URL || '/home';
+      const frontendUrl = env('FRONTEND_URL', '/home');
       res.redirect(frontendUrl);
     } catch (error) {
       const errorMsg = encodeURIComponent(error.message || 'Login failed');
       const errorCode = encodeURIComponent(error.code || 'UNKNOWN_ERROR');
-      res.redirect(`/login-failed?code=${errorCode}&message=${errorMsg}`);
+      res.redirect(
+        env('FRONTEND_URL_ROOT', '') +
+          `/login-failed?code=${errorCode}&message=${errorMsg}`,
+      );
     }
   }
 }

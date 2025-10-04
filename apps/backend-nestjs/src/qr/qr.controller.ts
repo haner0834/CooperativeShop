@@ -1,7 +1,10 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { QrCodePayload, QrService } from './qr.service';
 import { VerifyUserQrDto } from './dto/verify-user-data.dto';
 import { BadRequestError } from 'src/types/error.types';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
+import type { UserPayload } from 'src/auth/types/auth.types';
 
 @Controller('qr')
 export class QrController {
@@ -32,5 +35,12 @@ export class QrController {
     const verifiedData = await this.qrService.verifyQRCodeData(qrData);
 
     return verifiedData;
+  }
+
+  @Get('generate-data')
+  @UseGuards(JwtAccessGuard)
+  async generateData(@CurrentUser() user: UserPayload) {
+    const data = this.qrService.generateQRCodeData(user.id);
+    return data;
   }
 }
