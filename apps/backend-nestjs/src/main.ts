@@ -5,9 +5,10 @@ import { winstonLoggerOption } from './config/winston.config';
 import { GlobalExceptionFilter } from './common/interceptors/response-errpr.interceptor';
 import { SuccessResponseInterceptor } from './common/interceptors/response-success.interceptor';
 import cookieParser from 'cookie-parser';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: WinstonModule.createLogger(winstonLoggerOption),
   });
 
@@ -15,6 +16,8 @@ async function bootstrap() {
     origin: 'http://localhost:5173',
     credentials: true,
   });
+
+  // app.set('trust proxy', 1);
 
   app.setGlobalPrefix('api');
 

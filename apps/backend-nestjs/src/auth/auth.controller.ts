@@ -31,6 +31,7 @@ import type { User } from '@prisma/client';
 import { BadRequestError, UnauthorizedError } from 'src/types/error.types';
 import { AuthGuard } from '@nestjs/passport';
 import { env } from 'src/common/utils/env.utils';
+import { Throttle } from '@nestjs/throttler';
 
 const httpOnlyCookieOptions = {
   httpOnly: true,
@@ -39,6 +40,7 @@ const httpOnlyCookieOptions = {
   path: '/api/auth',
 } as const;
 
+@Throttle({ default: { ttl: 1 * 60 * 1000, limit: 7 } })
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
