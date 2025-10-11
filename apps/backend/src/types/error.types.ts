@@ -1,55 +1,54 @@
-export class AppError extends Error {
+// I wrap NestJS HttpException into project-specific subclasses to guarantee every error response contains a code.
+// ** Do not use Nest’s built-in exceptions directly. **
+
+import { HttpException } from '@nestjs/common';
+
+export class AppError extends HttpException {
   public readonly code: string;
-  public readonly statusCode: number;
 
   constructor(code: string, message: string, statusCode: number) {
-    super(message);
+    super({ code, message }, statusCode);
     this.code = code;
-    this.statusCode = statusCode;
-
-    Object.setPrototypeOf(this, new.target.prototype);
-
-    Error.captureStackTrace(this, this.constructor);
   }
 }
 
 export class NotFoundError extends AppError {
-  constructor(resourceName = "", message = "Resource not found.") {
+  constructor(resourceName = '', message = 'Resource not found.') {
     super(
-      `${resourceName ? resourceName.toUpperCase() + "_" : ""}NOT_FOUND`,
+      `${resourceName ? resourceName.toUpperCase() + '_' : ''}NOT_FOUND`,
       message,
-      404
+      404,
     );
   }
 }
 
 export class UnauthorizedError extends AppError {
-  constructor(message = "Authentication failed.") {
-    super("UNAUTHORIZED", message, 401);
+  constructor(message = 'Authentication failed.') {
+    super('UNAUTHORIZED', message, 401);
   }
 }
 
 export class BadRequestError extends AppError {
-  constructor(message = "Bad request.") {
-    super("BAD_REQUEST", message, 400);
+  constructor(message = 'Bad request.') {
+    super('BAD_REQUEST', message, 400);
   }
 }
 
 export class InternalError extends AppError {
-  constructor(message = "Internal server error.") {
-    super("INTERNAL_SERVER_ERROR", message, 500);
+  constructor(message = 'Internal server error.') {
+    super('INTERNAL_SERVER_ERROR', message, 500);
   }
 }
 
 export class PermissionError extends AppError {
-  constructor(message = "No permission to access the data.") {
-    super("NO_PERMISSION", message, 403);
+  constructor(message = 'No permission to access the data.') {
+    super('NO_PERMISSION', message, 403);
   }
 }
 
 export class AuthError extends AppError {
   constructor(code: string, message: string, statusCode = 403) {
     super(code, message, statusCode);
-    this.name = "AuthError";
+    this.name = 'AuthError';
   }
 }

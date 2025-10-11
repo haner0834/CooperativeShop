@@ -1,5 +1,5 @@
-import { validateStudentId } from './studentId.validator';
-import { type School } from '@prisma/client';
+import { validateStudentId } from "./studentId.validator";
+import { School } from "@prisma/client";
 
 interface ParsedFormat {
   prefix: string;
@@ -12,7 +12,7 @@ interface ParsedFormat {
  * @returns ParsedFormat object or null if invalid
  */
 const parseFormat = (format: string): ParsedFormat | null => {
-  if (format.startsWith('@')) return { prefix: '', suffix: format };
+  if (format.startsWith("@")) return { prefix: "", suffix: format };
   const regex = /^(.*?)<id>(.*?)$/;
   const match = format.match(regex);
   if (!match) return null;
@@ -28,7 +28,7 @@ const parseFormat = (format: string): ParsedFormat | null => {
  */
 export const validateEmailAndStudentId = (
   email: string,
-  school: School,
+  school: School
 ): boolean => {
   if (!school.emailFormats || school.emailFormats.length === 0) {
     // 如果沒有設定格式，則預設通過
@@ -41,13 +41,13 @@ export const validateEmailAndStudentId = (
 
     // 檢查 email 是否符合該格式的前後綴
     if (email.startsWith(parsed.prefix) && email.endsWith(parsed.suffix)) {
-      if (format.startsWith('@') && parsed.prefix === '') {
+      if (format.startsWith("@") && parsed.prefix === "") {
         return true;
       }
       // 提取中間的學號部分
       const studentId = email.substring(
         parsed.prefix.length,
-        email.length - parsed.suffix.length,
+        email.length - parsed.suffix.length
       );
 
       // 驗證提取出的學號是否符合學校的學號規則
