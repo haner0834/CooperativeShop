@@ -95,6 +95,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       404: 'NOT_FOUND',
       409: 'CONFLICT',
       422: 'VALIDATION_ERROR',
+      429: 'TOO_MANY_REQUEST',
       500: 'INTERNAL_SERVER_ERROR',
     };
     return statusMap[statusCode] || 'UNKNOWN_ERROR';
