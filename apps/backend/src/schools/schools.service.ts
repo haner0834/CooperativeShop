@@ -38,7 +38,7 @@ export class SchoolsService {
       id: school.id,
       name: school.name,
       abbreviation: school.abbreviation,
-      loginMethod: school.emailFormats ? 'google' : 'credential',
+      loginMethod: school.emailFormats.length > 0 ? 'google' : 'credential',
     }));
   }
 
