@@ -1,7 +1,15 @@
 <img alt="" src="/shared/app-icons/logo-bg.png"/>
 
-<h1 class="text-center">南校聯合特約</h1>
-<p class="text-center">南校聯合特約是我獨立開發的網站，整合商家資訊、學生憑證與美食地圖。學生可透過手機出示 QR Code 驗證身份，無需攜帶學生證，即時查詢附近合作商家與優惠內容。<a href="https://cooperativeshops.org">點此</a> 進入網站。</p>
+<div align="center">
+
+<h1>南校聯合特約</h1>
+
+<p>
+南校聯合特約是我獨立開發的網站，整合商家資訊、學生憑證與美食地圖。
+學生可透過手機出示 QR Code 驗證身份，無需攜帶學生證，即時查詢附近合作商家與優惠內容。
+<a href="https://cooperativeshops.org">點此</a> 進入網站。</p>
+
+</div>
 
 ---
 
