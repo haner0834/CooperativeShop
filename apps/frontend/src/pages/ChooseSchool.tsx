@@ -5,21 +5,16 @@ import {
 } from "../widgets/NavbarButtonsContext";
 import type { School } from "../types/school";
 import { useNavigate } from "react-router-dom";
-import {
-  Google,
-  School as SchoolIcon,
-  IdCard,
-  CircleQuestionMark,
-} from "@icons";
+import { Google, IdCard, CircleQuestionMark } from "@icons";
 import { useModal } from "../widgets/ModalContext";
 import { getErrorMessage } from "../utils/errors";
 import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
 import { path } from "../utils/path";
 import { useAuth, type SwitchableAccount } from "../auth/AuthContext";
+import SchoolIcon from "../widgets/SchoolIcon";
 
 const SchoolCard = ({
   school,
-  switchableAccounts,
 }: {
   school: School;
   switchableAccounts: SwitchableAccount[];
@@ -29,7 +24,7 @@ const SchoolCard = ({
     navigate(`/login/${school.loginMethod}?school=${school.id}`);
   return (
     <div className="w-full indicator">
-      <span className="indicator-item badge badge-soft badge-info me-2 p-1 h-7.5">
+      <span className="indicator-item badge badge-soft badge-info me-5 mt-5 p-1 h-7.5">
         <div
           className="tooltip tooltip-left"
           data-tip={
@@ -47,16 +42,15 @@ const SchoolCard = ({
       </span>
       <div
         onClick={toPath}
-        className="bg-base-100 w-full h-20 rounded-xl flex justify-center items-center px-4 gap-2"
+        className="w-full flex flex-col items-center justify-center bg-base-100 py-4 rounded-box gap-2 border border-base-300"
       >
-        <SchoolIcon
-          className={
-            switchableAccounts.some((a) => a.schoolId === school.abbreviation)
-              ? "text-primary"
-              : ""
-          }
-        />
-        <p className="font-semibold">{school.name}</p>
+        <div className="p-3 bg-white rounded-full overflow-clip shadow">
+          <SchoolIcon
+            abbreviation={school.abbreviation}
+            className="w-14 h-14"
+          />
+        </div>
+        <p className="opacity-80">{school.name}</p>
       </div>
     </div>
   );
@@ -142,7 +136,7 @@ const ChooseSchool = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-base-300 pt-22 flex flex-col p-4">
+    <div className="min-h-screen bg-base-200 pt-22 flex flex-col p-4">
       <div className="max-w-2xl mx-auto w-full flex flex-col flex-1">
         <label className="input w-full">
           <svg
