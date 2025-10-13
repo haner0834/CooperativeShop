@@ -130,7 +130,7 @@ const ChooseSchool = () => {
     };
 
     setNavbarButtons([...baseButtons, menuToggleButton]);
-    setNavbarTitle(undefined);
+    setNavbarTitle("登入");
 
     a();
   }, []);
