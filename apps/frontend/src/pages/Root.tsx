@@ -17,13 +17,13 @@ const Root = () => {
           if (!accessToken) {
             await refreshAccessToken();
           }
-          navigate("/home");
+          navigate("/home", { replace: true });
         } else {
-          navigate("/intro");
+          navigate("/intro", { replace: true });
         }
       } catch (error) {
         console.error("Error refreshing access token:", error);
-        navigate("/choose-school");
+        navigate("/choose-school", { replace: true });
         showModal({
           title: "登入已過期",
           description: getErrorMessage("EXPIRED_LOGIN"),
