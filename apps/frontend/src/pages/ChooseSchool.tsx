@@ -23,7 +23,7 @@ const SchoolCard = ({
   const toPath = () =>
     navigate(`/login/${school.loginMethod}?school=${school.id}`);
   return (
-    <div className="w-full indicator">
+    <article className="w-full indicator">
       <span className="indicator-item badge badge-soft badge-info me-5 mt-5 p-1 h-7.5">
         <div
           className="tooltip tooltip-left"
@@ -52,7 +52,7 @@ const SchoolCard = ({
         </div>
         <p className="opacity-80">{school.name}</p>
       </div>
-    </div>
+    </article>
   );
 };
 
