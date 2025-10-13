@@ -250,7 +250,9 @@ const Home = () => {
               <SchoolIcon />
               <p>學校</p>
             </div>
-            <p className="">{school?.abbreviation}</p>
+            <p className="" translate="no">
+              {school?.abbreviation}
+            </p>
           </div>
         </div>
       </div>
