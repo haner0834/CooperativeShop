@@ -12,6 +12,7 @@ import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
 import { path } from "../utils/path";
 import { useAuth, type SwitchableAccount } from "../auth/AuthContext";
 import SchoolIcon from "../widgets/SchoolIcon";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 const SchoolCard = ({
   school,
@@ -136,62 +137,64 @@ const ChooseSchool = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-base-200 pt-22 flex flex-col p-4">
-      <div className="max-w-2xl mx-auto w-full flex flex-col flex-1">
-        <label className="input w-full">
-          <svg
-            className="h-[1em] opacity-50"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <g
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              strokeWidth="2.5"
-              fill="none"
-              stroke="currentColor"
+    <>
+      <PageMeta {...routesMeta.chooseSchool} />
+
+      <div className="min-h-screen bg-base-200 pt-22 flex flex-col p-4">
+        <div className="max-w-2xl mx-auto w-full flex flex-col flex-1">
+          <label className="input w-full">
+            <svg
+              className="h-[1em] opacity-50"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
             >
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.3-4.3"></path>
-            </g>
-          </svg>
-          <input
-            type="search"
-            className="grow"
-            value={search}
-            onChange={(e) => handleSearch(e.target.value)}
-            placeholder="搜尋學校"
-          />
-        </label>
-
-        {search && (
-          <p className="text-xs opacity-50 pb-4 pt-2">
-            {filteredSchools.length} 項結果
-          </p>
-        )}
-
-        {!isLoading ? (
-          <ul
-            className={`grid grid-cols-2 sm:grid-cols-3 gap-4 ${
-              search ? "" : "pt-4"
-            }`}
-          >
-            {(search ? filteredSchools : schools).map((school) => (
-              <SchoolCard
-                key={school.id}
-                school={school}
-                switchableAccounts={switchableAccounts}
-              />
-            ))}
-          </ul>
-        ) : (
-          // I know this is ugly solution but it's fucking 25/08/31, 8:48 P.M. BROOOO
-          <div className="w-full flex-1 items-center justify-center flex">
-            <span className="loading"></span>
-          </div>
-        )}
+              <g
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                strokeWidth="2.5"
+                fill="none"
+                stroke="currentColor"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </g>
+            </svg>
+            <input
+              type="search"
+              className="grow"
+              value={search}
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="搜尋學校"
+            />
+          </label>
+          {search && (
+            <p className="text-xs opacity-50 pb-4 pt-2">
+              {filteredSchools.length} 項結果
+            </p>
+          )}
+          {!isLoading ? (
+            <ul
+              className={`grid grid-cols-2 sm:grid-cols-3 gap-4 ${
+                search ? "" : "pt-4"
+              }`}
+            >
+              {(search ? filteredSchools : schools).map((school) => (
+                <SchoolCard
+                  key={school.id}
+                  school={school}
+                  switchableAccounts={switchableAccounts}
+                />
+              ))}
+            </ul>
+          ) : (
+            // I know this is ugly solution but it's fucking 25/08/31, 8:48 P.M. BROOOO
+            <div className="w-full flex-1 items-center justify-center flex">
+              <span className="loading"></span>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

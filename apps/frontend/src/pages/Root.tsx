@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { useModal } from "../widgets/ModalContext";
 import { getErrorMessage } from "../utils/errors";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 const Root = () => {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ const Root = () => {
     checkLoginAndNavigate();
   }, []);
 
-  return null;
+  return <PageMeta {...routesMeta.root} />;
 };
 
 export default Root;

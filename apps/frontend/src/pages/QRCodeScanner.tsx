@@ -13,6 +13,7 @@ import ResponsiveSheet from "../widgets/ResponsiveSheet";
 import { getDeviceId } from "../utils/device";
 import type { QrCodePayload } from "../types/qr";
 import { path } from "../utils/path";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 // == Installation Note ==
 // The 'html5-qrcode' library is being loaded from a CDN,
@@ -297,45 +298,49 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-base-300 items-center justify-center p-4 font-sans">
-      <div className="w-full max-w-lg p-6 bg-base-100 rounded-xl shadow-lg">
-        <QrCodeScanner
-          ref={scannerRef}
-          qrbox={300}
-          onResult={handleScanResult}
-          onError={handleScanError}
-          className=""
-        />
+    <>
+      <PageMeta {...routesMeta.qrScanner} />
 
-        <div className="flex items-center justify-center gap-4 mt-6">
-          {/* <button onClick={handleStart} className="btn btn-primary">
-            Start Scan
-          </button>
-          <button onClick={handleStop} className="btn btn-error">
-            Stop Scan
-          </button> */}
-
-          <button
-            onClick={handleStop}
-            className="btn btn-error btn-soft flex-1 rounded-full"
-          >
-            <CameraOff className="w-5 h-5" />
-            停止
-          </button>
-
-          <button
-            onClick={handleStart}
-            className="btn btn-primary flex-1 rounded-full"
-          >
-            <Scan className="w-5 h-5" />
-            掃描
-          </button>
+      <div className="min-h-screen flex flex-col bg-base-300 items-center justify-center p-4 font-sans">
+        <div className="w-full max-w-lg p-6 bg-base-100 rounded-xl shadow-lg">
+          <QrCodeScanner
+            ref={scannerRef}
+            qrbox={300}
+            onResult={handleScanResult}
+            onError={handleScanError}
+            className=""
+          />
+          <div className="flex items-center justify-center gap-4 mt-6">
+            {/* <button onClick={handleStart} className="btn btn-primary">
+              Start Scan
+            </button>
+            <button onClick={handleStop} className="btn btn-error">
+              Stop Scan
+            </button> */}
+            <button
+              onClick={handleStop}
+              className="btn btn-error btn-soft flex-1 rounded-full"
+            >
+              <CameraOff className="w-5 h-5" />
+              停止
+            </button>
+            <button
+              onClick={handleStart}
+              className="btn btn-primary flex-1 rounded-full"
+            >
+              <Scan className="w-5 h-5" />
+              掃描
+            </button>
+          </div>
         </div>
+        <ResponsiveSheet
+          isOn={isSheetOn}
+          title="驗證結果"
+          onClose={onSheetClose}
+        >
+          <QrCodePayloadViewer qrData={qrData} />
+        </ResponsiveSheet>
       </div>
-
-      <ResponsiveSheet isOn={isSheetOn} title="驗證結果" onClose={onSheetClose}>
-        <QrCodePayloadViewer qrData={qrData} />
-      </ResponsiveSheet>
-    </div>
+    </>
   );
 }

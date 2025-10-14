@@ -49,6 +49,7 @@ import {
 import Marquee from "../widgets/Marquee";
 import WordScroller from "../widgets/WordScroller";
 import { motion, useScroll, useTransform } from "framer-motion";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 const ScanButton = () => {
   return (
@@ -437,15 +438,19 @@ const Intro = () => {
   }, []);
 
   return (
-    <div className="min-h-screen w-screen">
-      <Banner />
-      <SecondPage />
-      <ThirdPage />
-      <FourthPage />
-      <FifthPage />
-      <SixthPage />
-      <Footer />
-    </div>
+    <>
+      <PageMeta {...routesMeta.intro} />
+
+      <div className="min-h-screen w-screen">
+        <Banner />
+        <SecondPage />
+        <ThirdPage />
+        <FourthPage />
+        <FifthPage />
+        <SixthPage />
+        <Footer />
+      </div>
+    </>
   );
 };
 
