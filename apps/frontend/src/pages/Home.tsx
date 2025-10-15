@@ -13,6 +13,7 @@ import { useModal } from "../widgets/ModalContext";
 import { useNavigate } from "react-router-dom";
 import { path } from "../utils/path";
 import QRDisplay from "../widgets/QRDisplay";
+import PageMeta from "../widgets/PageMeta";
 
 const MenuToggle = ({ onClick }: { onClick: () => void }) => {
   return (
@@ -213,6 +214,8 @@ const Home = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-blue-300">
+      <PageMeta />
+
       <div className="bg-base-100 flex flex-col items-center justify-center max-w-sm min-w-xs mx-10 p-4 px-8 rounded-box shadow-md">
         <button
           onClick={() => setIsNormal((prev) => !prev)}
