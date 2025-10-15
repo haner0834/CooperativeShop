@@ -32,6 +32,7 @@ import { BadRequestError, UnauthorizedError } from 'src/types/error.types';
 import { AuthGuard } from '@nestjs/passport';
 import { env } from 'src/common/utils/env.utils';
 import { Throttle } from '@nestjs/throttler';
+import { GoogleRedirectGuard } from './guards/google-redirect.guard';
 
 const httpOnlyCookieOptions = {
   httpOnly: true,
@@ -181,27 +182,18 @@ export class AuthController {
   }
 
   @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleRedirectGuard)
   async googleCallback(
     @Req() req: express.Request,
     @Res() res: express.Response,
   ) {
-    try {
-      const user = req.user as any;
-      const deviceId = user.deviceId;
+    const user = req.user as any;
+    const deviceId = user.deviceId;
 
-      const data = await this.handleAuthSuccess(res, user, deviceId);
+    await this.handleAuthSuccess(res, user, deviceId);
 
-      // 重定向到前端
-      const frontendUrl = env('FRONTEND_URL', '/home');
-      res.redirect(frontendUrl);
-    } catch (error) {
-      const errorMsg = encodeURIComponent(error.message || 'Login failed');
-      const errorCode = encodeURIComponent(error.code || 'UNKNOWN_ERROR');
-      res.redirect(
-        env('FRONTEND_URL_ROOT', '') +
-          `/login-failed?code=${errorCode}&message=${errorMsg}`,
-      );
-    }
+    // 重定向到前端
+    const frontendUrl = env('FRONTEND_URL', '/home');
+    res.redirect(frontendUrl);
   }
 }
