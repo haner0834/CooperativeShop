@@ -4,9 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "generate-sitemap": "node scripts/generate-sitemap.js",
     "predev": "node scripts/sync-assets.js",
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run generate-sitemap && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "prebuild": "node scripts/sync-assets.js"
@@ -15,12 +16,14 @@
     "@tailwindcss/vite": "^4.1.12",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.12",
+    "fs": "^0.0.1-security",
     "html5-qrcode": "^2.3.8",
     "qr-code-styling": "^1.9.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-qr-code": "^2.0.18",
     "react-router-dom": "^7.8.1",
+    "sitemap": "^8.0.0",
     "tailwindcss": "^4.1.12",
     "vite-plugin-svgr": "^4.3.0"
   },
