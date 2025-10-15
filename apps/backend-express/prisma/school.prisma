@@ -1,8 +1,0 @@
-model School {
-    id              String   @id @default(cuid())
-    name            String
-    abbreviation    String   @unique
-    emailFormats    String[]
-    studentIdFormat Json?
-    users           User[]
-}
