@@ -449,6 +449,7 @@ const Intro = () => {
   return (
     <>
       <PageMeta {...routesMeta.intro} />
+      <link rel="canonical" href="https://cooperativeshops.org/" />
 
       <div className="min-h-screen w-screen">
         <Banner />
