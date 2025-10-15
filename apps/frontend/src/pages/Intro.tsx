@@ -382,7 +382,10 @@ const Footer = () => {
               <Mail />
             </a>
 
-            <a href="">
+            <a
+              href="https://github.com/haner0834/CooperativeShop"
+              target="_blank"
+            >
               <Github />
             </a>
           </div>
