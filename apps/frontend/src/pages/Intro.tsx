@@ -49,6 +49,7 @@ import {
 import Marquee from "../widgets/Marquee";
 import WordScroller from "../widgets/WordScroller";
 import { motion, useScroll, useTransform } from "framer-motion";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 const ScanButton = () => {
   return (
@@ -363,10 +364,16 @@ const Footer = () => {
         <nav>
           <h6 className="footer-title">Social</h6>
           <div className="grid grid-flow-col gap-4">
-            <a href="https://www.instagram.com/cooperativeshops_2026/">
+            <a
+              href="https://www.instagram.com/cooperativeshops_2026/"
+              target="_blank"
+            >
               <Instagram />
             </a>
-            <a href="https://youtu.be/xvFZjo5PgG0?si=yd4-GfTLyVF-3RCy">
+            <a
+              href="https://youtu.be/xvFZjo5PgG0?si=yd4-GfTLyVF-3RCy"
+              target="_blank"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -381,7 +388,10 @@ const Footer = () => {
               <Mail />
             </a>
 
-            <a href="">
+            <a
+              href="https://github.com/haner0834/CooperativeShop"
+              target="_blank"
+            >
               <Github />
             </a>
           </div>
@@ -437,15 +447,19 @@ const Intro = () => {
   }, []);
 
   return (
-    <div className="min-h-screen w-screen">
-      <Banner />
-      <SecondPage />
-      <ThirdPage />
-      <FourthPage />
-      <FifthPage />
-      <SixthPage />
-      <Footer />
-    </div>
+    <>
+      <PageMeta {...routesMeta.intro} />
+
+      <div className="min-h-screen w-screen">
+        <Banner />
+        <SecondPage />
+        <ThirdPage />
+        <FourthPage />
+        <FifthPage />
+        <SixthPage />
+        <Footer />
+      </div>
+    </>
   );
 };
 
