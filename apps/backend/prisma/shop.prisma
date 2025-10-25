@@ -1,0 +1,35 @@
+model Shop {
+    id             String         @id @default(cuid())
+    title          String
+    description    String
+    phoneNumbers   String[]
+    googleMapsLink String?
+    imageLinks     String[]
+    thumbnailLink  String
+    discount       String?
+    schedules      WorkSchedule[]
+    address        String
+    longitude      Float
+    latitude       Float
+
+    @@index([title])
+}
+
+model WorkSchedule {
+    id               String  @id @default(cuid())
+    weekday          Weekday
+    startMinuteOfDay Int
+    endMinuteOfDay   Int
+    shop             Shop    @relation(fields: [shopId], references: [id])
+    shopId           String
+}
+
+enum Weekday {
+    MONDAY
+    TUESDAY
+    WEDNESDAY
+    THURSDAY
+    FRIDAY
+    SATURDAY
+    SUNDAY
+}

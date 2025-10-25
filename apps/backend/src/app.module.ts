@@ -7,6 +7,7 @@ import { QrModule } from './qr/qr.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { ShopsModule } from './shops/shops.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { APP_GUARD } from '@nestjs/core';
         },
       ],
     }),
+    ShopsModule,
   ],
   controllers: [AppController],
   providers: [
