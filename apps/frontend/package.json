@@ -18,6 +18,7 @@
     "framer-motion": "^12.23.12",
     "fs": "^0.0.1-security",
     "html5-qrcode": "^2.3.8",
+    "lucide-react": "^0.548.0",
     "qr-code-styling": "^1.9.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

@@ -11,6 +11,7 @@ import ProtectedRoute from "./auth/ProtectedRoute";
 import LoginFailed from "./pages/LoginFailed";
 import QrScannerRef from "./pages/QRCodeScanner";
 import Schools from "./pages/Schools";
+import Shops from "./pages/Shops";
 
 function App() {
   useEffect(() => {
@@ -35,6 +36,7 @@ function App() {
         <Route path="login-failed" element={<LoginFailed />} />
         <Route path="qr-scanner" element={<QrScannerRef />} />
         <Route path="schools" element={<Schools />} />
+        <Route path="shops" element={<Shops />} />
         <Route
           path="home"
           element={
