@@ -45,6 +45,7 @@ import {
   Twvs,
   Yhsh,
   Yrhs,
+  FangHead,
 } from "@icons";
 import Marquee from "../widgets/Marquee";
 import WordScroller from "../widgets/WordScroller";
@@ -399,12 +400,21 @@ const Footer = () => {
       </footer>
 
       <footer className="footer sm:footer-horizontal bg-base-300 text-base-content p-10">
-        <div className="flex items-center">
-          <Frog className="avator w-15 rounded-full border-1 border-black/5" />
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex items-center space-x-2">
+            <Frog className="avator w-15 rounded-full border-1 border-black/5" />
+            <div>
+              <p className="text-sm opacity-60">Created by</p>
+              <h6 className="text-lg font-bold">林禹澔</h6>
+            </div>
+          </div>
 
-          <div>
-            <p className="text-sm opacity-60">Created by</p>
-            <h6 className="text-lg font-bold">林禹澔</h6>
+          <div className="flex items-center space-x-2">
+            <FangHead className="avator w-15 h-15 object-cover rounded-full border-1 border-black/5" />
+            <div>
+              <p className="text-sm opacity-60">Supported by</p>
+              <h6 className="text-lg font-bold">方允可</h6>
+            </div>
           </div>
         </div>
       </footer>

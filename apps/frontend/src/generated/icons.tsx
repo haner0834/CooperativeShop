@@ -12,6 +12,7 @@ import CjshsUrl from '@shared/icons/cjshs.png';
 import DwshUrl from '@shared/icons/dwsh.png';
 import EyeOffIcon from '@shared/icons/eye-off.svg?react';
 import EyeIcon from '@shared/icons/eye.svg?react';
+import FangHeadUrl from '@shared/icons/fang-head.jpg';
 import FrogUrl from '@shared/icons/frog.jpeg';
 import GithubIcon from '@shared/icons/github.svg?react';
 import GlobeIcon from '@shared/icons/globe.svg?react';
@@ -114,6 +115,11 @@ export const EyeOff = (props: React.SVGProps<SVGSVGElement>) => {
 
 export const Eye = (props: React.SVGProps<SVGSVGElement>) => {
   return <EyeIcon {...props} />;
+};
+
+
+export const FangHead = (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
+  return <img src={FangHeadUrl} {...props} />;
 };
 
 
