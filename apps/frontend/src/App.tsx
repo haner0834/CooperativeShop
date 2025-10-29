@@ -28,6 +28,7 @@ function App() {
 
   return (
     <Routes>
+      <Route path="shops" element={<Shops />} />
       <Route path="/" element={<Navbar />}>
         <Route index element={<Root />} />
         <Route path="intro" element={<Intro />} />
@@ -36,7 +37,6 @@ function App() {
         <Route path="login-failed" element={<LoginFailed />} />
         <Route path="qr-scanner" element={<QrScannerRef />} />
         <Route path="schools" element={<Schools />} />
-        <Route path="shops" element={<Shops />} />
         <Route
           path="home"
           element={

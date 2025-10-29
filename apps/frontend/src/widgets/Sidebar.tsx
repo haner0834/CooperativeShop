@@ -24,7 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, children }) => {
         - 大螢幕: 'lg:translate-x-0' 會覆蓋 'isOpen' 的 transform，強制顯示
       */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-base-100 shadow-xl transition-transform duration-300 ease-in-out
+        className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-base-100 shadow-xl lg:shadow-none border border-base-300 transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0`}
       >
