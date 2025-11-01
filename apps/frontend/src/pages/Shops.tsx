@@ -1,20 +1,11 @@
 import { useState } from "react";
-import {
-  Bookmark,
-  ChevronRight,
-  IdCard,
-  Map,
-  Menu,
-  Phone,
-  School,
-  Search,
-  X,
-} from "lucide-react";
+import { ChevronRight, Menu, Phone, Search, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../widgets/Sidebar";
 import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
 import ThemeToggle from "../widgets/ThemeToggle";
 import type { Shop } from "../types/shop";
+import { SidebarContent } from "../widgets/SidebarContent";
 
 export const testShops: Shop[] = [
   {
@@ -166,36 +157,7 @@ const Shops = () => {
   return (
     <div>
       <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar}>
-        <div className="pt-18">
-          <p className="uppercase font-semibold text-sm opacity-60 px-4 pt-2">
-            service
-          </p>
-          <ul className="menu bg-base-100 min-h-full w-64 px-4 space-y-2">
-            <li>
-              <a>
-                <Bookmark className="w-5 h-5" /> Saved
-              </a>
-            </li>
-            <li>
-              <a>
-                <Map className="w-5 h-5" />
-                Map
-              </a>
-            </li>
-            <li>
-              <a>
-                <IdCard className="w-5 h-5" />
-                Personal QR Code
-              </a>
-            </li>
-            <li>
-              <a>
-                <School className="w-5 h-5" />
-                All Schools
-              </a>
-            </li>
-          </ul>
-        </div>
+        <SidebarContent />
       </Sidebar>
 
       <div className="navbar bg-base-100 shadow-sm z-50 fixed overflow-hidden">
