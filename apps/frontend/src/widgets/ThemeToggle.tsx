@@ -22,7 +22,7 @@ const ThemeToggle = () => {
   };
 
   return (
-    <div className="me-2 btn btn-circle btn-ghost">
+    <div className="me-2 btn btn-circle btn-ghost select-none">
       <label className="swap swap-rotate h-10">
         {/* checkbox controls theme state */}
         <input
