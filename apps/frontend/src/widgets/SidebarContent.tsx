@@ -12,35 +12,35 @@ export type MenuItem = {
 
 const menu: MenuItem[] = [
   {
-    label: "Shops",
+    label: "合作商家",
     icon: "ShoppingCart",
     color: "text-amber-500",
     children: [
-      { label: "Recent Visited", icon: "RotateCcw" },
-      { label: "Popular", icon: "Flame" },
-      { label: "Saved", icon: "BookmarkIcon" },
-      { label: "Nearby", icon: "MapPin" },
-      { label: "Map", icon: "Map" },
+      { label: "近期訪問", icon: "RotateCcw" },
+      { label: "熱門", icon: "Flame" },
+      { label: "已保存", icon: "BookmarkIcon" },
+      { label: "附近商家", icon: "MapPin" },
+      { label: "商家地圖", icon: "Map" },
     ],
   },
   {
-    label: "My",
+    label: "我的",
     icon: "User",
     color: "text-blue-500",
     children: [
-      { label: "Personal QR", icon: "QrCode" },
-      { label: "Account Center", icon: "Settings" },
-      { label: "Scanner", icon: "ScanLine" },
-      { label: "School", icon: "School" },
+      { label: "個人 QR", icon: "QrCode" },
+      { label: "帳號中心", icon: "UserRoundCog" },
+      { label: "QR 掃描", icon: "ScanLine" },
+      { label: "學校", icon: "School" },
     ],
   },
   {
-    label: "Others",
+    label: "其他",
     icon: "Ellipsis",
     color: "text-gray-400",
     children: [
       { label: "FAQ", icon: "BadgeQuestionMark" },
-      { label: "Bug Reports", icon: "MessageCircleWarning" },
+      { label: "問題回報", icon: "MessageCircleWarning" },
     ],
   },
 ];
