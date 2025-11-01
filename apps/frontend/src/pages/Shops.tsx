@@ -6,6 +6,8 @@ import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
 import ThemeToggle from "../widgets/ThemeToggle";
 import type { Shop } from "../types/shop";
 import { SidebarContent } from "../widgets/SidebarContent";
+import { Link } from "react-router-dom";
+import { path } from "../utils/path";
 
 export const testShops: Shop[] = [
   {
@@ -116,28 +118,35 @@ const SectionTitle = ({ title }: { title: string }) => {
 const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
   const badgeStyle = shop.isOpen ? "badge-success" : "badge-error";
   return (
-    <article className="space-y-2 flex-none">
-      <img
-        src={shop.thumbnailLink}
-        className={`${className} aspect-[5/3] object-cover rounded-box`}
-        // loading="lazy"
-      />
+    <Link
+      to={`/shops/${shop.id}`}
+      className="flex-none"
+      onClick={() =>
+        fetch(path(`/api/shops/${shop.id}/view`), { method: "POST" })
+      }
+    >
+      <article className="space-y-2 transition-transform ease-in-out duration-300 hover:scale-102">
+        <img
+          src={shop.thumbnailLink}
+          className={`${className} aspect-[5/3] object-cover rounded-box`}
+        />
 
-      <div className="">
-        <h3 className="text-lg font-bold">{shop.title}</h3>
+        <div className="">
+          <h3 className="text-lg font-bold">{shop.title}</h3>
 
-        <p className="opacity-60 text-sm">{shop.address}</p>
+          <p className="opacity-60 text-sm">{shop.address}</p>
 
-        <div className="space-x-2">
-          <span className={`badge ${badgeStyle} badge-soft uppercase mt-2`}>
-            {shop.isOpen ? "open" : "closed"}
-          </span>
-          <span className={`badge badge-info badge-soft uppercase mt-2`}>
-            <Phone className="w-4 h-4" /> {shop?.phoneNumbers[0] ?? "UNKNOWN"}
-          </span>
+          <div className="space-x-2">
+            <span className={`badge ${badgeStyle} badge-soft uppercase mt-2`}>
+              {shop.isOpen ? "open" : "closed"}
+            </span>
+            <span className={`badge badge-info badge-soft uppercase mt-2`}>
+              <Phone className="w-4 h-4" /> {shop?.phoneNumbers[0] ?? "UNKNOWN"}
+            </span>
+          </div>
         </div>
-      </div>
-    </article>
+      </article>
+    </Link>
   );
 };
 
