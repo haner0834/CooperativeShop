@@ -182,7 +182,7 @@ const Shops = () => {
                   opacity: 0,
                   scale: 0.95,
                   position: "absolute",
-                  left: 0,
+                  left: "2%",
                   top: 0,
                   height: "100%",
                   width: "33.33%", // daisyUI navbar-start 默認是 flex: 1
