@@ -1,20 +1,58 @@
-import * as Icons from "lucide-react";
+import {
+  ShoppingCart,
+  RotateCcw,
+  Flame,
+  BookmarkIcon,
+  MapPin,
+  Map,
+  User,
+  QrCode,
+  UserRoundCog,
+  ScanLine,
+  School,
+  Ellipsis,
+  BadgeQuestionMark,
+  MessageCircleWarning,
+} from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 import ThemeToggle from "./ThemeToggle";
+
+// ✅ 受控 icon map，只包含實際會用到的 icons
+export const ICONS = {
+  ShoppingCart,
+  RotateCcw,
+  Flame,
+  BookmarkIcon,
+  MapPin,
+  Map,
+  User,
+  QrCode,
+  UserRoundCog,
+  ScanLine,
+  School,
+  Ellipsis,
+  BadgeQuestionMark,
+  MessageCircleWarning,
+} as const;
+
+// ✅ 讓 icon 屬性型別限定於 ICONS 的 key
+export type IconName = keyof typeof ICONS;
 
 export type MenuItem = {
   label: string;
   href?: string;
-  icon?: keyof typeof Icons;
+  icon?: IconName;
   color?: string;
   children?: MenuItem[];
 };
 
-const menu: MenuItem[] = [
+// ✅ 現有 menu 結構不變，只是 icon 型別更嚴謹
+export const menu: MenuItem[] = [
   {
     label: "合作商家",
     icon: "ShoppingCart",
     color: "text-amber-500",
+    href: "/shops",
     children: [
       { label: "近期訪問", icon: "RotateCcw" },
       { label: "熱門", icon: "Flame" },
@@ -45,16 +83,16 @@ const menu: MenuItem[] = [
   },
 ];
 
-const Icon = ({
+export const Icon = ({
   name,
   color,
 }: {
-  name?: keyof typeof Icons;
+  name?: keyof typeof ICONS;
   color?: string;
 }) => {
   if (!name) return null;
-  // lucide-react exports a mix of components and helpers; assert this entry is a component
-  const LucideIcon = Icons[name] as ComponentType<SVGProps<SVGSVGElement>>;
+
+  const LucideIcon = ICONS[name] as ComponentType<SVGProps<SVGSVGElement>>;
   return <LucideIcon className={`w-5 h-5 ${color ?? ""}`} />;
 };
 

@@ -12,6 +12,7 @@ import LoginFailed from "./pages/LoginFailed";
 import QrScannerRef from "./pages/QRCodeScanner";
 import Schools from "./pages/Schools";
 import Shops from "./pages/Shops";
+import ShopDetail from "./pages/ShopDetail";
 
 function App() {
   useEffect(() => {
@@ -29,6 +30,8 @@ function App() {
   return (
     <Routes>
       <Route path="shops" element={<Shops />} />
+      <Route path="shops/:id" element={<ShopDetail />} />
+
       <Route path="/" element={<Navbar />}>
         <Route index element={<Root />} />
         <Route path="intro" element={<Intro />} />

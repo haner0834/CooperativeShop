@@ -15,7 +15,7 @@ export const testShops: Shop[] = [
     title: "Brew & Bloom Café",
     description:
       "A warm café known for its floral-themed interior and artisan coffee.",
-    phoneNumbers: ["+886912345678"],
+    phoneNumbers: ["0912345678"],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
     imageLinks: [
@@ -34,7 +34,7 @@ export const testShops: Shop[] = [
     title: "Midnight Noodles",
     description:
       "Popular late-night eatery serving traditional Taiwanese noodles and snacks.",
-    phoneNumbers: ["+886988776655", "+886222334455"],
+    phoneNumbers: ["0988776655", "0222334455"],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
     imageLinks: [
@@ -54,7 +54,7 @@ export const testShops: Shop[] = [
     title: "Leafy Market",
     description:
       "Fresh produce and organic groceries with a focus on local farmers.",
-    phoneNumbers: ["+886977001122"],
+    phoneNumbers: ["0977001122"],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
     imageLinks: ["https://picsum.photos/800/600?random=8"],
@@ -70,7 +70,7 @@ export const testShops: Shop[] = [
     title: "Pixel Studio",
     description:
       "Creative space offering photography, design, and branding services.",
-    phoneNumbers: ["+886901112233"],
+    phoneNumbers: ["0901112233"],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
     imageLinks: [
@@ -89,7 +89,7 @@ export const testShops: Shop[] = [
     title: "Sunrise Books",
     description:
       "Independent bookstore featuring local authors and cozy reading spaces.",
-    phoneNumbers: ["+886934556677"],
+    phoneNumbers: ["0934556677"],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
     imageLinks: [
@@ -125,7 +125,7 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
         fetch(path(`/api/shops/${shop.id}/view`), { method: "POST" })
       }
     >
-      <article className="space-y-2 transition-transform ease-in-out duration-300 hover:scale-102">
+      <article className="space-y-2 transition-transform ease-in-out duration-300 hover:scale-98">
         <img
           src={shop.thumbnailLink}
           className={`${className} aspect-[5/3] object-cover rounded-box`}
@@ -258,7 +258,7 @@ const Shops = () => {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search"
-                    className="grow"
+                    className="grow text-[16px]"
                   />
                 </label>
               </div>
@@ -309,7 +309,14 @@ const Shops = () => {
       <main className="bg-base-100 min-h-screen pt-18 space-y-8 lg:ps-64">
         <section className="">
           <SectionTitle title="Recent Visited" />
-          <div className="overflow-x-scroll whitespace-normal px-4">
+          <div
+            className="overflow-x-scroll px-4"
+            style={{
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
             <div className="inline-flex space-x-4">
               {[...testShops].map((shop) => (
                 <ShopCard
