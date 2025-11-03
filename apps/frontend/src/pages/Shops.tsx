@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronRight, Menu, Phone, Search, X } from "lucide-react";
+import { ChevronRight, Menu, Phone, Search, Tag, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../widgets/Sidebar";
 import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
@@ -138,7 +138,7 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
 
           <div className="space-x-2">
             <span className={`badge ${badgeStyle} badge-soft uppercase mt-2`}>
-              {shop.isOpen ? "open" : "closed"}
+              <Tag className="w-4 h-4" /> {shop.isOpen ? "open" : "closed"}
             </span>
             <span className={`badge badge-info badge-soft uppercase mt-2`}>
               <Phone className="w-4 h-4" /> {shop?.phoneNumbers[0] ?? "UNKNOWN"}
