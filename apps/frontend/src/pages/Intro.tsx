@@ -409,13 +409,13 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          {/** <div className="flex items-center space-x-2">
             <FangHead className="avator w-15 h-15 object-cover rounded-full border-1 border-black/5" />
             <div>
               <p className="text-sm opacity-60">Supported by</p>
               <h6 className="text-lg font-bold">方允可</h6>
             </div>
-          </div>
+          </div> */}
         </div>
       </footer>
     </>
