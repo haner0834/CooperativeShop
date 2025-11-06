@@ -46,13 +46,13 @@ export const routesMeta: Record<string, RouteMetaConfig> = {
     url: "https://cooperativeshops.org/",
   },
   intro: {
-    title: "歡迎 - 南校聯合特約",
+    title: "歡迎 | 南校聯合特約",
     description:
       "台南 26 所高中聯合舉辦，整合商家、美食地圖、學校、電子憑證等資訊。",
     url: "https://cooperativeshops.org/intro",
   },
   chooseSchool: {
-    title: "登入 - 選擇學校",
+    title: "登入 | 選擇學校",
     description: "登入南校聯合特約，即可享有專屬優惠。",
     url: "https://cooperativeshops.org/choose-school",
   },
