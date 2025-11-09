@@ -1,19 +1,19 @@
 import "./App.css";
 import { Route, Routes } from "react-router-dom";
-import Root from "./pages/Root";
+const Root = lazy(() => import("./pages/Root"));
 import Navbar from "./widgets/Navbar";
-import Intro from "./pages/Intro";
-import { useEffect } from "react";
-import ChooseSchool from "./pages/ChooseSchool";
-import Login from "./pages/Login";
-import Home from "./pages/Home";
-import ProtectedRoute from "./auth/ProtectedRoute";
-import LoginFailed from "./pages/LoginFailed";
-import QrScannerRef from "./pages/QRCodeScanner";
-import Schools from "./pages/Schools";
-import Shops from "./pages/Shops";
-import ShopDetail from "./pages/ShopDetail";
-import ShopRegisterForm from "./pages/ShopRegisterForm";
+const Intro = lazy(() => import("./pages/Intro"));
+import { lazy, useEffect } from "react";
+const ChooseSchool = lazy(() => import("./pages/ChooseSchool"));
+const Login = lazy(() => import("./pages/Login"));
+const Home = lazy(() => import("./pages/Home"));
+const ProtectedRoute = lazy(() => import("./auth/ProtectedRoute"));
+const LoginFailed = lazy(() => import("./pages/LoginFailed"));
+const QrScannerRef = lazy(() => import("./pages/QRCodeScanner"));
+const Schools = lazy(() => import("./pages/Schools"));
+const Shops = lazy(() => import("./pages/Shops"));
+const ShopDetail = lazy(() => import("./pages/ShopDetail"));
+const ShopRegisterForm = lazy(() => import("./pages/ShopRegisterForm"));
 
 function App() {
   useEffect(() => {
