@@ -5,7 +5,7 @@ import { getDeviceId } from "../utils/device";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
 import type { School } from "../types/school";
 import { getErrorMessage } from "../utils/errors";
-import { Eye, EyeOff } from "@icons";
+import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { path } from "../utils/path";
 

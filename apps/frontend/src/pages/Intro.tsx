@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef } from "react";
 import {
   NavbarButtonTypeMap,
   useNavbarButtons,
@@ -7,50 +7,27 @@ import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
 import Logo from "@shared/app-icons/logo.jpg";
 import VerticalLogo from "@shared/app-icons/logo-vertical.svg?react";
 import {
-  ArrowDown,
-  Bmsh,
-  Ccsh,
-  Cjshs,
-  Dwsh,
   Frog,
-  Github,
-  Globe,
   Google,
-  Hhsh,
-  Hhvs,
-  Hkhs,
-  Hyivs,
-  Hysh,
-  IdCard,
   Instagram,
-  Kmsh,
-  Lmsh,
-  Mail,
-  Mdsh,
-  MoveRight,
-  Nkhs,
-  Nnkieh,
-  Nnsh,
-  Pmai,
-  QrCode,
-  ScanLine,
-  School,
-  Sfsh,
-  Tcjh,
-  Tncvs,
-  Tnssh,
-  Tntcshsa,
-  Tnvs,
-  Twais,
-  Twvs,
-  Yhsh,
-  Yrhs,
+  Github,
   // FangHead,
 } from "@icons";
 import Marquee from "../widgets/Marquee";
 import WordScroller from "../widgets/WordScroller";
 import { motion, useScroll, useTransform } from "framer-motion";
 import PageMeta, { routesMeta } from "../widgets/PageMeta";
+import {
+  ArrowDown,
+  Globe,
+  IdCard,
+  Mail,
+  MoveRight,
+  QrCode,
+  ScanLine,
+  School,
+} from "lucide-react";
+import { LazyLoadImage } from "react-lazy-load-image-component";
 
 const ScanButton = () => {
   return (
@@ -145,38 +122,38 @@ const Banner = () => {
 
 const schoolIconClassName = "h-[clamp(3rem,6vw,6rem)] w-auto" as const;
 
-const schoolIcons: ReactNode[][] = [
+const schoolIconFileNames: string[][] = [
   [
-    <Bmsh className={schoolIconClassName} />,
-    <Ccsh className={schoolIconClassName} />,
-    <Cjshs className={schoolIconClassName} />,
-    <Dwsh className={schoolIconClassName} />,
-    <Hhsh className={schoolIconClassName} />,
-    <Hhvs className={schoolIconClassName} />,
-    <Hkhs className={schoolIconClassName} />,
-    <Hyivs className={schoolIconClassName} />,
-    <Hysh className={schoolIconClassName} />,
+    "bmsh.png",
+    "ccsh.png",
+    "cjshs.png",
+    "dwsh.png",
+    "hhsh.png",
+    "hhvs.png",
+    "hkhs.png",
+    "hyivs.png",
+    "hysh.png",
   ],
   [
-    <Kmsh className={schoolIconClassName} />,
-    <Lmsh className={schoolIconClassName} />,
-    <Mdsh className={schoolIconClassName} />,
-    <Nkhs className={schoolIconClassName} />,
-    <Nnkieh className={schoolIconClassName} />,
-    <Nnsh className={schoolIconClassName} />,
-    <Pmai className={schoolIconClassName} />,
-    <Sfsh className={schoolIconClassName} />,
-    <Tcjh className={schoolIconClassName} />,
+    "kmsh.gif",
+    "lmsh.jpg",
+    "mdsh.png",
+    "nkhs.jpeg",
+    "nnkieh.jpg",
+    "nnsh.png",
+    "pmai.jpg",
+    "sfsh.gif",
+    "tcjh.jpeg",
   ],
   [
-    <Tncvs className={schoolIconClassName} />,
-    <Tnssh className={schoolIconClassName} />,
-    <Tntcshsa className={schoolIconClassName} />,
-    <Tnvs className={schoolIconClassName} />,
-    <Twais className={schoolIconClassName} />,
-    <Twvs className={schoolIconClassName} />,
-    <Yhsh className={schoolIconClassName} />,
-    <Yrhs className={schoolIconClassName} />,
+    "tncvs.png",
+    "tnssh.png",
+    "tntcshsa.gif",
+    "tnvs.png",
+    "twais.png",
+    "twvs.png",
+    "yhsh.png",
+    "yrhs.jpg",
   ],
 ];
 
@@ -190,9 +167,14 @@ const SecondPage = () => {
         200+ 店家合作，範圍涵蓋飲食、文具、咖啡廳與生活服務
       </p>
       <div className="space-y-2 py-10 w-screen">
-        {schoolIcons.map((icons, index) => (
+        {schoolIconFileNames.map((icons, index) => (
           <Marquee
-            elements={icons}
+            elements={icons.map((iconName) => (
+              <LazyLoadImage
+                className={schoolIconClassName}
+                src={`https://image.cooperativeshops.org/${iconName}`}
+              ></LazyLoadImage>
+            ))}
             key={index}
             speed={30}
             pauseOnHover

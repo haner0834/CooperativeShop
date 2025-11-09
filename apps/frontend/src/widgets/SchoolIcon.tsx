@@ -1,95 +1,34 @@
-import {
-  Bmsh,
-  Ccsh,
-  Cjshs,
-  Dwsh,
-  Hhsh,
-  Hhvs,
-  Hkhs,
-  Hyivs,
-  Hysh,
-  Kmsh,
-  Lmsh,
-  Mdsh,
-  Nkhs,
-  Nnkieh,
-  Nnsh,
-  Pmai,
-  Sfsh,
-  Tcjh,
-  Tncvs,
-  Tnssh,
-  Tntcshsa,
-  Tnvs,
-  Twais,
-  Twvs,
-  Yhsh,
-  Yrhs,
-} from "@icons";
-import type { ComponentType } from "react";
+import { LazyLoadImage } from "react-lazy-load-image-component";
 
-const schoolIcons: ComponentType<{ className?: string }>[] = [
-  Bmsh,
-  Ccsh,
-  Cjshs,
-  Dwsh,
-  Hhsh,
-  Hhvs,
-  Hkhs,
-  Hyivs,
-  Hysh,
-  Kmsh,
-  Lmsh,
-  Mdsh,
-  Nkhs,
-  Nnkieh,
-  Nnsh,
-  Pmai,
-  Sfsh,
-  Tcjh,
-  Tncvs,
-  Tnssh,
-  Tntcshsa,
-  Tnvs,
-  Twais,
-  Twvs,
-  Yhsh,
-  Yrhs,
-];
-
-const schoolNames = [
-  "Bmsh",
-  "Ccsh",
-  "Cjshs",
-  "Dwsh",
-  "Hhsh",
-  "Hhvs",
-  "Hkhs",
-  "Hyivs",
-  "Hysh",
-  "Kmsh",
-  "Lmsh",
-  "Mdsh",
-  "Nkhs",
-  "Nnkieh",
-  "Nnsh",
-  "Pmai",
-  "Sfsh",
-  "Tcjh",
-  "Tncvs",
-  "Tnssh",
-  "Tntcshsa",
-  "Tnvs",
-  "Twais",
-  "Twvs",
-  "Yhsh",
-  "Yrhs",
-].map((e) => e.toLowerCase());
-
-const map = schoolNames.reduce((acc, key, index) => {
-  acc[key] = schoolIcons[index];
-  return acc;
-}, {} as Record<string, ComponentType<{ className?: string }>>);
+const schoolIconFileNameMap: Record<string, string> = {
+  // Key is the component name prefix, value is the full filename from the image
+  bmsh: "bmsh.png",
+  ccsh: "ccsh.png",
+  cjshs: "cjshs.png",
+  dwsh: "dwsh.png",
+  hhsh: "hhsh.png",
+  hhvs: "hhvs.png",
+  hkhs: "hkhs.png",
+  hyivs: "hyivs.png",
+  hysh: "hysh.png",
+  kmsh: "kmsh.gif",
+  lmsh: "lmsh.jpg",
+  mdsh: "mdsh.png",
+  nkhs: "nkhs.jpeg",
+  nnkieh: "nnkieh.jpg",
+  nnsh: "nnsh.png",
+  pmai: "pmai.jpg",
+  sfsh: "sfsh.gif",
+  tcjh: "tcjh.jpeg",
+  tncvs: "tncvs.png",
+  tnssh: "tnssh.png",
+  tntcshsa: "tntcshsa.gif",
+  tnvs: "tnvs.png",
+  twais: "twais.png",
+  twvs: "twvs.png",
+  yhsh: "yhsh.png",
+  yrhs: "yrhs.jpg",
+};
 
 const SchoolIcon = ({
   abbreviation,
@@ -98,9 +37,14 @@ const SchoolIcon = ({
   abbreviation: string;
   className?: string;
 }) => {
-  const Icon = map[abbreviation.toLowerCase()];
-  if (Icon) {
-    return <Icon className={className} />;
+  const fileName = schoolIconFileNameMap[abbreviation];
+  if (fileName) {
+    return (
+      <LazyLoadImage
+        className={className}
+        src={`https://image.cooperativeshops.org/${fileName}`}
+      ></LazyLoadImage>
+    );
   } else {
     return <p className="font-bold text-error">You spelled it wrong bruh</p>;
   }

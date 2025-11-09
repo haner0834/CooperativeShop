@@ -5,7 +5,8 @@ import {
 } from "../widgets/NavbarButtonsContext";
 import type { School } from "../types/school";
 import { useNavigate } from "react-router-dom";
-import { Google, IdCard, CircleQuestionMark } from "@icons";
+import { Google } from "@icons";
+import { IdCard, CircleQuestionMark } from "lucide-react";
 import { useModal } from "../widgets/ModalContext";
 import { getErrorMessage } from "../utils/errors";
 import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
