@@ -31,7 +31,7 @@ export class SchoolsService {
         },
       });
     } else {
-      throw new BadRequestError('Invalid login type');
+      throw new BadRequestError('INVALID_LOGIN_TYPE', 'Invalid login type');
     }
 
     return schools.map((school) => ({

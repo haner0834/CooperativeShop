@@ -1,0 +1,13 @@
+model FileRecord {
+    id           String     @id @default(cuid())
+    fileKey      String     @unique
+    url          String
+    thumbnailKey String?    @unique
+    thumbnailUrl String
+    user         User?      @relation(fields: [userId], references: [id])
+    userId       String
+    category     String
+    contentType  String
+    createdAt    DateTime   @default(now())
+    shopImage    ShopImage?
+}
