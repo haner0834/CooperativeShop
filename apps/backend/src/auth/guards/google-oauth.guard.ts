@@ -11,11 +11,11 @@ export class GoogleOAuthGuard extends AuthGuard('google') {
 
     // 在這裡驗證必要參數
     if (!schoolId || typeof schoolId !== 'string') {
-      throw new BadRequestError('School ID is required.');
+      throw new BadRequestError('MISSING_SCHOOL_ID', 'School ID is required.');
     }
 
     if (!deviceId || typeof deviceId !== 'string') {
-      throw new BadRequestError('Device ID is required.');
+      throw new BadRequestError('MISSING_DEVICE_ID', 'Device ID is required.');
     }
 
     // 構建 state 並將其作為選項返回

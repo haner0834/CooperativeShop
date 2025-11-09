@@ -32,7 +32,10 @@ export class AuthService {
 
   async authSuccess(user: User, deviceId: string) {
     if (!deviceId) {
-      throw new BadRequestError('Device ID is required for login.');
+      throw new BadRequestError(
+        'MISSING_DEVICE_ID',
+        'Device ID is required for login.',
+      );
     }
 
     const account = await this.prisma.account.findFirst({
@@ -153,7 +156,7 @@ export class AuthService {
 
     // 確保使用者屬於指定的學校
     if (!account || account.user.schoolId !== data.schoolId) {
-      throw new BadRequestError('Invalid credentials.');
+      throw new BadRequestError('INVALID_CREDENTIAL', 'Invalid credentials.');
     }
 
     const passwordMatch = await bcrypt.compare(
@@ -161,7 +164,7 @@ export class AuthService {
       account.password!,
     );
     if (!passwordMatch) {
-      throw new BadRequestError('Invalid credentials.');
+      throw new BadRequestError('INVALID_CREDENTIAL', 'Invalid credentials.');
     }
 
     return account.user;
@@ -240,7 +243,8 @@ export class AuthService {
   async rotateRefreshToken(tokenFromCookie: string, deviceId: string) {
     if (!tokenFromCookie)
       throw new UnauthorizedError('No refresh token provided.');
-    if (!deviceId) throw new BadRequestError('Device ID is missing.');
+    if (!deviceId)
+      throw new BadRequestError('MISSING_DEVICE_ID', 'Device ID is missing.');
 
     const decoded = this.tokenService.verifyRefreshToken(tokenFromCookie);
     if (!decoded || !decoded.sub)
@@ -292,8 +296,13 @@ export class AuthService {
   }
 
   async switchAccount(targetUserId: string, deviceId: string) {
-    if (!targetUserId) throw new BadRequestError('Target User ID is required.');
-    if (!deviceId) throw new BadRequestError('Device ID is missing.');
+    if (!targetUserId)
+      throw new BadRequestError(
+        'MISSING_TARGET_UID',
+        'Target User ID is required.',
+      );
+    if (!deviceId)
+      throw new BadRequestError('MISSING_DEVICE_ID', 'Device ID is missing.');
 
     // 尋找目標帳號在此設備上的 session
     const targetSession = await this.prisma.authSession.findFirst({

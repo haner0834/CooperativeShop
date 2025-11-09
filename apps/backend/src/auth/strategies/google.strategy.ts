@@ -47,11 +47,17 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       const state: State = JSON.parse(stateJSON);
 
       if (!state.schoolId) {
-        throw new BadRequestError('School ID is missing from state.');
+        throw new BadRequestError(
+          'MISSING_SCHOOL_ID',
+          'School ID is missing from state.',
+        );
       }
 
       if (!state.deviceId) {
-        throw new BadRequestError('Device ID is missing from state.');
+        throw new BadRequestError(
+          'MISSING_SCHOOL_ID',
+          'Device ID is missing from state.',
+        );
       }
 
       // 驗證學校
@@ -60,12 +66,18 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       });
 
       if (!school) {
-        throw new BadRequestError('Invalid school specified.');
+        throw new BadRequestError(
+          'SCHOOL_NOT_FOUND',
+          'Invalid school specified.',
+        );
       }
 
       // 驗證 email
       if (!profile.emails || profile.emails.length === 0) {
-        throw new BadRequestError('No email found in Google profile.');
+        throw new BadRequestError(
+          'EMAIL_NOT_FOUND',
+          'No email found in Google profile.',
+        );
       }
 
       const googleProfile = {

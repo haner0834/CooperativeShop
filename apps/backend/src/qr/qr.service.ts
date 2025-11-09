@@ -140,7 +140,10 @@ export class QrService {
 
     // Compare signature
     if (expectedSignature !== receivedSignature) {
-      throw new BadRequestError('Invalid QR Code signature.');
+      throw new BadRequestError(
+        'QR_SIGNATURE_MISMATCH',
+        'Invalid QR Code signature.',
+      );
     }
 
     return { userId, ...publicData };

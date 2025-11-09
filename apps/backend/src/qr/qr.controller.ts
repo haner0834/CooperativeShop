@@ -15,7 +15,10 @@ export class QrController {
     const { data } = body;
 
     if (!data) {
-      throw new BadRequestError('QR code data is missing or not a string');
+      throw new BadRequestError(
+        'INVALID_QR_DATA',
+        'QR code data is missing or not a string',
+      );
     }
 
     let qrData: QrCodePayload;
@@ -23,12 +26,18 @@ export class QrController {
       const decoded = decodeURIComponent(data);
       qrData = JSON.parse(decoded);
     } catch (err) {
-      throw new BadRequestError('Invalid QR code payload');
+      throw new BadRequestError(
+        'INVALID_QR_PAYLOAD',
+        'Invalid QR code payload',
+      );
     }
 
     const { signature, schoolAbbreviation, schoolName, userId } = qrData;
     if (!signature || !schoolAbbreviation || !schoolName || !userId) {
-      throw new BadRequestError('Incomplete QR code payload');
+      throw new BadRequestError(
+        'INCOMPLETE_QR_PAYLOAD',
+        'Incomplete QR code payload',
+      );
     }
 
     // 呼叫 Service 驗證 QR

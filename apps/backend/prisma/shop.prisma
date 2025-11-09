@@ -4,15 +4,24 @@ model Shop {
     description    String
     phoneNumbers   String[]
     googleMapsLink String?
-    imageLinks     String[]
     thumbnailLink  String
     discount       String?
     schedules      WorkSchedule[]
     address        String
     longitude      Float
     latitude       Float
+    images         ShopImage[]
 
     @@index([title])
+}
+
+model ShopImage {
+    id     String     @id @default(cuid())
+    file   FileRecord @relation(fields: [fileId], references: [id], onDelete: Cascade)
+    fileId String     @unique
+    shop   Shop       @relation(fields: [shopId], references: [id])
+    shopId String
+    order  Int
 }
 
 model WorkSchedule {

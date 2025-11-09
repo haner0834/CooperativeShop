@@ -136,7 +136,8 @@ export class AuthController {
     @Res({ passthrough: true }) res: express.Response,
   ) {
     const refreshToken = req.cookies?.refreshToken;
-    if (!deviceId) throw new BadRequestError('Missing device ID');
+    if (!deviceId)
+      throw new BadRequestError('MISSING_DEVICE_ID', 'Missing device ID');
 
     const user = await this.authService.restoreSession(refreshToken, deviceId);
 
