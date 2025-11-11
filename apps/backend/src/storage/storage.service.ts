@@ -173,7 +173,7 @@ export class StorageService {
     const fileUrl = this.publicUrl + fileKey;
     const thumbnailUrl = this.publicUrl + thumbnailKey;
 
-    return this.prisma.fileRecord.create({
+    return await this.prisma.fileRecord.create({
       data: {
         fileKey,
         url: fileUrl,
