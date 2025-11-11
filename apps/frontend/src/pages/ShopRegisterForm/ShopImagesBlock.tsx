@@ -1,11 +1,12 @@
 import type { Dispatch } from "react";
 import QuestionBlock from "./QuestionBlock";
-import { Upload, X } from "lucide-react";
+import { CloudAlert, Upload, X } from "lucide-react";
 import type { SelectedImage } from "../../types/selectedImage";
 import axios from "axios";
 import { path } from "../../utils/path";
 import { compressImage } from "../../utils/imageCompressor";
 import { useAuthFetch } from "../../auth/useAuthFetch";
+import { AnimatedCloudUploadIcon } from "../../widgets/CloudUploadIcon";
 
 const ShopImagesBlock = ({
   images,
@@ -173,7 +174,10 @@ const ShopImagesBlock = ({
   };
 
   return (
-    <QuestionBlock title="圖片">
+    <QuestionBlock
+      title="圖片"
+      description="於此上傳商家的照片。至多上傳 10 張。"
+    >
       <div
         className="overflow-x-scroll flex space-x-4 h-40"
         style={{
@@ -183,7 +187,7 @@ const ShopImagesBlock = ({
         }}
       >
         {images.length < 10 && (
-          <label className="cursor-pointer bg-base-300 w-40 aspect-square rounded-field flex flex-col items-center justify-center space-y-1 hover:bg-base-200 transition">
+          <label className="cursor-pointer bg-base-300 h-full aspect-square rounded-field flex flex-col items-center justify-center space-y-1 hover:bg-base-200 transition">
             <div className="p-2 bg-neutral/10 rounded-full">
               <Upload className="text-base-100" />
             </div>
@@ -199,24 +203,53 @@ const ShopImagesBlock = ({
         )}
 
         {/* 預覽圖片 */}
-        {images.map((selectedImage, index) => (
+        {images.map((img, i) => (
           <div
-            key={index}
-            className="relative h-full aspect-square flex-none rounded-xl overflow-hidden"
+            key={img.localId}
+            className="aspect-square h-full relative flex-none rounded-field overflow-hidden"
           >
             <img
-              src={selectedImage.previewUrl}
-              alt={`upload-${index}`}
+              src={img.previewUrl}
               className="object-cover h-full aspect-square"
             />
-            {/* {!selectedImage.isUploading && ( */}
-            <button
-              onClick={() => handleRemove(index)}
-              className="absolute top-1 right-1 bg-black/60 hover:bg-black/80 rounded-full p-1 text-white"
-            >
-              <X size={14} />
-            </button>
-            {/* )} */}
+            {img.isUploading && (
+              <div>
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white">
+                  <AnimatedCloudUploadIcon />
+                </div>
+
+                <div
+                  className="absolute bottom-2 left-2 right-2 h-1.5 bg-white rounded-full"
+                  style={{
+                    width: `${Math.min(Math.max(img.uploadProgress, 0), 100)}%`,
+                  }}
+                />
+              </div>
+            )}
+            {img.status === "error" && (
+              <div className="absolute inset-0 bg-neutral/70 flex items-center justify-center">
+                <div className="flex flex-col items-center justify-center text-xs bg-base-100/80 p-2 rounded-md">
+                  <CloudAlert />
+
+                  <div>
+                    上傳失敗{" "}
+                    <button className="link" onClick={() => handleRemove(i)}>
+                      刪除
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            {img.status !== "error" &&
+              img.status !== "uploading" &&
+              !img.isUploading && (
+                <button
+                  onClick={() => handleRemove(i)}
+                  className="absolute top-1 right-1 bg-black/60 hover:bg-black/80 rounded-full p-1 text-white"
+                >
+                  <X size={14} />
+                </button>
+              )}
           </div>
         ))}
       </div>
