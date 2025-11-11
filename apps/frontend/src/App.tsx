@@ -13,7 +13,7 @@ const QrScannerRef = lazy(() => import("./pages/QRCodeScanner"));
 const Schools = lazy(() => import("./pages/Schools"));
 const Shops = lazy(() => import("./pages/Shops"));
 const ShopDetail = lazy(() => import("./pages/ShopDetail"));
-import ShopRegisterForm from "./pages/ShopRegisterForm";
+import ShopRegisterForm from "./pages/ShopRegisterForm/ShopRegisterForm";
 
 function App() {
   useEffect(() => {

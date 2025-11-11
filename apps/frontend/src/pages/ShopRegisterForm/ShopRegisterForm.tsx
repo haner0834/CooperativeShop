@@ -1,20 +1,20 @@
 import { Check, Ellipsis, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import FormHeader from "./ShopRegisterForm/FormHeader";
-import ShopTitleBlock from "./ShopRegisterForm/ShopTitleBlock";
-import ShopDescriptionBlock from "./ShopRegisterForm/ShopDescriptionBlock";
-import ShopPhoneNumbersBlock from "./ShopRegisterForm/ShopPhoneNumbersBlock";
-import ShopImagesBlock from "./ShopRegisterForm/ShopImagesBlock";
-import ShopLocationBlock from "./ShopRegisterForm/ShopLocationBlock";
+import FormHeader from "./FormHeader";
+import ShopTitleBlock from "./ShopTitleBlock";
+import ShopDescriptionBlock from "./ShopDescriptionBlock";
+import ShopPhoneNumbersBlock from "./ShopPhoneNumbersBlock";
+import ShopImagesBlock from "./ShopImagesBlock";
+import ShopLocationBlock from "./ShopLocationBlock";
 import ShopWorkSchedulesBlock, {
   type Weekday,
   type WorkSchedule,
   DEFAULT_WORKSCHEDULE,
   getChineseWeekdayName,
   weekdayOrder,
-} from "./ShopRegisterForm/ShopWorkSchedulesBlock";
-import type { SelectedImage } from "../types/selectedImage";
+} from "./ShopWorkSchedulesBlock";
+import type { SelectedImage } from "../../types/selectedImage";
 
 const Navbar = () => {
   return (
