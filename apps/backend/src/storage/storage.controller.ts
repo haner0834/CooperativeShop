@@ -51,8 +51,8 @@ export class StorageController {
       record = await this.storageService.recordFile(
         body.fileKey,
         body.category,
-        body.thumbnailKey,
         body.contentType,
+        body.thumbnailKey,
         user.id,
       );
     }
