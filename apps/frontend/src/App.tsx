@@ -1,9 +1,9 @@
 import "./App.css";
+import { lazy, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
-const Root = lazy(() => import("./pages/Root"));
+import Root from "./pages/Root";
 import Navbar from "./widgets/Navbar";
 const Intro = lazy(() => import("./pages/Intro"));
-import { lazy, useEffect } from "react";
 const ChooseSchool = lazy(() => import("./pages/ChooseSchool"));
 const Login = lazy(() => import("./pages/Login"));
 const Home = lazy(() => import("./pages/Home"));
@@ -13,7 +13,7 @@ const QrScannerRef = lazy(() => import("./pages/QRCodeScanner"));
 const Schools = lazy(() => import("./pages/Schools"));
 const Shops = lazy(() => import("./pages/Shops"));
 const ShopDetail = lazy(() => import("./pages/ShopDetail"));
-const ShopRegisterForm = lazy(() => import("./pages/ShopRegisterForm"));
+import ShopRegisterForm from "./pages/ShopRegisterForm";
 
 function App() {
   useEffect(() => {
