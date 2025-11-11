@@ -11,7 +11,6 @@ export enum FileCategory {
   AVATAR = 'avatar',
   SHOP_IMAGE = 'shop-image',
   SHOP_THUMBNAIL = 'shop-thumbnail',
-  IMAGE_THUMBNAIL = 'image-thumbnail',
 }
 
 export class GeneratePresignedUrlDto {
