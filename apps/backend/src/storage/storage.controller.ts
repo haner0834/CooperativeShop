@@ -25,7 +25,7 @@ export class StorageController {
   @Post('presigned-url')
   @UseGuards(JwtAccessGuard)
   async generatePresignedUrl(@Body() body: GeneratePresignedUrlDto) {
-    const result = await this.storageService.generatePresignedUrl(
+    const result = await this.storageService.generatePresignedUrlWithThumbnail(
       body.fileName,
       body.contentType,
       body.category,
@@ -42,7 +42,9 @@ export class StorageController {
     @Body() body: ConfirmUploadDto,
     @CurrentUser() user: UserPayload,
   ) {
-    const isExist = await this.storageService.verifyFileUploaded(body.fileKey);
+    const isExist =
+      (await this.storageService.verifyFileUploaded(body.fileKey)) &&
+      (await this.storageService.verifyFileUploaded(body.thumbnailKey));
 
     let record: RecordFileResult | null = null;
     if (isExist) {
