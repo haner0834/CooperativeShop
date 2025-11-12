@@ -9,6 +9,7 @@ import {
 import { RecordFileResult, StorageService } from './storage.service';
 import {
   ConfirmUploadDto,
+  DeleteFileDto,
   GeneratePresignedUrlDto,
 } from './dto/presigned-upload.dto';
 import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
@@ -58,6 +59,13 @@ export class StorageController {
     }
 
     return new MetaContext(record, { isExist });
+  }
+
+  @Post('delete')
+  @UseGuards(JwtAccessGuard)
+  async deleteFile(@Body() body: DeleteFileDto) {
+    await this.storageService.deleteFile(body.fileKey, body.thumbnailKey);
+    return null;
   }
 
   @Log()

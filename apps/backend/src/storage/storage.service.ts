@@ -186,14 +186,24 @@ export class StorageService {
     });
   }
 
-  async deleteFile(fileKey: string) {
-    try {
+  async deleteFile(fileKey: string, thumbnailKey: string) {
+    const keysToDelete = [fileKey, thumbnailKey];
+
+    const deletionPromises = keysToDelete.map((key) => {
       const command = new DeleteObjectCommand({
         Bucket: this.bucketName,
-        Key: fileKey,
+        Key: key,
       });
 
-      await this.s3Client.send(command);
+      return this.s3Client.send(command);
+    });
+
+    try {
+      await Promise.all(deletionPromises);
+
+      await this.prisma.fileRecord.delete({
+        where: { fileKey },
+      });
     } catch (error) {
       throw this.handleS3Error(error);
     }
