@@ -169,8 +169,23 @@ const ShopImagesBlock = ({
     );
   };
 
-  const handleRemove = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
+  const handleRemove = async (index: number) => {
+    try {
+      const image = images[index];
+      const apiResponse = await authedFetch(path("/api/storage/delete"), {
+        method: "POST",
+        body: JSON.stringify({
+          fileKey: image.uploadInfo?.fileKey,
+          thumbnailKey: image.uploadInfo?.thumbnailKey,
+        }),
+      });
+      if (!apiResponse.success) {
+        console.log(apiResponse);
+      }
+      setImages((prev) => prev.filter((_, i) => i !== index));
+    } catch (error) {
+      console.log("Failed to delete image:", error);
+    }
   };
 
   return (
