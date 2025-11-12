@@ -33,7 +33,7 @@ type AuthFetchOptions = RequestInit & {
  * @returns { authedFetch: (url: string, options?: AuthFetchOptions) => Promise<any> }
  */
 export const useAuthFetch = () => {
-  const { accessToken, refreshAccessToken } = useAuth();
+  const { tokenRef, refreshAccessToken } = useAuth();
 
   const authedFetch = useCallback(
     async (url: string, options: AuthFetchOptions = {}) => {
@@ -43,7 +43,7 @@ export const useAuthFetch = () => {
 
       // Use a variable to store the currently valid token,
       // as it may be updated during the retry process.
-      let tokenToUse = accessToken;
+      let tokenToUse = tokenRef.current;
 
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         const headers = new Headers(fetchOptions.headers);
@@ -181,7 +181,7 @@ export const useAuthFetch = () => {
       );
     },
     // When accessToken or refreshAccessToken changed, re-generate the function
-    [accessToken, refreshAccessToken]
+    [tokenRef, refreshAccessToken]
   );
 
   return { authedFetch };
