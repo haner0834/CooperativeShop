@@ -48,3 +48,13 @@ export class ConfirmUploadDto {
   @IsNotEmpty()
   contentType: string;
 }
+
+export class DeleteFileDto {
+  @IsString()
+  @IsNotEmpty()
+  fileKey: string;
+
+  @IsString()
+  @IsNotEmpty()
+  thumbnailKey: string;
+}
