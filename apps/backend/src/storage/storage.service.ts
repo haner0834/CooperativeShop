@@ -187,7 +187,7 @@ export class StorageService {
   }
 
   async deleteFile(fileKey: string, thumbnailKey: string) {
-    const keysToDelete = [fileKey, thumbnailKey];
+    const keysToDelete = [fileKey, thumbnailKey].filter((key) => !!key);
 
     const deletionPromises = keysToDelete.map((key) => {
       const command = new DeleteObjectCommand({
@@ -247,6 +247,7 @@ export class StorageService {
     error: unknown,
     context?: { fileKey?: string; command?: string },
   ): AppError {
+    if (!(error instanceof S3ServiceException)) throw error;
     // Cast to S3 exception if possible
     const err = error as S3ServiceException;
 
