@@ -7,7 +7,7 @@ export async function compressImage(file: File) {
   });
 
   const thumbnail = await imageCompression(file, {
-    maxWidthOrHeight: 100,
+    maxWidthOrHeight: 700,
     useWebWorker: true,
   });
 
