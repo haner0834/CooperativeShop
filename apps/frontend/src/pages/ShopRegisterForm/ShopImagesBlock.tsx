@@ -172,6 +172,18 @@ const ShopImagesBlock = ({
   const handleRemove = async (index: number) => {
     try {
       const image = images[index];
+      setImages((prev) =>
+        prev.map((img) =>
+          img.localId === image.localId ? { ...img, status: "deleting" } : img
+        )
+      );
+
+      if (!image.uploadInfo) throw new Error("No fucking upload info");
+
+      const { fileKey, thumbnailKey } = image.uploadInfo;
+      if (!fileKey || !thumbnailKey)
+        throw new Error("No fileKey nor thumbnailKey");
+
       const apiResponse = await authedFetch(path("/api/storage/delete"), {
         method: "POST",
         body: JSON.stringify({
@@ -241,6 +253,11 @@ const ShopImagesBlock = ({
                 />
               </div>
             )}
+            {img.status === "deleting" && (
+              <div className="absolute inset-0 bg-neutral/50 flex items-center justify-center">
+                <span className="loading text-white" />
+              </div>
+            )}
             {img.status === "error" && (
               <div className="absolute inset-0 bg-neutral/70 flex items-center justify-center">
                 <div className="flex flex-col items-center justify-center text-xs bg-base-100/80 p-2 rounded-md">
@@ -257,6 +274,7 @@ const ShopImagesBlock = ({
             )}
             {img.status !== "error" &&
               img.status !== "uploading" &&
+              img.status !== "deleting" &&
               !img.isUploading && (
                 <button
                   onClick={() => handleRemove(i)}

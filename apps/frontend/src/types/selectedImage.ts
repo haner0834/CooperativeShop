@@ -9,6 +9,6 @@ export interface SelectedImage {
   };
   isUploading: boolean;
   uploadProgress: number;
-  status: "idle" | "uploading" | "success" | "error";
+  status: "idle" | "uploading" | "success" | "error" | "deleting";
   errorMessage?: string;
 }
