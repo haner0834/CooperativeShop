@@ -4,6 +4,8 @@ import {
   useState,
   useCallback,
   type ReactNode,
+  useRef,
+  useEffect,
 } from "react";
 import { getDeviceId } from "../utils/device";
 import { path } from "../utils/path";
@@ -29,6 +31,7 @@ export type SwitchableAccount = {
 // AuthContext 的完整型別
 type AuthContextType = {
   accessToken: string | null;
+  tokenRef: React.RefObject<string | null>;
   activeUser: UserPayload | null;
   switchableAccounts: SwitchableAccount[];
   isLoading: boolean; // 這個 loading 現在代表「正在進行某項認證操作」
@@ -51,6 +54,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasAttemptedRestore, setHasAttemptedRestore] = useState(false);
+
+  // Use ref to update access token immediately instead of
+  // wait until `accessToken` re-generate. This would be helpful
+  // for calling `authedFetch` twice because using `ref` could
+  // get up-to-date access token.
+  const tokenRef = useRef<string | null>(accessToken);
+
+  useEffect(() => {
+    tokenRef.current = accessToken;
+  }, [accessToken]);
 
   // --- 2. 處理認證成功後的通用邏輯 ---
   const handleAuthSuccess = (data: any) => {
@@ -170,6 +183,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextType = {
     activeUser,
     accessToken,
+    tokenRef,
     switchableAccounts,
     isLoading,
     login,
