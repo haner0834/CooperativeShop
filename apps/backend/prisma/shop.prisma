@@ -2,7 +2,7 @@ model Shop {
     id             String         @id @default(cuid())
     title          String
     description    String
-    phoneNumbers   String[]
+    phoneNumbers   Json // An array
     googleMapsLink String?
     thumbnailLink  String
     discount       String?

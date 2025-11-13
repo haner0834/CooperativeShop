@@ -1,8 +1,16 @@
 import React from 'react';
+import FacebookIcon from '@shared/icons/facebook.svg?react';
 import FrogUrl from '@shared/icons/frog.jpeg';
 import GithubIcon from '@shared/icons/github.svg?react';
 import GoogleUrl from '@shared/icons/google.png';
 import InstagramIcon from '@shared/icons/instagram.svg?react';
+import LineIcon from '@shared/icons/line.svg?react';
+import TintedInstagramUrl from '@shared/icons/tinted-instagram.png';
+
+
+export const Facebook = (props: React.SVGProps<SVGSVGElement>) => {
+  return <FacebookIcon {...props} />;
+};
 
 
 export const Frog = (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
@@ -22,4 +30,14 @@ export const Google = (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
 
 export const Instagram = (props: React.SVGProps<SVGSVGElement>) => {
   return <InstagramIcon {...props} />;
+};
+
+
+export const Line = (props: React.SVGProps<SVGSVGElement>) => {
+  return <LineIcon {...props} />;
+};
+
+
+export const TintedInstagram = (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
+  return <img src={TintedInstagramUrl} {...props} />;
 };

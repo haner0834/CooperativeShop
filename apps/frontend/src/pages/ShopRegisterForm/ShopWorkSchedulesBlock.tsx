@@ -1,6 +1,6 @@
-import type { Dispatch } from "react";
+import { useState, type Dispatch } from "react";
 import QuestionBlock from "./QuestionBlock";
-import { Trash, Plus } from "lucide-react";
+import { Trash, Plus, Check } from "lucide-react";
 import DoubleSlider from "../../widgets/RangeSlider";
 
 export type Weekday = "SUN" | "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT";
@@ -39,15 +39,93 @@ export const getChineseWeekdayName = (weekday: Weekday): string => {
   return zhMap[weekday];
 };
 
+const WeekdaySelector = ({
+  defaultValue,
+  selectedWeekdays,
+  setNewWeekday,
+  onClose,
+}: {
+  defaultValue: Weekday[];
+  selectedWeekdays: Weekday[];
+  setNewWeekday: (newValue: Weekday[]) => void;
+  onClose: () => void;
+}) => {
+  const [selected, setSelected] = useState(defaultValue);
+
+  const toggleSelection = (weekday: Weekday) => {
+    if (selectedWeekdays.includes(weekday) && !defaultValue.includes(weekday))
+      return;
+    if (selected.includes(weekday)) {
+      const newSelected = [...selected].filter((w) => w !== weekday);
+      setSelected(newSelected);
+    } else {
+      setSelected([...selected, weekday]);
+    }
+  };
+
+  const cancel = async () => {
+    onClose();
+  };
+
+  const finish = () => {
+    setNewWeekday(selected);
+    setTimeout(onClose, 0);
+  };
+
+  return (
+    <div className="modal-box space-y-2">
+      <h3 className="font-bold flex-1 text-center">編輯工作日</h3>
+      <div className="divider" />
+
+      <div className="flex space-x-2 overflow-scroll pb-3">
+        {weekdayOrder.map((weekday, i) => (
+          <button
+            key={`WEEKDAY_SELECTOR_ITEM_${i}`}
+            onClick={() => toggleSelection(weekday)}
+            className="flex flex-col flex-none items-center rounded-field w-15 p-2 border border-base-300 space-y-2"
+          >
+            <p className="text-sm">{getChineseWeekdayName(weekday)}</p>
+
+            <div
+              className={`p-1 bg-accent rounded-full transition-opacity duration-150 ${
+                selected.includes(weekday)
+                  ? ""
+                  : selectedWeekdays.includes(weekday) &&
+                    !defaultValue.includes(weekday)
+                  ? "opacity-30"
+                  : "opacity-0"
+              }`}
+            >
+              <Check className="w-4 h-4 text-white" />
+            </div>
+          </button>
+        ))}
+      </div>
+
+      <form method="dialog" className="space-y-2">
+        {/* if there is a button in form, it will close the modal */}
+        <button onClick={cancel} className="btn w-full">
+          取消
+        </button>
+        <button onClick={finish} className="btn btn-primary w-full">
+          完成
+        </button>
+      </form>
+    </div>
+  );
+};
+
 const ShopWorkSchedulesBlock = ({
   workSchedules,
   setWorkSchedules,
-  setWorkScheduleIndex,
 }: {
   workSchedules: WorkSchedule[];
   setWorkSchedules: Dispatch<React.SetStateAction<WorkSchedule[]>>;
-  setWorkScheduleIndex: Dispatch<React.SetStateAction<number | undefined>>;
 }) => {
+  const [workScheduleIndex, setWorkScheduleIndex] = useState<
+    number | undefined
+  >(undefined);
+
   const handleSliderRangeChange = (
     newValue: [number, number],
     index: number
@@ -131,9 +209,43 @@ const ShopWorkSchedulesBlock = ({
       modal?.showModal();
     }, 0);
   };
+
+  const setWeekdays = (newValue: Weekday[], index: number) => {
+    if (index < 0 || index >= workSchedules.length) return;
+
+    const newSchedule = { ...workSchedules[index], weekdays: newValue };
+
+    const newWorkSchedules = [...workSchedules];
+    newWorkSchedules[index] = newSchedule;
+
+    setWorkSchedules(newWorkSchedules);
+  };
+
+  const resetSelectedIndex = () =>
+    // 300 ms for animation duration
+    setTimeout(() => {
+      setWorkScheduleIndex(undefined);
+    }, 300);
+
+  const selectedWeekdays = () => {
+    return workSchedules.flatMap((w) => w.weekdays);
+  };
+
   return (
     <QuestionBlock title="營業時間">
       <>
+        <dialog id="my_modal_1" className="modal">
+          {workScheduleIndex !== undefined && (
+            <WeekdaySelector
+              defaultValue={workSchedules[workScheduleIndex].weekdays}
+              selectedWeekdays={selectedWeekdays()}
+              setNewWeekday={(newValue) =>
+                setWeekdays(newValue, workScheduleIndex)
+              }
+              onClose={resetSelectedIndex}
+            />
+          )}
+        </dialog>
         {workSchedules.map((workSchedule, i) => (
           <div
             key={`WORK_SCHEDULE_BLOCK_${i}`}
@@ -180,6 +292,7 @@ const ShopWorkSchedulesBlock = ({
 
         <button
           onClick={addWorkSchedule}
+          disabled={selectedWeekdays().length >= 7}
           className="w-full btn btn-soft btn-primary"
         >
           <Plus className="w-4 h-4" /> 新增時段

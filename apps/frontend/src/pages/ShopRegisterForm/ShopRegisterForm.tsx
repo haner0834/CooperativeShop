@@ -1,20 +1,19 @@
-import { Check, Ellipsis, Menu } from "lucide-react";
+import { Ellipsis, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import FormHeader from "./FormHeader";
 import ShopTitleBlock from "./ShopTitleBlock";
 import ShopDescriptionBlock from "./ShopDescriptionBlock";
-import ShopPhoneNumbersBlock from "./ShopPhoneNumbersBlock";
+import ShopContactInfoBlock from "./ShopContactInfoBlock";
 import ShopImagesBlock from "./ShopImagesBlock";
 import ShopLocationBlock from "./ShopLocationBlock";
 import ShopWorkSchedulesBlock, {
-  type Weekday,
   type WorkSchedule,
   DEFAULT_WORKSCHEDULE,
-  getChineseWeekdayName,
-  weekdayOrder,
 } from "./ShopWorkSchedulesBlock";
 import type { SelectedImage } from "../../types/selectedImage";
+import type { ContactInfo } from "../../types/shop";
+import { categoryMap } from "../../utils/contactInfoMap";
 
 const Navbar = () => {
   return (
@@ -36,102 +35,16 @@ const Navbar = () => {
   );
 };
 
-const WeekdaySelector = ({
-  defaultValue,
-  setNewWeekday,
-  onClose,
-}: {
-  defaultValue: Weekday[];
-  setNewWeekday: (newValue: Weekday[]) => void;
-  onClose: () => void;
-}) => {
-  const [selected, setSelected] = useState(defaultValue);
-
-  const toggleSelection = (weekday: Weekday) => {
-    if (selected.includes(weekday)) {
-      const newSelected = [...selected].filter((w) => w !== weekday);
-      setSelected(newSelected);
-    } else {
-      setSelected([...selected, weekday]);
-    }
-  };
-
-  const cancel = async () => {
-    onClose();
-  };
-
-  const finish = () => {
-    setNewWeekday(selected);
-    setTimeout(onClose, 0);
-  };
-
-  return (
-    <div className="modal-box space-y-2">
-      <h3 className="font-bold flex-1 text-center">編輯工作日</h3>
-      <div className="divider" />
-
-      <div className="flex space-x-2 overflow-scroll pb-3">
-        {weekdayOrder.map((weekday, i) => (
-          <button
-            key={`WEEKDAY_SELECTOR_ITEM_${i}`}
-            onClick={() => toggleSelection(weekday)}
-            className="flex flex-col flex-none items-center rounded-field w-15 p-2 border border-base-300 space-y-2"
-          >
-            <p className="text-sm">{getChineseWeekdayName(weekday)}</p>
-
-            <div
-              className={`p-1 bg-accent rounded-full transition-opacity duration-150 ${
-                selected.includes(weekday) ? "" : "opacity-0"
-              }`}
-            >
-              <Check className="w-4 h-4 text-white" />
-            </div>
-          </button>
-        ))}
-      </div>
-
-      <form method="dialog" className="space-y-2">
-        {/* if there is a button in form, it will close the modal */}
-        <button onClick={cancel} className="btn w-full">
-          取消
-        </button>
-        <button onClick={finish} className="btn btn-primary w-full">
-          完成
-        </button>
-      </form>
-    </div>
-  );
-};
-
 const ShopRegisterForm = () => {
   const [title, setTitle] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   const [description, setDescription] = useState("");
-  const [phoneNumbers, setPhoneNumbers] = useState([""] as string[]);
+  const [contactInfo, setContactInfo] = useState<ContactInfo[]>([]);
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([
     DEFAULT_WORKSCHEDULE,
   ]);
-  const [workScheduleIndex, setWorkScheduleIndex] = useState<
-    number | undefined
-  >(undefined);
+
   const [images, setImages] = useState<SelectedImage[]>([]); // 用 base64 URL 預覽
-
-  const setWeekdays = (newValue: Weekday[], index: number) => {
-    if (index < 0 || index >= workSchedules.length) return;
-
-    const newSchedule = { ...workSchedules[index], weekdays: newValue };
-
-    const newWorkSchedules = [...workSchedules];
-    newWorkSchedules[index] = newSchedule;
-
-    setWorkSchedules(newWorkSchedules);
-  };
-
-  const resetSelectedIndex = () =>
-    // 300 ms for animation duration
-    setTimeout(() => {
-      setWorkScheduleIndex(undefined);
-    }, 300);
 
   useEffect(() => {
     if (!searchParams.get("id")) {
@@ -146,8 +59,21 @@ const ShopRegisterForm = () => {
       const shop = JSON.parse(draft);
       setTitle(shop.title);
       setDescription(shop.description);
-      setPhoneNumbers(shop.phoneNumbers);
       setWorkSchedules(shop.workSchedules);
+
+      // update contact info
+      const contactInfo: ContactInfo[] = shop.contactInfo.map(
+        (props: Omit<ContactInfo, "validator" | "formatter">) => {
+          const { icon, ...rest } = props;
+          return {
+            icon: categoryMap[props.category].icon,
+            ...rest,
+            validator: categoryMap[props.category].validator,
+            formatter: categoryMap[props.category].formatter,
+          };
+        }
+      );
+      setContactInfo(contactInfo);
     }
   }, []);
 
@@ -155,28 +81,16 @@ const ShopRegisterForm = () => {
     const id = searchParams.get("id");
     if (!id) return;
     const handler = setTimeout(() => {
-      const shop = { title, description, phoneNumbers, workSchedules };
+      const shop = { title, description, contactInfo, workSchedules, images };
       localStorage.setItem("SHOP_DRAFT_" + id, JSON.stringify(shop));
     }, 1000); // ← delay 1s
 
     return () => clearTimeout(handler); // ← Cancel the previous timer (to prevent duplicate storage).
-  }, [title, description, phoneNumbers, workSchedules]);
+  }, [title, description, contactInfo, workSchedules, images]);
 
   return (
     <div className="select-none md:select-auto">
       <Navbar />
-
-      <dialog id="my_modal_1" className="modal">
-        {workScheduleIndex !== undefined && (
-          <WeekdaySelector
-            defaultValue={workSchedules[workScheduleIndex].weekdays}
-            setNewWeekday={(newValue) =>
-              setWeekdays(newValue, workScheduleIndex)
-            }
-            onClose={resetSelectedIndex}
-          />
-        )}
-      </dialog>
 
       <main className="pt-18 min-h-screen bg-base-300 flex justify-center">
         <div className="max-w-xl w-full p-4 space-y-4">
@@ -189,9 +103,9 @@ const ShopRegisterForm = () => {
             setDescription={setDescription}
           />
 
-          <ShopPhoneNumbersBlock
-            phoneNumbers={phoneNumbers}
-            setPhoneNumbers={setPhoneNumbers}
+          <ShopContactInfoBlock
+            contactInfo={contactInfo}
+            setContactInfo={setContactInfo}
           />
 
           <ShopImagesBlock images={images} setImages={setImages} />
@@ -201,7 +115,6 @@ const ShopRegisterForm = () => {
           <ShopWorkSchedulesBlock
             workSchedules={workSchedules}
             setWorkSchedules={setWorkSchedules}
-            setWorkScheduleIndex={setWorkScheduleIndex}
           />
 
           <div className="flex space-x-4">
