@@ -8,9 +8,15 @@ const QuestionBlock = ({
 }: {
   title?: string;
   description?: string;
-  status?: "required" | "optional" | null;
+  status?: "required" | "optional" | "ok" | null;
   children?: ReactNode;
 }) => {
+  const statusStyle =
+    status === "required"
+      ? "status-error"
+      : status === "optional"
+      ? "status-info"
+      : "status-success";
   return (
     <div className="w-full bg-base-100 rounded-box p-4 space-y-2">
       <div>
@@ -19,10 +25,7 @@ const QuestionBlock = ({
           {status && (
             <div
               aria-label={status + " question"}
-              className={
-                "status flex-none " +
-                (status === "required" ? "status-error" : "status-info")
-              }
+              className={"status flex-none " + statusStyle}
             ></div>
           )}
         </div>

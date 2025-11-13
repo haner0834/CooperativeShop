@@ -9,7 +9,7 @@ const ShopTitleBlock = ({
   setTitle: Dispatch<React.SetStateAction<string>>;
 }) => {
   return (
-    <QuestionBlock title="店家名稱">
+    <QuestionBlock title="店家名稱" status={title ? "ok" : "required"}>
       <input
         type="text"
         value={title}

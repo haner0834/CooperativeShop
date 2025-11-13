@@ -203,6 +203,7 @@ const ShopImagesBlock = ({
   return (
     <QuestionBlock
       title="圖片"
+      status={images.length >= 1 ? "ok" : "required"}
       description="於此上傳商家的照片。至多上傳 10 張。"
     >
       <div

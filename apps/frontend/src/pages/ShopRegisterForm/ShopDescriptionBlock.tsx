@@ -12,7 +12,8 @@ const ShopDescriptionBlock = ({
   return (
     <QuestionBlock
       title="描述"
-      description="對店家的簡短介紹，介於 100 至 500 字。"
+      status={description ? "ok" : "required"}
+      description="對店家的介紹，介於 100 至 500 字。"
     >
       <AdaptiveTextArea
         value={description}

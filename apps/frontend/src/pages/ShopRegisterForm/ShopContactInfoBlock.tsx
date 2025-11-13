@@ -97,8 +97,16 @@ const ShopContactInfoBlock = ({
     modal?.showModal();
   };
 
+  const isMeetRequires = (): boolean => {
+    return contactInfo.filter((contact) => !!contact.content).length >= 1;
+  };
+
   return (
-    <QuestionBlock title="聯絡資訊" description="至多填寫 5 個聯絡方式。">
+    <QuestionBlock
+      title="聯絡資訊"
+      status={isMeetRequires() ? "ok" : "required"}
+      description="至多填寫 5 個聯絡方式。"
+    >
       <dialog id="new_contact_modal" className="modal">
         <ModalContent handleAddContact={handleAddContact} />
       </dialog>

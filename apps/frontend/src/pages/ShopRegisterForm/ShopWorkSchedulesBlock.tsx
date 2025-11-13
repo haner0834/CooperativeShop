@@ -232,7 +232,10 @@ const ShopWorkSchedulesBlock = ({
   };
 
   return (
-    <QuestionBlock title="營業時間">
+    <QuestionBlock
+      title="營業時間"
+      status={selectedWeekdays().length === 7 ? "ok" : "required"}
+    >
       <>
         <dialog id="my_modal_1" className="modal">
           {workScheduleIndex !== undefined && (
