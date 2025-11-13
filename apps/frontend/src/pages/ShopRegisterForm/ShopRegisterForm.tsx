@@ -83,7 +83,7 @@ const ShopRegisterForm = () => {
     const handler = setTimeout(() => {
       const shop = { title, description, contactInfo, workSchedules, images };
       localStorage.setItem("SHOP_DRAFT_" + id, JSON.stringify(shop));
-    }, 1000); // ← delay 1s
+    }, 500); // ← delay 0.5s
 
     return () => clearTimeout(handler); // ← Cancel the previous timer (to prevent duplicate storage).
   }, [title, description, contactInfo, workSchedules, images]);
