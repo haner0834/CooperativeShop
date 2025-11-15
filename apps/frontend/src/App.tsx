@@ -13,7 +13,10 @@ const QrScannerRef = lazy(() => import("./pages/QRCodeScanner"));
 const Schools = lazy(() => import("./pages/Schools"));
 const Shops = lazy(() => import("./pages/Shops"));
 const ShopDetail = lazy(() => import("./pages/ShopDetail"));
-import ShopRegisterForm from "./pages/ShopRegisterForm/ShopRegisterForm";
+const ShopRegisterForm = lazy(
+  () => import("./pages/ShopRegisterForm/ShopRegisterForm")
+);
+const ShopDrafts = lazy(() => import("./pages/ShopDrafts"));
 
 function App() {
   useEffect(() => {
@@ -49,6 +52,7 @@ function App() {
       </Route>
 
       <Route path="shops/register" element={<ShopRegisterForm />} />
+      <Route path="shops/drafts" element={<ShopDrafts />} />
       <Route path="shops" element={<Shops />} />
       <Route path="shops/:id" element={<ShopDetail />} />
     </Routes>
