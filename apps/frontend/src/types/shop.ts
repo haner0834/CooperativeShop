@@ -1,3 +1,6 @@
+import type { WorkSchedule } from "../pages/ShopRegisterForm/ShopWorkSchedulesBlock";
+import type { SelectedImage } from "./selectedImage";
+
 export interface Shop {
   id: string;
   title: string;
@@ -32,4 +35,16 @@ export interface ContactInfo {
   icon: React.ReactNode;
   formatter: (original: string) => string;
   validator: (newValue: string) => string;
+}
+
+export interface ShopDraft {
+  key: string;
+  dateISOString: string;
+  data: {
+    title: string;
+    description: string;
+    images: SelectedImage[];
+    contactInfo: Omit<ContactInfo, "icon" | "formatter" | "validator">[];
+    workSchedules: WorkSchedule[];
+  };
 }
