@@ -1,4 +1,4 @@
-import { Ellipsis, Menu } from "lucide-react";
+import { CircleDotDashed, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import FormHeader from "./FormHeader";
@@ -12,7 +12,7 @@ import ShopWorkSchedulesBlock, {
   DEFAULT_WORKSCHEDULE,
 } from "./ShopWorkSchedulesBlock";
 import type { SelectedImage } from "../../types/selectedImage";
-import type { ContactInfo } from "../../types/shop";
+import type { ContactInfo, ShopDraft } from "../../types/shop";
 import { categoryMap } from "../../utils/contactInfoMap";
 
 const Navbar = () => {
@@ -27,9 +27,9 @@ const Navbar = () => {
         <a className="text-base font-semibold">特約商家註冊</a>
       </div>
       <div className="flex-none">
-        <button className="btn btn-square btn-ghost">
-          <Ellipsis />
-        </button>
+        <a className="btn btn-circle btn-ghost" href="/shops/drafts">
+          <CircleDotDashed />
+        </a>
       </div>
     </div>
   );
@@ -57,12 +57,13 @@ const ShopRegisterForm = () => {
     const draft = localStorage.getItem("SHOP_DRAFT_" + searchParams.get("id"));
     if (draft) {
       const shop = JSON.parse(draft);
-      setTitle(shop.title);
-      setDescription(shop.description);
-      setWorkSchedules(shop.workSchedules);
+      setTitle(shop.data.title);
+      setDescription(shop.data.description);
+      setImages(shop.data.images);
+      setWorkSchedules(shop.data.workSchedules);
 
       // update contact info
-      const contactInfo: ContactInfo[] = shop.contactInfo.map(
+      const contactInfo: ContactInfo[] = shop.data.contactInfo.map(
         (props: Omit<ContactInfo, "validator" | "formatter">) => {
           const { icon, ...rest } = props;
           return {
@@ -81,8 +82,23 @@ const ShopRegisterForm = () => {
     const id = searchParams.get("id");
     if (!id) return;
     const handler = setTimeout(() => {
-      const shop = { title, description, contactInfo, workSchedules, images };
-      localStorage.setItem("SHOP_DRAFT_" + id, JSON.stringify(shop));
+      const key = "SHOP_DRAFT_" + id;
+      const contactInfoToStore = contactInfo.map((info) => {
+        const { icon, formatter, validator, ...infoToStore } = info;
+        return infoToStore;
+      });
+      const shop: ShopDraft = {
+        key,
+        dateISOString: new Date().toISOString(),
+        data: {
+          title,
+          description,
+          contactInfo: contactInfoToStore,
+          workSchedules,
+          images,
+        },
+      };
+      localStorage.setItem(key, JSON.stringify(shop));
     }, 500); // ← delay 0.5s
 
     return () => clearTimeout(handler); // ← Cancel the previous timer (to prevent duplicate storage).
