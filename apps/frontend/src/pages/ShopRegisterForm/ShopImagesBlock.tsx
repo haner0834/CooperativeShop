@@ -6,7 +6,9 @@ import axios from "axios";
 import { path } from "../../utils/path";
 import { compressImage } from "../../utils/imageCompressor";
 import { useAuthFetch } from "../../auth/useAuthFetch";
-import { AnimatedCloudUploadIcon } from "../../widgets/CloudUploadIcon";
+import { AnimatedCloudUploadIcon } from "../../widgets/icon-animation/CloudUploadIcon";
+import { AnimatedChevrons } from "../../widgets/icon-animation/ChevronsLeftRightIcon";
+import { ImageWithFallback } from "../../widgets/ImageWithFallback";
 
 const ShopImagesBlock = ({
   images,
@@ -25,16 +27,11 @@ const ShopImagesBlock = ({
 
     // 轉換成預覽圖
     const newImages: SelectedImage[] = await Promise.all(
-      selectedFiles.map(async (file) => {
-        const reader = new FileReader();
-        const previewUrl = await new Promise<string>((resolve) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.readAsDataURL(file);
-        });
-
+      selectedFiles.map(async (_) => {
+        // To prevent user upload very large image, preview url use compressed one
         return {
           localId: crypto.randomUUID(),
-          previewUrl,
+          previewUrl: "",
           isUploading: false,
           uploadProgress: 0,
           status: "idle" as const,
@@ -68,6 +65,24 @@ const ShopImagesBlock = ({
       const { mainImage, thumbnail: thumbnailImage } = await compressImage(
         file
       );
+      console.log(mainImage.size);
+      const reader = new FileReader();
+      const previewUrl = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error("Failed to read file"));
+        reader.readAsDataURL(mainImage);
+      });
+
+      setImages((prev) =>
+        prev.map((img) =>
+          img.localId === localId
+            ? {
+                ...img,
+                previewUrl,
+              }
+            : img
+        )
+      );
 
       // 取得 presigned urls
       const apiResponse = await authedFetch(
@@ -78,7 +93,7 @@ const ShopImagesBlock = ({
             fileName: file.name,
             contentType: file.type,
             category: "shop-image",
-            fileSize: file.size,
+            fileSize: mainImage.size,
           }),
         }
       );
@@ -178,7 +193,10 @@ const ShopImagesBlock = ({
         )
       );
 
-      if (!image.uploadInfo) throw new Error("No fucking upload info");
+      if (!image.uploadInfo) {
+        setImages((prev) => prev.filter((_, i) => i !== index));
+        return;
+      }
 
       const { fileKey, thumbnailKey } = image.uploadInfo;
       if (!fileKey || !thumbnailKey)
@@ -236,8 +254,9 @@ const ShopImagesBlock = ({
             key={img.localId}
             className="aspect-square h-full relative flex-none rounded-field overflow-hidden"
           >
-            <img
+            <ImageWithFallback
               src={img.previewUrl}
+              error={img.previewUrl === "" ? <div /> : undefined}
               className="object-cover h-full aspect-square"
             />
             {img.isUploading && (
@@ -257,6 +276,12 @@ const ShopImagesBlock = ({
             {img.status === "deleting" && (
               <div className="absolute inset-0 bg-neutral/50 flex items-center justify-center">
                 <span className="loading text-white" />
+              </div>
+            )}
+            {img.status === "idle" && (
+              <div className="absolute inset-0 skeleton flex flex-col items-center justify-center">
+                <AnimatedChevrons className="rotate-90" />
+                <p className="text-sm">壓縮中</p>
               </div>
             )}
             {img.status === "error" && (
