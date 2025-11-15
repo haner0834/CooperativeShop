@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import type { ShopDraft } from "../types/shop";
 import { Ellipsis, Pencil, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   return (
@@ -41,7 +40,6 @@ const AnimatedListItem = ({ children }: { children?: React.ReactNode }) => {
 
 const ShopDrafts = () => {
   const [drafts, setDrafts] = useState<ShopDraft[]>([]);
-  const navigate = useNavigate();
 
   useEffect(() => {
     let drafts: ShopDraft[] = [];
@@ -134,10 +132,6 @@ const ShopDrafts = () => {
       },
     };
     setDrafts((prev) => [...prev, newDraft]);
-
-    setTimeout(() => {
-      navigate(`/shops/register?id=${getDraftId(newDraft.key)}`);
-    }, 500);
   };
 
   return (
