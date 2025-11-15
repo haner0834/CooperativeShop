@@ -53,8 +53,8 @@ export class StorageService {
 
   // based on bytes
   private readonly MAX_FILE_SIZES = {
-    'shop-image': 500 * 1024, // 500 KB
-    'shop-thumbnail': 100 * 1028, // 100 KB
+    'shop-image': 1 * 1024 * 1024, // 1 MB
+    'shop-thumbnail': 700 * 1024, // 100 KB
     'image-thumbnail': 15 * 1024, // 15 KB
   } as const;
 
@@ -170,8 +170,8 @@ export class StorageService {
     thumbnailKey: string,
     userId: string,
   ): Promise<RecordFileResult> {
-    const fileUrl = this.publicUrl + fileKey;
-    const thumbnailUrl = this.publicUrl + thumbnailKey;
+    const fileUrl = this.publicUrl + '/' + fileKey;
+    const thumbnailUrl = this.publicUrl + '/' + thumbnailKey;
 
     return await this.prisma.fileRecord.create({
       data: {
