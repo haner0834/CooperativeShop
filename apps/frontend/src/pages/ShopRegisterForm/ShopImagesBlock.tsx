@@ -7,7 +7,7 @@ import { path } from "../../utils/path";
 import { compressImage } from "../../utils/imageCompressor";
 import { useAuthFetch } from "../../auth/useAuthFetch";
 import { AnimatedCloudUploadIcon } from "../../widgets/icon-animation/CloudUploadIcon";
-import { AnimatedChevrons } from "../../widgets/icon-animation/ChevronsLeftRightIcon";
+import { AnimatedChevrons } from "../../widgets/icon-animation/AnimatedChevrons";
 import { ImageWithFallback } from "../../widgets/ImageWithFallback";
 
 const ShopImagesBlock = ({
