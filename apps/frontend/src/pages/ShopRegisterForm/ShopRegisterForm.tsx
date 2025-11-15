@@ -1,4 +1,4 @@
-import { CircleDotDashed, Menu } from "lucide-react";
+import { CircleDotDashed, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import FormHeader from "./FormHeader";
@@ -19,9 +19,9 @@ const Navbar = () => {
   return (
     <div className="navbar bg-base-100 shadow-sm z-50 fixed">
       <div className="flex-none">
-        <button className="btn btn-square btn-ghost">
-          <Menu />
-        </button>
+        <a href="/shops/register" className="btn btn-circle btn-ghost">
+          <Plus />
+        </a>
       </div>
       <div className="flex-1 text-center">
         <a className="text-base font-semibold">特約商家註冊</a>
