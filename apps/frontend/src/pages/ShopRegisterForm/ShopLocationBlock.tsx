@@ -321,10 +321,12 @@ type Mode = "geocoding" | "current-location" | "manually-point";
 
 const ShopLocationBlock = ({
   address,
+  selectedPoint,
   setAddress,
   setSelectedPoint,
 }: {
   address: string;
+  selectedPoint: Point | null;
   setAddress: Dispatch<React.SetStateAction<string>>;
   setSelectedPoint: Dispatch<React.SetStateAction<Point | null>>;
 }) => {
@@ -369,6 +371,12 @@ const ShopLocationBlock = ({
       setIsSearching(false);
     }
   };
+
+  useEffect(() => {
+    if (selectedPoint?.id) {
+      setSelectedPointId(selectedPoint.id);
+    }
+  }, []);
 
   useEffect(() => {
     if (selectedPointId && geocodePoints.length > 0) {

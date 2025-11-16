@@ -64,6 +64,8 @@ const ShopRegisterForm = () => {
       setDescription(shop.data.description);
       setImages(shop.data.images);
       setWorkSchedules(shop.data.workSchedules);
+      setAddress(shop.data.address);
+      setSelectedPoint(shop.data.selectedPoint);
 
       // update contact info
       const contactInfo: ContactInfo[] = shop.data.contactInfo.map(
@@ -141,6 +143,7 @@ const ShopRegisterForm = () => {
 
           <ShopLocationBlock
             address={address}
+            selectedPoint={selectedPoint}
             setAddress={setAddress}
             setSelectedPoint={setSelectedPoint}
           />
