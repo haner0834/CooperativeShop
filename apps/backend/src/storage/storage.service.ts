@@ -20,6 +20,11 @@ export interface PresignedUrlResult {
   expiresIn: number;
 }
 
+export interface PresignedUrlWithThumbnailResult {
+  main: PresignedUrlResult;
+  thumbnail: PresignedUrlResult;
+}
+
 export interface RecordFileResult {
   id: string;
   fileKey: string;
@@ -48,8 +53,8 @@ export class StorageService {
 
   // based on bytes
   private readonly MAX_FILE_SIZES = {
-    'shop-image': 500 * 1024, // 500 KB
-    'shop-thumbnail': 100 * 1028, // 100 KB
+    'shop-image': 1 * 1024 * 1024, // 1 MB
+    'shop-thumbnail': 700 * 1024, // 100 KB
     'image-thumbnail': 15 * 1024, // 15 KB
   } as const;
 
@@ -68,23 +73,23 @@ export class StorageService {
   }
 
   @Log({ logReturn: false })
-  async generatePresignedUrl(
+  async generatePresignedUrlWithThumbnail(
     fileName: string,
     contentType: string,
     category: string,
     fileSize?: number,
-  ): Promise<PresignedUrlResult> {
+  ): Promise<PresignedUrlWithThumbnailResult> {
     try {
       this.validateContentType(contentType, category);
-
       if (fileSize) this.validateFileSize(fileSize, category);
 
+      // main image
       const fileExtension = this.extractFileExtension(fileName);
       const uniqueFileName = `${crypto.randomUUID()}${fileExtension}`;
       const fileKey = `${category}/${uniqueFileName}`;
+      const expiresIn = 10 * 60; // 10 分鐘
 
-      const expiresIn = 10 * 60; // 10 min
-      const command = new PutObjectCommand({
+      const mainCommand = new PutObjectCommand({
         Bucket: this.bucketName,
         Key: fileKey,
         ContentType: contentType,
@@ -94,18 +99,50 @@ export class StorageService {
         },
         CacheControl: 'public, max-age=31536000, immutable',
       });
-      const uploadUrl = await getSignedUrl(this.s3Client, command, {
+
+      const uploadUrl = await getSignedUrl(this.s3Client, mainCommand, {
         expiresIn,
       });
-
       const publicUrl = `${this.publicUrl}/${fileKey}`;
 
-      return {
+      const mainResult: PresignedUrlResult = {
         uploadUrl,
         fileKey,
         publicUrl,
         expiresIn,
       };
+
+      // thumbnail（type fixed to `thumbnail`）
+      const thumbFileName = `${crypto.randomUUID()}_thumbnail${fileExtension}`;
+      const thumbKey = `${category}/thumbnail/${thumbFileName}`;
+
+      const thumbCommand = new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: thumbKey,
+        ContentType: contentType,
+        Metadata: {
+          'original-filename': encodeURIComponent(fileName),
+          'upload-timestamp': new Date().toISOString(),
+          thumbnail: 'true',
+        },
+        CacheControl: 'public, max-age=31536000, immutable',
+      });
+
+      const thumbnailUploadUrl = await getSignedUrl(
+        this.s3Client,
+        thumbCommand,
+        { expiresIn },
+      );
+      const thumbnailPublicUrl = `${this.publicUrl}/${thumbKey}`;
+
+      const thumbnailResult: PresignedUrlResult = {
+        uploadUrl: thumbnailUploadUrl,
+        fileKey: thumbKey,
+        publicUrl: thumbnailPublicUrl,
+        expiresIn,
+      };
+
+      return { main: mainResult, thumbnail: thumbnailResult };
     } catch (error) {
       throw this.handleS3Error(error);
     }
@@ -133,10 +170,10 @@ export class StorageService {
     thumbnailKey: string,
     userId: string,
   ): Promise<RecordFileResult> {
-    const fileUrl = this.publicUrl + fileKey;
-    const thumbnailUrl = this.publicUrl + thumbnailKey;
+    const fileUrl = this.publicUrl + '/' + fileKey;
+    const thumbnailUrl = this.publicUrl + '/' + thumbnailKey;
 
-    return this.prisma.fileRecord.create({
+    return await this.prisma.fileRecord.create({
       data: {
         fileKey,
         url: fileUrl,
@@ -149,14 +186,24 @@ export class StorageService {
     });
   }
 
-  async deleteFile(fileKey: string) {
-    try {
+  async deleteFile(fileKey: string, thumbnailKey: string) {
+    const keysToDelete = [fileKey, thumbnailKey].filter((key) => !!key);
+
+    const deletionPromises = keysToDelete.map((key) => {
       const command = new DeleteObjectCommand({
         Bucket: this.bucketName,
-        Key: fileKey,
+        Key: key,
       });
 
-      await this.s3Client.send(command);
+      return this.s3Client.send(command);
+    });
+
+    try {
+      await Promise.all(deletionPromises);
+
+      await this.prisma.fileRecord.delete({
+        where: { fileKey },
+      });
     } catch (error) {
       throw this.handleS3Error(error);
     }
@@ -200,6 +247,7 @@ export class StorageService {
     error: unknown,
     context?: { fileKey?: string; command?: string },
   ): AppError {
+    if (!(error instanceof S3ServiceException)) throw error;
     // Cast to S3 exception if possible
     const err = error as S3ServiceException;
 

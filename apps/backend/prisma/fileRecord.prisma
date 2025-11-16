@@ -10,4 +10,6 @@ model FileRecord {
     contentType  String
     createdAt    DateTime   @default(now())
     shopImage    ShopImage?
+
+    @@index([fileKey, thumbnailKey])
 }

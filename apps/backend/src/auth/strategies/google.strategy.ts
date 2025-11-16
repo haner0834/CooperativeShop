@@ -28,6 +28,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       callbackURL,
       scope: ['profile', 'email'],
       passReqToCallback: true,
+      // @ts-ignore
+      prompt: 'select_account',
     });
   }
 

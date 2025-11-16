@@ -6,7 +6,8 @@ import {
 import { useAuth } from "../auth/AuthContext";
 import type { LoginMethod, School } from "../types/school";
 import { useAuthFetch } from "../auth/useAuthFetch";
-import { IdCard, School as SchoolIcon, Menu, Google, Check } from "@icons";
+import { Google } from "@icons";
+import { IdCard, School as SchoolIcon, Menu, Check } from "lucide-react";
 import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
 import { useModal } from "../widgets/ModalContext";

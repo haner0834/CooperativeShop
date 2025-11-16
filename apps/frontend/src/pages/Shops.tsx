@@ -16,6 +16,7 @@ export const testShops: Shop[] = [
     description:
       "A warm café known for its floral-themed interior and artisan coffee.",
     phoneNumbers: ["0912345678"],
+    contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
     imageLinks: [
@@ -35,6 +36,7 @@ export const testShops: Shop[] = [
     description:
       "Popular late-night eatery serving traditional Taiwanese noodles and snacks.",
     phoneNumbers: ["0988776655", "0222334455"],
+    contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
     imageLinks: [
@@ -55,6 +57,7 @@ export const testShops: Shop[] = [
     description:
       "Fresh produce and organic groceries with a focus on local farmers.",
     phoneNumbers: ["0977001122"],
+    contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
     imageLinks: ["https://picsum.photos/800/600?random=8"],
@@ -71,6 +74,7 @@ export const testShops: Shop[] = [
     description:
       "Creative space offering photography, design, and branding services.",
     phoneNumbers: ["0901112233"],
+    contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
     imageLinks: [
@@ -90,6 +94,7 @@ export const testShops: Shop[] = [
     description:
       "Independent bookstore featuring local authors and cozy reading spaces.",
     phoneNumbers: ["0934556677"],
+    contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
     imageLinks: [

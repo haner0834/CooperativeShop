@@ -8,7 +8,7 @@ import {
 // The import path uses a CDN to resolve the module error in some environments.
 import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode"; // TODO: Make this lazy-loaded for better LCP
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
-import { CameraOff, Check, IdCard, Scan, School } from "@icons";
+import { CameraOff, Check, IdCard, Scan, School } from "lucide-react";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
 import { getDeviceId } from "../utils/device";
 import type { QrCodePayload } from "../types/qr";

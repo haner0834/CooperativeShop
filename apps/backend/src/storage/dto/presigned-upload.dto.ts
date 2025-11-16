@@ -11,7 +11,6 @@ export enum FileCategory {
   AVATAR = 'avatar',
   SHOP_IMAGE = 'shop-image',
   SHOP_THUMBNAIL = 'shop-thumbnail',
-  IMAGE_THUMBNAIL = 'image-thumbnail',
 }
 
 export class GeneratePresignedUrlDto {
@@ -48,4 +47,14 @@ export class ConfirmUploadDto {
   @IsString()
   @IsNotEmpty()
   contentType: string;
+}
+
+export class DeleteFileDto {
+  @IsString()
+  @IsNotEmpty()
+  fileKey: string;
+
+  @IsString()
+  @IsNotEmpty()
+  thumbnailKey: string;
 }

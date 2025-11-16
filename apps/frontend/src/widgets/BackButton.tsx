@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "@icons";
+import { ChevronLeft } from "lucide-react";
 
 const BackButton = () => {
   const navigate = useNavigate();
