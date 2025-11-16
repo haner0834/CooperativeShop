@@ -1,3 +1,4 @@
+import type { Point } from "../pages/ShopRegisterForm/ShopLocationBlock";
 import type { WorkSchedule } from "../pages/ShopRegisterForm/ShopWorkSchedulesBlock";
 import type { SelectedImage } from "./selectedImage";
 
@@ -44,6 +45,8 @@ export interface ShopDraft {
     title: string;
     description: string;
     images: SelectedImage[];
+    selectedPoint: Point | null;
+    address: string;
     contactInfo: Omit<ContactInfo, "icon" | "formatter" | "validator">[];
     workSchedules: WorkSchedule[];
   };

@@ -126,6 +126,8 @@ const ShopDrafts = () => {
       data: {
         title: "",
         description: "",
+        selectedPoint: null,
+        address: "",
         images: [],
         contactInfo: [],
         workSchedules: [],

@@ -14,6 +14,7 @@ import ShopWorkSchedulesBlock, {
 import type { SelectedImage } from "../../types/selectedImage";
 import type { ContactInfo, ShopDraft } from "../../types/shop";
 import { categoryMap } from "../../utils/contactInfoMap";
+import type { Point } from "./ShopLocationBlock";
 
 const Navbar = () => {
   return (
@@ -39,6 +40,8 @@ const ShopRegisterForm = () => {
   const [title, setTitle] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   const [description, setDescription] = useState("");
+  const [address, setAddress] = useState("");
+  const [selectedPoint, setSelectedPoint] = useState<Point | null>(null);
   const [contactInfo, setContactInfo] = useState<ContactInfo[]>([]);
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([
     DEFAULT_WORKSCHEDULE,
@@ -96,13 +99,23 @@ const ShopRegisterForm = () => {
           contactInfo: contactInfoToStore,
           workSchedules,
           images,
+          selectedPoint,
+          address,
         },
       };
       localStorage.setItem(key, JSON.stringify(shop));
     }, 500); // ← delay 0.5s
 
     return () => clearTimeout(handler); // ← Cancel the previous timer (to prevent duplicate storage).
-  }, [title, description, contactInfo, workSchedules, images]);
+  }, [
+    title,
+    description,
+    contactInfo,
+    workSchedules,
+    images,
+    address,
+    selectedPoint,
+  ]);
 
   return (
     <div className="select-none md:select-auto">
@@ -126,7 +139,11 @@ const ShopRegisterForm = () => {
 
           <ShopImagesBlock images={images} setImages={setImages} />
 
-          <ShopLocationBlock />
+          <ShopLocationBlock
+            address={address}
+            setAddress={setAddress}
+            setSelectedPoint={setSelectedPoint}
+          />
 
           <ShopWorkSchedulesBlock
             workSchedules={workSchedules}

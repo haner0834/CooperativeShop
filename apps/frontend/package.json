@@ -13,6 +13,7 @@
     "prebuild": "node scripts/sync-assets.js"
   },
   "dependencies": {
+    "@mapbox/mapbox-gl-language": "^1.0.1",
     "@tailwindcss/vite": "^4.1.12",
     "@types/react-lazy-load-image-component": "^1.6.4",
     "axios": "^1.13.2",
@@ -22,6 +23,7 @@
     "fs": "^0.0.1-security",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.548.0",
+    "mapbox-gl": "^3.16.0",
     "qr-code-styling": "^1.9.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
