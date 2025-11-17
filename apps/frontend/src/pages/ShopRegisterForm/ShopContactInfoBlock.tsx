@@ -2,7 +2,7 @@ import { type Dispatch } from "react";
 import QuestionBlock from "./QuestionBlock";
 import { Minus, Plus, X } from "lucide-react";
 import type { ContactCategory, ContactInfo } from "../../types/shop";
-import { categoryMap } from "../../utils/contactInfoMap";
+import { categoryMap } from "../../utils/contactInfoMap.ts";
 
 const allCategory: ContactCategory[] = [
   "phone-number",
