@@ -2,16 +2,32 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsEnum,
   IsLatitude,
   IsLongitude,
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsPhoneNumber,
   IsString,
   IsUrl,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { IsGoogleMapsUrl } from 'src/common/decorators/is-googlemaps-url.decorator';
+import { ContactCategory, ContactInfo } from '../types/contact-info.type';
+
+class ContactInfoDto implements ContactInfo {
+  @IsEnum(ContactCategory)
+  category: ContactCategory;
+
+  @IsString()
+  @IsNotEmpty()
+  content: string;
+
+  @IsString()
+  @IsNotEmpty()
+  href: string;
+}
 
 export class CreateShopDto {
   @IsString()
@@ -24,8 +40,13 @@ export class CreateShopDto {
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(5)
-  @IsPhoneNumber('TW', { each: true })
-  phoneNumbers: string[];
+  @ValidateNested({ each: true })
+  @Type(() => ContactInfoDto)
+  contactInfo: ContactInfoDto[];
+
+  @IsString()
+  @IsNotEmpty()
+  schoolId: string;
 
   @IsOptional()
   @IsGoogleMapsUrl()

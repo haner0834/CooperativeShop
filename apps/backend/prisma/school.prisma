@@ -5,4 +5,5 @@ model School {
     emailFormats    String[]
     studentIdFormat Json?
     users           User[]
+    shops           Shop[]
 }

@@ -1,8 +1,8 @@
 model Shop {
-    id             String         @id @default(cuid())
+    id             String          @id @default(cuid())
     title          String
     description    String
-    phoneNumbers   Json // An array
+    contactInfo    Json // An array
     googleMapsLink String?
     thumbnailLink  String
     discount       String?
@@ -11,6 +11,10 @@ model Shop {
     longitude      Float
     latitude       Float
     images         ShopImage[]
+    school         School          @relation(fields: [schoolId], references: [id])
+    schoolId       String
+    dailyStats     ShopDailyStat[]
+    category       String
 
     @@index([title])
 }

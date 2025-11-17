@@ -9,6 +9,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ShopsModule } from './shops/shops.module';
 import { StorageModule } from './storage/storage.module';
+import { InteractionModule } from './interaction/interaction.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { StorageModule } from './storage/storage.module';
     }),
     ShopsModule,
     StorageModule,
+    InteractionModule,
   ],
   controllers: [AppController],
   providers: [

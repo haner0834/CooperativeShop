@@ -1,0 +1,14 @@
+model ShopDailyStat {
+    id     String   @id @default(cuid())
+    shop   Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+    shopId String
+    date   DateTime // truncated to day
+
+    impressions Int @default(0)
+    views       Int @default(0)
+    viewTimeSec Int @default(0)
+    taps        Int @default(0)
+
+    @@unique([shopId, date])
+    @@index([shopId, date])
+}
