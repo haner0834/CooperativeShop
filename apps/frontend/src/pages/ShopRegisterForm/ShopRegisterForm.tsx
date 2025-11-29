@@ -13,7 +13,7 @@ import ShopWorkSchedulesBlock, {
 } from "./ShopWorkSchedulesBlock";
 import type { SelectedImage } from "../../types/selectedImage";
 import type { ContactInfo, ShopDraft } from "../../types/shop";
-import { categoryMap } from "../../utils/contactInfoMap.ts";
+import { categoryMap } from "../../utils/contactInfoMap";
 import type { Point } from "./ShopLocationBlock";
 
 const Navbar = () => {
