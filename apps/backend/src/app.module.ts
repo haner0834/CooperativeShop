@@ -10,6 +10,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { ShopsModule } from './shops/shops.module';
 import { StorageModule } from './storage/storage.module';
 import { InteractionModule } from './interaction/interaction.module';
+import { ShopRankingModule } from './shop-ranking/shop-ranking.module';
+import { ShopRankingModule } from './shop-ranking/shop-ranking.module';
 
 @Module({
   imports: [
@@ -28,6 +30,7 @@ import { InteractionModule } from './interaction/interaction.module';
     ShopsModule,
     StorageModule,
     InteractionModule,
+    ShopRankingModule,
   ],
   controllers: [AppController],
   providers: [

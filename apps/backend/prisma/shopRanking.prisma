@@ -1,0 +1,14 @@
+model ShopRanking {
+    id        String   @id @default(cuid())
+    shopId    String
+    shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+    type      String // 'hot' | 'home' | 'nearby'
+    date      DateTime
+    rank      Int
+    score     Float
+    metadata  Json? // For nearby: store lat/lng used for calculation
+    createdAt DateTime @default(now())
+
+    @@unique([shopId, type, date])
+    @@index([type, date, rank])
+}

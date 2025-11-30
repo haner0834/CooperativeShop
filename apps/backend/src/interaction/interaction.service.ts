@@ -111,7 +111,6 @@ export class InteractionService {
     });
   }
 
-  // Then you can call it like:
   async recordImpression(
     shopId: string,
     identifier: string,
