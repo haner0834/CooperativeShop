@@ -1,17 +1,10 @@
-import { IdentifierType } from '@prisma/client';
-import { IsIn, IsNotEmpty, IsString } from 'class-validator';
-
-const PROVIDERS: IdentifierType[] = ['USER', 'DEVICE_ID'];
+import { IsString, IsEnum, IsInt, Min, IsOptional } from 'class-validator';
 
 export class RecordImpressionDto {
   @IsString()
-  @IsNotEmpty()
-  identifier: string;
-
-  @IsIn(PROVIDERS)
-  identifierType: string;
+  shopId: string;
 
   @IsString()
-  @IsNotEmpty()
-  shopId: string;
+  @IsOptional()
+  deviceId?: string;
 }
