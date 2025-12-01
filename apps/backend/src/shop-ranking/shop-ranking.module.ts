@@ -3,11 +3,12 @@ import { ShopRankingService } from './shop-ranking.service';
 import { ShopRankingController } from './shop-ranking.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { StorageModule } from 'src/storage/storage.module';
+import { RankingScheduler } from './shop-ranking.cron';
 
 @Module({
   imports: [PrismaModule, StorageModule],
   controllers: [ShopRankingController],
-  providers: [ShopRankingService],
+  providers: [ShopRankingService, RankingScheduler],
   exports: [ShopRankingService],
 })
 export class ShopRankingModule {}
