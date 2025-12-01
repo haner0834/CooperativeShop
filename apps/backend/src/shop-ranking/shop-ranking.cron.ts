@@ -1,16 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ShopRankingService } from './shop-ranking.service';
+import { Log } from 'src/common/decorators/logger.decorator';
 
 @Injectable()
 export class RankingScheduler {
   constructor(private shopRankingService: ShopRankingService) {}
 
+  @Log({ logReturn: false })
   @Cron(CronExpression.EVERY_HOUR)
   async updateHotRankings() {
     await this.shopRankingService.calculateAndUploadHotRankings();
   }
 
+  @Log({ logReturn: false })
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async updateHomeRankings() {
     await this.shopRankingService.calculateAndUploadHomeRankings();
