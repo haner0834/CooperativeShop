@@ -170,4 +170,25 @@ export class InteractionService {
       viewTimeSec,
     );
   }
+
+  async cleanupOldUserInteractions(
+    days: number,
+  ): Promise<{ userInteractions: number }> {
+    const daysAgo = new Date();
+    daysAgo.setDate(daysAgo.getDate() - days);
+    daysAgo.setHours(0, 0, 0, 0);
+
+    const userInteractionsResult =
+      await this.prisma.userShopDailyInteraction.deleteMany({
+        where: {
+          date: {
+            lt: daysAgo,
+          },
+        },
+      });
+
+    return {
+      userInteractions: userInteractionsResult.count,
+    };
+  }
 }
