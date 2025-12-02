@@ -3,13 +3,22 @@ import { CreateShopDto } from './dto/create-shop.dto';
 import { UpdateShopDto } from './dto/update-shop.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppError } from 'src/types/error.types';
+import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class ShopsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createShopDto: CreateShopDto) {
-    await this.prisma.shop.create({ data: createShopDto });
+    const { contactInfo, ...rest } = createShopDto;
+    const plainContactInfo = instanceToPlain(contactInfo);
+
+    await this.prisma.shop.create({
+      data: {
+        contactInfo: plainContactInfo,
+        ...rest,
+      },
+    });
   }
 
   async findAll() {
@@ -21,9 +30,15 @@ export class ShopsService {
   }
 
   async update(id: string, updateShopDto: UpdateShopDto) {
+    const { contactInfo, ...rest } = updateShopDto;
+    const plainContactInfo = instanceToPlain(contactInfo);
+
     return await this.prisma.shop.update({
       where: { id },
-      data: updateShopDto,
+      data: {
+        contactInfo: plainContactInfo,
+        ...rest,
+      },
     });
   }
 

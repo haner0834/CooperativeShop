@@ -1,0 +1,21 @@
+model UserShopDailyInteraction {
+    id String @id @default(cuid())
+
+    identifier     String
+    identifierType IdentifierType
+    shopId         String
+    date           DateTime // truncated to day
+
+    impressionCount Int @default(0)
+    viewCount       Int @default(0)
+    viewTimeSec     Int @default(0)
+    tapCount        Int @default(0)
+
+    @@unique([identifier, identifierType, shopId, date])
+    @@index([date])
+}
+
+enum IdentifierType {
+    USER
+    DEVICE_ID
+}

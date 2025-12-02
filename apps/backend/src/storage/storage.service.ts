@@ -9,7 +9,11 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { env } from 'src/common/utils/env.utils';
-import { AppError, BadRequestError } from 'src/types/error.types';
+import {
+  AppError,
+  BadRequestError,
+  InternalError,
+} from 'src/types/error.types';
 import { Log } from 'src/common/decorators/logger.decorator';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -184,6 +188,29 @@ export class StorageService {
         userId,
       },
     });
+  }
+
+  async uploadJson(key: string, data: any): Promise<void> {
+    const command = new PutObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+      Body: JSON.stringify(data),
+      ContentType: 'application/json',
+    });
+
+    await this.s3Client.send(command);
+  }
+
+  async downloadJson<T>(key: string): Promise<T> {
+    const command = new GetObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+    });
+
+    const response = await this.s3Client.send(command);
+    const body = await response.Body?.transformToString();
+    if (!body) throw new InternalError(`File not found with key: ${key}`);
+    return JSON.parse(body);
   }
 
   async deleteFile(fileKey: string, thumbnailKey: string) {

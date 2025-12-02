@@ -10,6 +10,7 @@ import {
 import { ShopsService } from './shops.service';
 import { CreateShopDto } from './dto/create-shop.dto';
 import { UpdateShopDto } from './dto/update-shop.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Controller('shops')
 export class ShopsController {
@@ -39,4 +40,7 @@ export class ShopsController {
   remove(@Param('id') id: string) {
     return this.shopsService.remove(id);
   }
+
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  async cleanExpiredUserInteractions() {}
 }
