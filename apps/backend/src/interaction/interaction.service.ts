@@ -11,7 +11,7 @@ type InteractionMetric =
 type MetricConfig = {
   userField: InteractionMetric;
   shopField: 'impressions' | 'views' | 'taps' | 'viewTimeSec';
-  maxPerDay: number | null;
+  maxPerDay: number;
 };
 
 const METRIC_CONFIGS: Record<InteractionMetric, MetricConfig> = {
@@ -31,9 +31,9 @@ const METRIC_CONFIGS: Record<InteractionMetric, MetricConfig> = {
     maxPerDay: 5,
   },
   viewTimeSec: {
-    userField: 'tapCount',
-    shopField: 'taps',
-    maxPerDay: null,
+    userField: 'viewTimeSec',
+    shopField: 'viewTimeSec',
+    maxPerDay: 5 * 60,
   },
 };
 
@@ -76,9 +76,15 @@ export class InteractionService {
       });
 
       const currentCount = existing?.[config.userField] ?? 0;
-      const shouldRecord = currentCount < (config.maxPerDay ?? 0);
+      const shouldRecord =
+        config.maxPerDay === null || currentCount < config.maxPerDay;
 
       if (shouldRecord) {
+        const actualIncrement =
+          config.maxPerDay !== null
+            ? Math.min(increment, config.maxPerDay - currentCount)
+            : increment;
+
         // Record the interaction
         await tx.userShopDailyInteraction.upsert({
           where: {
@@ -97,15 +103,15 @@ export class InteractionService {
             [config.userField]: 1,
           },
           update: {
-            [config.userField]: { increment },
+            [config.userField]: { increment: actualIncrement },
           },
         });
 
         // Increment global ShopDailyStat
         await tx.shopDailyStat.upsert({
           where: { shopId_date: { shopId, date: dayKey } },
-          update: { [config.shopField]: { increment } },
-          create: { shopId, date: dayKey, [config.shopField]: increment },
+          update: { [config.shopField]: { increment: actualIncrement } },
+          create: { shopId, date: dayKey, [config.shopField]: actualIncrement },
         });
       }
     });
