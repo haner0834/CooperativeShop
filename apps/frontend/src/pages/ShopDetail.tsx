@@ -66,13 +66,14 @@ const SaveButton = ({ style = "circle" }: { style?: "circle" | "square" }) => {
   );
 };
 
-const ShopDetail = () => {
-  const { id } = useParams();
-  const [shop, setShop] = useState<Shop | null>(null);
+const ShopDetailContent = ({
+  shop,
+  activeIndex,
+}: {
+  shop: Shop | null;
+  activeIndex: number;
+}) => {
   const { isMobile } = useDevice();
-
-  const [activeIndex, setActiveIndex] = useState(0);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [initialImageIndex, setInitialImageIndex] = useState(0);
 
@@ -85,30 +86,9 @@ const ShopDetail = () => {
     setIsModalOpen(false);
   };
 
-  // 可以監聽 hash 變化，更新 activeIndex
-  useEffect(() => {
-    function onHashChange() {
-      const hash = window.location.hash.replace("#", "");
-      const index = parseInt(hash);
-      if (!isNaN(index)) setActiveIndex(index);
-    }
-
-    window.addEventListener("hashchange", onHashChange);
-
-    // 初始化
-    onHashChange();
-
-    return () => window.removeEventListener("hashchange", onHashChange);
-  }, []);
-
   const goToItem = (hash: string) => {
     window.location.replace(window.location.pathname + hash);
   };
-
-  useEffect(() => {
-    const shop = testShops.find((s) => s.id === id);
-    if (shop) setShop(shop);
-  }, []);
 
   return (
     <article>
@@ -276,6 +256,36 @@ const ShopDetail = () => {
       </div>
     </article>
   );
+};
+
+const ShopDetail = () => {
+  const { id } = useParams();
+  const [shop, setShop] = useState<Shop | null>(null);
+
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // 可以監聽 hash 變化，更新 activeIndex
+  useEffect(() => {
+    function onHashChange() {
+      const hash = window.location.hash.replace("#", "");
+      const index = parseInt(hash);
+      if (!isNaN(index)) setActiveIndex(index);
+    }
+
+    window.addEventListener("hashchange", onHashChange);
+
+    // 初始化
+    onHashChange();
+
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
+  useEffect(() => {
+    const shop = testShops.find((s) => s.id === id);
+    if (shop) setShop(shop);
+  }, []);
+
+  return <ShopDetailContent shop={shop} activeIndex={activeIndex} />;
 };
 
 export default ShopDetail;
