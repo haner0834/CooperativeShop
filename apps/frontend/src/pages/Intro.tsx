@@ -5,11 +5,7 @@ import {
 } from "../widgets/NavbarButtonsContext";
 import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
 import Logo from "@shared/app-icons/logo.jpg";
-import {
-  // Frog, // 如果 Footer 需要可保留
-  Instagram,
-  Github,
-} from "@icons";
+import { Instagram, Github } from "@icons";
 import Marquee from "../widgets/Marquee";
 import {
   motion,
@@ -27,7 +23,7 @@ import {
   Zap,
 } from "lucide-react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { useMemo } from "react"; // 確保有引入 useMemo
+import { useMemo } from "react";
 import { useDevice } from "../widgets/DeviceContext";
 
 const ScanButton = () => (
@@ -36,13 +32,9 @@ const ScanButton = () => (
   </a>
 );
 
-// 極簡風格的 Hero 區塊
 const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-base-100">
-      {/* 背景裝飾 (極簡光暈) */}
-      {/* <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[100px]" /> */}
-
       <div className="container px-4 mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
         {/* 左側：文案 */}
         <motion.div
@@ -87,7 +79,7 @@ const Hero = () => {
           </div>
         </motion.div>
 
-        {/* 右側：浮動卡片 (視覺核心) */}
+        {/* 右側：浮動卡片 */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -136,7 +128,6 @@ const Hero = () => {
             </div>
           </motion.div>
 
-          {/* 裝飾性陰影 */}
           <div className="absolute -bottom-10 left-10 right-10 h-10 bg-black/20 blur-2xl rounded-full opacity-40" />
         </motion.div>
       </div>
@@ -184,7 +175,6 @@ const schoolIconFileNames: string[][] = [
   ],
 ];
 
-// 合作學校跑馬燈
 const SchoolTicker = () => {
   const { isMobile } = useDevice();
 
@@ -287,21 +277,17 @@ const NarrativeScroll = () => {
   );
 };
 
-// ... 其他 import 保持不變
-
-// 輔助函式：從檔名提取學校簡寫 (例如 "tnssh.png" -> "TNSSH")
 const getSchoolAbbr = (filename: string) => {
   return filename.split(".")[0].toUpperCase();
 };
 
 const CardReplacementAnimation = () => {
+  const { isMobile } = useDevice();
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   });
-
-  // --- 設定與性能優化 ---
 
   // 1. 只取最後 10 張卡片以優化性能
   // 注意：需確保 schoolIconFileNames 已在外部定義或透過 props 傳入
@@ -309,7 +295,6 @@ const CardReplacementAnimation = () => {
   const visibleCardsCount = 8;
 
   const cardsConfig = useMemo(() => {
-    // 扁平化並只取最後 N 張
     const flatIcons = schoolIconFileNames
       .flat()
       .filter((n) => n != "kmsh.gif")
@@ -318,8 +303,10 @@ const CardReplacementAnimation = () => {
 
     return slicedIcons.map((icon, index) => {
       // 決定飛入方向：左(-1)、中(0)、右(1)
-      const direction =
-        Math.random() < 0.33 ? -1 : Math.random() < 0.66 ? 0 : 1;
+      let direction = Math.random() < 0.33 ? -1 : Math.random() < 0.66 ? 0 : 1;
+      if (isMobile) {
+        direction = Math.random() < 0.5 ? -1 : 1; // For better look on mobile
+      }
       // 根據方向設定起始 X 位置 (螢幕外)
       const startX = direction * 1000; // 1000px 應該足夠移出視窗
 
@@ -557,7 +544,6 @@ const CardReplacementAnimation = () => {
   );
 };
 
-// 功能網格 (取代 FifthPage)
 const FeatureGrid = () => {
   return (
     <section className="py-24 px-4 bg-base-100">
@@ -613,7 +599,6 @@ const FeatureGrid = () => {
   );
 };
 
-// 最終 CTA (取代 SixthPage)
 const CTA = () => {
   return (
     <section className="py-32 bg-base-100 relative overflow-hidden">
@@ -666,7 +651,7 @@ const Footer = () => {
               </span>
             </div>
             <p className="text-xs text-base-content/40 mt-2">
-              © 2026 林禹澔. All rights reserved.
+              © 2026 嘎嘎嘎. All rights reserved.
             </p>
           </div>
 
@@ -718,13 +703,10 @@ const Footer = () => {
   );
 };
 
-// --- 主組件 ---
-
 const Intro = () => {
   const { setNavbarButtons } = useNavbarButtons();
 
   useEffect(() => {
-    // 設定 Navbar 按鈕
     const baseButtons: NavbarButton[] = (
       ["logo", "login"] as NavbarButtonType[]
     )
@@ -739,7 +721,6 @@ const Intro = () => {
 
     setNavbarButtons([...baseButtons, scanButton]);
 
-    // 強制設定主題 (保留原本邏輯)
     const storedTheme = localStorage.getItem("theme");
     const isDarkMode =
       storedTheme === "dark" ||
@@ -749,9 +730,6 @@ const Intro = () => {
       "data-theme",
       isDarkMode ? "dark" : "light"
     );
-
-    // 確保 Hero 區塊載入時設為 light (如果設計上需要強制白色背景)
-    // 但為了支援深色模式，建議讓 CSS 變數處理
   }, [setNavbarButtons]);
 
   return (
