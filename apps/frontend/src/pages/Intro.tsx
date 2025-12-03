@@ -508,8 +508,16 @@ const CardReplacementAnimation = () => {
             style={{ scale: finalCardScale, opacity: finalCardOpacity }}
             className="absolute inset-0 z-20"
           >
-            {/* 這裡使用稍微不同的光暈，區別於上面的堆疊 */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary/60 to-secondary/60 opacity-30 blur-lg rounded-box" />
+            <div className="absolute -inset-6">
+              {/* 光暈 */}
+              <div className="absolute inset-6 -m-1 bg-gradient-to-r from-primary/60 to-secondary/60 opacity-30 blur-lg rounded-box" />
+
+              {/* 卡片本體 */}
+              <div className="absolute inset-6 rounded-box border border-base-300 backdrop-blur-xl overflow-hidden group">
+                <div className="absolute inset-0 bg-white" />
+                {/* 其餘內容 */}
+              </div>
+            </div>
 
             <div className="relative w-full h-full rounded-box border border-base-300 backdrop-blur-xl overflow-hidden group">
               <div className="absolute inset-0 bg-white" />
@@ -528,7 +536,7 @@ const CardReplacementAnimation = () => {
                     2026 COOPERATIVE
                   </div>
                   <div className="text-2xl font-bold tracking-widest uppercase">
-                    Student ID
+                    GAGAGA
                   </div>
                 </div>
                 <div className="flex justify-between items-end font-mono text-xs opacity-50">
