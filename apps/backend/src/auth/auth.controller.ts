@@ -190,11 +190,16 @@ export class AuthController {
   ) {
     const user = req.user as any;
     const deviceId = user.deviceId;
+    const to = user.to;
+    let redirectUrl = '';
+    if (to) {
+      redirectUrl = env('FRONTEND_URL_ROOT', '') + decodeURIComponent(to);
+    }
 
     await this.handleAuthSuccess(res, user, deviceId);
 
     // 重定向到前端
     const frontendUrl = env('FRONTEND_URL', '/home');
-    res.redirect(frontendUrl);
+    res.redirect(redirectUrl ? redirectUrl : frontendUrl);
   }
 }

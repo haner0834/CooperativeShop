@@ -7,7 +7,7 @@ import { BadRequestError } from 'src/types/error.types';
 export class GoogleOAuthGuard extends AuthGuard('google') {
   getAuthenticateOptions(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
-    const { schoolId, deviceId } = request.query;
+    const { schoolId, deviceId, to } = request.query;
 
     // 在這裡驗證必要參數
     if (!schoolId || typeof schoolId !== 'string') {
@@ -18,11 +18,18 @@ export class GoogleOAuthGuard extends AuthGuard('google') {
       throw new BadRequestError('MISSING_DEVICE_ID', 'Device ID is required.');
     }
 
+    if (to && typeof to != 'string') {
+      throw new BadRequestError(
+        'INCORRECT_REDIRECT_PATH',
+        'Redirect path is not valid.',
+      );
+    }
+
     // 構建 state 並將其作為選項返回
     // Passport 會自動將這個 state 附加到導向 Google 的 URL 中
-    const state = Buffer.from(JSON.stringify({ schoolId, deviceId })).toString(
-      'base64',
-    );
+    const state = Buffer.from(
+      JSON.stringify({ schoolId, deviceId, to }),
+    ).toString('base64');
 
     return { state };
   }
