@@ -41,7 +41,7 @@ const httpOnlyCookieOptions = {
   path: '/api/auth',
 } as const;
 
-@Throttle({ default: { ttl: 1 * 60 * 1000, limit: 7 } })
+@Throttle({ default: { ttl: 1 * 60 * 1000, limit: 20 } })
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
