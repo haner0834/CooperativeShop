@@ -22,7 +22,7 @@ import { ShopRankingModule } from './shop-ranking/shop-ranking.module';
       throttlers: [
         {
           ttl: 1 * 60 * 1000,
-          limit: 70,
+          limit: 180,
         },
       ],
     }),
