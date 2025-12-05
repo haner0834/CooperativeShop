@@ -19,9 +19,9 @@ const GooglePlaceholder = () => {
   const loginWithGoogle = (schoolId: string) => {
     const deviceId = getDeviceId();
     // Let browser redirect automatically
-    location.href = path(
-      `/api/auth/google?schoolId=${schoolId}&deviceId=${deviceId}`
-    );
+    navigate(`/api/auth/google?schoolId=${schoolId}&deviceId=${deviceId}`, {
+      replace: true,
+    });
   };
 
   useEffect(() => {
