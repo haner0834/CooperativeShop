@@ -5,122 +5,140 @@ import {
 } from "../widgets/NavbarButtonsContext";
 import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
 import Logo from "@shared/app-icons/logo.jpg";
-import VerticalLogo from "@shared/app-icons/logo-vertical.svg?react";
-import {
-  Frog,
-  Google,
-  Instagram,
-  Github,
-  // FangHead,
-} from "@icons";
+import { Instagram, Github } from "@icons";
 import Marquee from "../widgets/Marquee";
-import WordScroller from "../widgets/WordScroller";
-import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useMotionTemplate,
+} from "framer-motion";
 import PageMeta, { routesMeta } from "../widgets/PageMeta";
 import {
-  ArrowDown,
-  Globe,
-  IdCard,
-  Mail,
-  MoveRight,
-  QrCode,
+  ArrowRight,
+  CheckCircle2,
   ScanLine,
   School,
+  Smartphone,
+  Zap,
 } from "lucide-react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
+import { useMemo } from "react";
+import { useDevice } from "../widgets/DeviceContext";
 
-const ScanButton = () => {
+const ScanButton = () => (
+  <a href="/qr-scanner" className="btn btn-circle btn-ghost">
+    <ScanLine />
+  </a>
+);
+
+const Hero = () => {
   return (
-    <a href="/qr-scanner" className="btn btn-circle btn-ghost">
-      <ScanLine />
-    </a>
-  );
-};
-
-const Banner = () => {
-  return (
-    <div className="hero bg-base-200 min-h-screen">
-      <div className="hero-content flex-col lg:flex-row-reverse">
-        <div className="hidden lg:block rotate-6 md:ms-10 rounded-box flex-col bg-black/5 w-lg p-4">
-          <div className="flex opacity-100">
-            <img src={Logo} alt="Logo" className="w-40 h-40 rounded-field" />
-
-            <ul className="px-4 w-full flex flex-col justify-between">
-              <li>
-                <p className="font-bold text-xl pb-2">南校特約</p>
-              </li>
-              <li className="flex flex-1 justify-between font-mono">
-                <p>年級</p>
-                <p className="text-primary font-bold">高中部</p>
-              </li>
-
-              <li className="flex flex-1 justify-between font-mono">
-                <p>學校</p>
-                <p>kmsh</p>
-              </li>
-
-              <li className="flex flex-1 justify-between font-mono">
-                <p>開始日期</p>
-                <p>26/01/01</p>
-              </li>
-              <li className="flex flex-1 justify-between font-mono">
-                <p>結束日期</p>
-                <p>26/06/01</p>
-              </li>
-            </ul>
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-base-100">
+      <div className="container px-4 mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+        {/* 左側：文案 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="flex-1 text-center lg:text-left space-y-6 z-10"
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-base-200/50 border border-base-300 text-sm font-medium text-base-content/70">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
+            </span>
+            26 校聯合．現已上線
           </div>
-          <div className="divider" />
-          <div className="flex space-x-2">
-            <span className="badge badge-info badge-soft">
-              <ScanLine className="w-4 h-4" />
-              QR Code
-            </span>
-            <span className="badge badge-primary badge-soft">
-              <Globe className="w-4 h-4" />
-              Website
-            </span>
-            <span className="badge badge-secondary badge-soft">
-              <School className="w-4 h-4" />
-              26 校聯合
-            </span>
-          </div>
-        </div>
-        <div className="lg:w-lg">
-          <h1 className="text-[clamp(2rem,3.5vw,4rem)]/tight  font-bold text-center lg:text-left">
-            26校聯合
+
+          <h1 className="text-5xl lg:text-7xl font-bold tracking-tight leading-[1.1]">
+            校園生活，
             <br />
-            史上最大學生優惠計畫
+            <span className="">一掃即享。</span>
           </h1>
-          <p className="py-6 opacity-50 text-center lg:text-left">
-            由台南 26 所高中學生會共同發起，串聯超過 200
-            間在地商店，打造專屬學生的優惠網絡。
-            <br />
-            只要學生證或 QR Code，一掃即享，最方便的校園生活福利！
+
+          <p className="text-lg text-base-content/60 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+            全台南最大學生優惠計畫。串聯 200+ 間在地商店，
+            不需要實體卡片，只需你的手機。
           </p>
-          <div className="space-x-2 flex justify-center lg:justify-start">
-            <a
-              className="btn btn-soft btn-neutral rounded-full"
-              target="_blank"
-              href="https://www.instagram.com/cooperativeshops_2026/"
-            >
-              <Instagram />
-              Instagram
-            </a>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start pt-4">
             <a
               href="/choose-school"
-              className="btn btn-primary rounded-full lg:btn-wide px-8"
+              className="btn btn-primary rounded-full px-8 text-lg font-medium shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/25 transition-all"
             >
               立即開始
-              <MoveRight />
+              <ArrowRight className="w-5 h-5" />
+            </a>
+            <a
+              href="/schools"
+              className="btn btn-ghost rounded-full px-8 text-lg font-normal hover:bg-base-content/5 text-neutral/50"
+            >
+              查看合作店家
             </a>
           </div>
-        </div>
+        </motion.div>
+
+        {/* 右側：浮動卡片 */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+          className="flex-1 w-full max-w-md relative"
+        >
+          <div
+            className="absolute top-10 -left-4 w-32 h-32 bg-blue-500 rounded-full blur-[50px] opacity-60 animate-pulse"
+            style={{ animationDuration: "4s" }}
+          />
+          <div
+            className="absolute bottom-10 -right-4 w-32 h-32 bg-emerald-500 rounded-full blur-[50px] opacity-60 animate-pulse"
+            style={{ animationDuration: "5s", animationDelay: "1s" }}
+          />
+
+          <motion.div
+            animate={{ y: [0, -15, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="relative z-10"
+          >
+            <div className="relative w-full aspect-[1.58/1] rounded-box border border-base-300 bg-base-100 shadow-lg overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-base-100 to-base-200 opacity-50" />
+
+              <div className="relative p-6 h-full flex flex-col justify-between text-base-content">
+                <div className="flex justify-between items-start">
+                  <img
+                    src={Logo}
+                    alt="Logo"
+                    className="w-16 h-16 rounded-2xl shadow-md"
+                  />
+                  <ScanLine className="w-8 h-8 opacity-50" />
+                </div>
+                <div>
+                  <div className="font-mono text-sm opacity-50 mb-1">
+                    2026 COOPERATIVE
+                  </div>
+                  <div className="text-2xl font-bold tracking-widest uppercase">
+                    Student ID
+                  </div>
+                </div>
+                <div className="flex justify-between items-end font-mono text-xs opacity-70">
+                  <span>TAINAN UNION</span>
+                  <span>VALID THRU 06/26</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <div className="absolute -bottom-10 left-10 right-10 h-10 bg-black/20 blur-2xl rounded-full opacity-40" />
+        </motion.div>
       </div>
-    </div>
+    </section>
   );
 };
 
-const schoolIconClassName = "h-[clamp(3rem,6vw,6rem)] w-auto" as const;
+const schoolIconClassName = (isMobile: boolean) =>
+  `h-16 w-auto grayscale ${
+    isMobile ? "grayscale-0" : "opacity-50"
+  } hover:grayscale-0 hover:opacity-100 transition-all duration-300 cursor-pointer mx-6`;
 
 const schoolIconFileNames: string[][] = [
   [
@@ -157,255 +175,545 @@ const schoolIconFileNames: string[][] = [
   ],
 ];
 
-const SecondPage = () => {
+const SchoolTicker = () => {
+  const { isMobile } = useDevice();
+
   return (
-    <div className="h-screen flex flex-col items-center justify-center">
-      <h1 className="text-5xl font-bold tracking-wider flex">
-        <p className="text-success">26</p> 校聯合舉辦
-      </h1>
-      <p className="opacity-50 pt-4 px-4 text-center">
-        200+ 店家合作，範圍涵蓋飲食、文具、咖啡廳與生活服務
-      </p>
-      <div className="space-y-2 py-10 w-screen">
+    <div className="py-20 bg-base-100 border-y border-base-200/50">
+      <div className="text-center mb-10">
+        <span className="text-sm font-bold tracking-widest text-primary/80 uppercase">
+          Trusted Partners
+        </span>
+        <h2 className="mt-2 text-2xl font-bold">26 所高中職聯合發起</h2>
+      </div>
+      <div className="space-y-8 mask-linear-fade">
         {schoolIconFileNames.map((icons, index) => (
           <Marquee
-            elements={icons.map((iconName) => (
-              <LazyLoadImage
-                className={schoolIconClassName}
-                src={`https://image.cooperativeshops.org/${iconName}`}
-              ></LazyLoadImage>
-            ))}
             key={index}
-            speed={30}
-            pauseOnHover
-            direction={index % 2 !== 0 ? "left" : "right"}
-            gap={40}
-            className="py-4"
-          />
+            speed={50}
+            direction={index % 2 === 0 ? "left" : "right"}
+            elements={icons.map((iconName) => (
+              <div key={iconName} className="px-4">
+                <LazyLoadImage
+                  className={schoolIconClassName(isMobile)}
+                  src={`https://image.cooperativeshops.org/${iconName}`}
+                  alt="School Logo"
+                  effect="opacity"
+                />
+              </div>
+            ))}
+          ></Marquee>
         ))}
       </div>
-
-      <a href="/schools" className="btn btn-primary btn-wide">
-        查看所有學校
-      </a>
     </div>
   );
 };
 
-const ThirdPage = () => {
-  const words = [
-    "全新方式",
-    "結合",
-    "Google 登入",
-    "以及",
-    "QR Code",
-    "更便利",
-    "更快速",
-  ];
-  const scrollHeightPerWord = 300;
-
-  const gradientStyle = {
-    background:
-      "radial-gradient(circle at 30% 50%, #007bff -200%, transparent 35%), radial-gradient(circle at 70% 60%, #28a745 -200%, transparent 30%)",
-    width: "100%",
-  };
-
-  const scrollTrackHeight = (words.length + 2) * scrollHeightPerWord;
-  const stickyContainerRef = useRef<HTMLDivElement>(null);
-
-  return (
-    <>
-      <div className="relative" style={{ height: `${scrollTrackHeight}px` }}>
-        <div
-          ref={stickyContainerRef}
-          className="sticky top-0 h-screen w-full overflow-hidden"
-          style={gradientStyle}
-        >
-          <WordScroller
-            scrollHeightPerWord={scrollHeightPerWord}
-            words={words}
-            stickyContainerRef={stickyContainerRef}
-          />
-        </div>
-      </div>
-    </>
-  );
-};
-
-const FourthPage = () => {
-  const containerRef = useRef(null);
+const NarrativeScroll = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start end", "end start"],
+    offset: ["start center", "end center"],
   });
 
-  // 用 step function 控制 opacity
-  const getStepOpacity = (start: number) => {
-    return useTransform(scrollYProgress, (v) => (v >= start ? 1 : 0.2));
-  };
-
-  const opacity1 = getStepOpacity(0.2);
-  const opacity2 = getStepOpacity(0.4);
-  const opacity3 = getStepOpacity(0.6);
+  const words = [
+    { text: "告別", highlight: false },
+    { text: "容易遺失的", highlight: false },
+    { text: "實體學生證", highlight: true },
+    { text: "擁抱", highlight: false },
+    { text: "更便利的", highlight: false },
+    { text: "數位生活", highlight: true },
+  ];
 
   return (
-    <div ref={containerRef} className="h-[200vh] bg-white">
-      <div className="sticky top-1/2 -translate-y-1/2 flex flex-col items-center">
-        <h1 className="text-5xl lg:text-7xl font-bold flex">
-          <motion.span style={{ opacity: opacity1 }}>不再</motion.span>
-          <motion.span style={{ opacity: opacity2 }}>需要</motion.span>
-          <motion.span className="text-accent" style={{ opacity: opacity3 }}>
-            學生證
-          </motion.span>
-        </h1>
-        <p className="opacity-50 pt-4 mx-2 text-center max-w-xl">
-          QR Code 即時認證，搭配學校 Google
-          帳號或學號登入，讓消費更快速、更便利。
-        </p>
-      </div>
-    </div>
-  );
-};
+    <div ref={containerRef} className="relative h-[300vh] bg-base-200">
+      <div className="sticky top-0 h-screen flex items-center justify-center">
+        <div className="max-w-4xl px-6 w-full">
+          <motion.div className="flex flex-wrap justify-center content-center gap-x-2 gap-y-2 lg:gap-x-8 lg:gap-y-4">
+            {words.map((word, i) => {
+              const start = i / words.length;
+              const end = (i + 1) / (words.length + 1);
 
-const FifthPage = () => {
-  return (
-    <div className="h-screen bg-neutral flex flex-col xl:flex-row items-center justify-center xl:justify-between xl:px-30 text-base-100 gap-10">
-      <div className="text-center flex flex-col items-center justify-center xl:text-left xl:items-start space-y-4">
-        <h1 className="text-2xl font-bold lg:text-5xl">
-          使用學校的 Google 帳號或學號登入
-        </h1>
-        <h2 className="text-2xl lg:text-4xl font-light">
-          一鍵登入，立即解鎖優惠
-        </h2>
+              const opacity = useTransform(
+                scrollYProgress,
+                [start, end],
+                [0.1, 1]
+              );
+              const y = useTransform(scrollYProgress, [start, end], [20, 0]);
+              const blur = useTransform(scrollYProgress, [start, end], [10, 0]);
+              const filter = useMotionTemplate`blur(${blur}px)`;
 
-        <p className="opacity-50 max-w-lg mx-2">
-          使用學校 Google 帳號或學號登入，立即生成專屬 QR Code。全台南 200+
-          間合作店家，憑此即可享受學生限定優惠，便利又快速，安全且專屬於你。
-        </p>
+              return (
+                <motion.span
+                  key={i}
+                  style={{ opacity, y, filter }}
+                  className={`text-4xl lg:text-7xl font-bold transition-colors duration-300 ${
+                    word.highlight
+                      ? i === 2
+                        ? "text-error line-through decoration-4 decoration-error/80"
+                        : "text-success"
+                      : "text-base-content"
+                  }`}
+                >
+                  {word.text}
+                </motion.span>
+              );
+            })}
+          </motion.div>
 
-        <a href="/choose-school" className="btn btn-base-100 btn-wide my-10">
-          立即登入
-        </a>
-      </div>
-
-      <div className="flex flex-col items-center justify-center gap-6">
-        <div className="flex items-center justify-center gap-4">
-          <div className="flex flex-col items-center gap-1">
-            <Google className="w-16 h-16 p-2 m-1 bg-white rounded-full" />
-            <p className="text-xs opacity-50">學校帳號</p>
-          </div>
-
-          <p className="font-semibold opacity-50">OR</p>
-
-          <div className="flex flex-col items-center gap-1">
-            <IdCard className="w-18 h-18" />
-            <p className="text-xs opacity-50">學號</p>
-          </div>
-        </div>
-
-        <ArrowDown className="w-5 h-5" />
-
-        <div className="flex flex-col items-center">
-          <QrCode className="w-22 h-22 text-blue-300" />
-          <p className="text-xs opacity-50">個人 QR Code</p>
+          <motion.div
+            style={{
+              opacity: useTransform(scrollYProgress, [0.7, 0.9], [0, 1]),
+            }}
+            className="text-center mt-12"
+          >
+            <p className="text-xl text-base-content/60">
+              Google 帳號一鍵登入，QR Code 即時認證
+            </p>
+          </motion.div>
         </div>
       </div>
     </div>
   );
 };
 
-const SixthPage = () => {
+const getSchoolAbbr = (filename: string) => {
+  return filename.split(".")[0].toUpperCase();
+};
+
+const CardReplacementAnimation = () => {
+  const { isMobile } = useDevice();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+
+  // 1. 只取最後 10 張卡片以優化性能
+  // 注意：需確保 schoolIconFileNames 已在外部定義或透過 props 傳入
+  // 這裡假設 allSchoolIcons 是扁平化後的陣列
+  const visibleCardsCount = 8;
+
+  const cardsConfig = useMemo(() => {
+    const flatIcons = schoolIconFileNames
+      .flat()
+      .filter((n) => n != "kmsh.gif")
+      .concat(["kmsh.gif"]);
+    const slicedIcons = flatIcons.slice(-visibleCardsCount);
+
+    return slicedIcons.map((icon, index) => {
+      // 決定飛入方向：左(-1)、中(0)、右(1)
+      let direction = Math.random() < 0.33 ? -1 : Math.random() < 0.66 ? 0 : 1;
+      if (isMobile) {
+        direction = Math.random() < 0.5 ? -1 : 1; // For better look on mobile
+      }
+      // 根據方向設定起始 X 位置 (螢幕外)
+      const startX = direction * 1000; // 1000px 應該足夠移出視窗
+
+      return {
+        icon,
+        id: index,
+        // 最終靜止時的微調 (不規則堆疊)
+        endRotate: Math.random() * 20 - 10,
+        endX: Math.random() * 40 - 20,
+        endY: Math.random() * 40 - 20,
+        // 起始位置
+        startX,
+      };
+    });
+  }, []);
+
+  // --- 動畫時間軸規劃 (總長 0 ~ 1) ---
+  // 0.00 ~ 0.60: 卡片飛入階段 (Chaos Fly-in)
+  // 0.60 ~ 0.75: 停滯階段 (The Hold) - 讓使用者看清堆疊
+  // 0.75 ~ 0.90: 轉換階段 (Transformation) - 變為統一卡片
+
+  const flyInEnd = 0.6;
+  const holdEnd = 0.75;
+  const exitEnd = 0.9;
+
+  // --- 文字動畫 ---
+
+  // 文字 1: "26種樣式" (在飛入期顯示，停滯期開始消失)
+  const textOpacity1 = useTransform(
+    scrollYProgress,
+    [0, 0.1, flyInEnd, flyInEnd + 0.05],
+    [0, 1, 1, 0]
+  );
+  const textY1 = useTransform(
+    scrollYProgress,
+    [0, 0.1, flyInEnd + 0.05],
+    [20, 0, -20]
+  );
+
+  // 文字 2: "一個身份" (在轉換期顯示)
+  const textOpacity2 = useTransform(
+    scrollYProgress,
+    [holdEnd, holdEnd + 0.1],
+    [0, 1]
+  );
+  const textY2 = useTransform(
+    scrollYProgress,
+    [holdEnd, holdEnd + 0.1],
+    [20, 0]
+  );
+
+  // --- 統一卡片 (Hero Card) 動畫 ---
+  // 在 holdEnd 之後才開始出現
+  const finalCardScale = useTransform(
+    scrollYProgress,
+    [holdEnd, exitEnd],
+    [0.8, 1]
+  );
+  const finalCardOpacity = useTransform(
+    scrollYProgress,
+    [holdEnd, holdEnd + 0.05],
+    [0, 1]
+  );
+
+  // --- 堆疊卡片組的整體退場 ---
+  const stackScale = useTransform(
+    scrollYProgress,
+    [holdEnd, exitEnd],
+    [1, 0.5]
+  );
+  const stackOpacity = useTransform(
+    scrollYProgress,
+    [holdEnd + 0.05, exitEnd],
+    [1, 0]
+  );
+
   return (
-    <div className="h-screen flex flex-col items-center justify-center">
-      <VerticalLogo className="w-xs" />
-    </div>
+    <section ref={containerRef} className="relative h-[450vh] bg-base-200">
+      <div className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden">
+        {/* 文字層 */}
+        <div className="absolute top-[15%] w-full text-center z-30 px-4 pointer-events-none">
+          <motion.div
+            style={{ opacity: textOpacity1, y: textY1 }}
+            className="absolute inset-x-0 top-0"
+          >
+            <h2 className="text-3xl lg:text-5xl font-bold mb-4 drop-shadow-sm">
+              26 所學校，26 種樣式
+            </h2>
+            <p className="text-xl text-base-content/60">
+              傳統學生證辨識不易，
+              <br className="md:hidden" />
+              店家給予優惠常常受阻。
+            </p>
+          </motion.div>
+
+          <motion.div
+            style={{ opacity: textOpacity2, y: textY2 }}
+            className="absolute inset-x-0 top-0"
+          >
+            <h2 className="text-3xl lg:text-5xl font-bold mb-4 drop-shadow-sm">
+              一個身份，全台南通用
+            </h2>
+            <p className="text-xl text-base-content/60">
+              統一視覺識別，掃描即驗證。
+              <br className="md:hidden" />
+              讓優惠像呼吸一樣自然。
+            </p>
+          </motion.div>
+        </div>
+
+        {/* 卡片動畫容器 */}
+        <div className="relative w-full max-w-md aspect-[1.58/1] flex items-center justify-center">
+          {/* 1. 混亂堆疊 (The Chaos Stack) */}
+          <motion.div
+            style={{ scale: stackScale, opacity: stackOpacity }}
+            className="absolute inset-0 z-10 perspective-1000"
+          >
+            {cardsConfig.map((card, i) => {
+              // 計算每張卡片的個人時間軸
+              // 總共 15 張，分配在 0 ~ 0.6 的區間
+              const step = flyInEnd / visibleCardsCount;
+              const start = i * step;
+              const end = start + 0.2; // 縮短單張飛行時間，讓動作更俐落
+
+              // 1. 透明度：快速顯現 (解決問題 1)
+              // 在動畫開始的前 20% 時間內就變為不透明
+              // eslint-disable-next-line react-hooks/rules-of-hooks
+              const opacity = useTransform(
+                scrollYProgress,
+                [start, start + 0.05],
+                [0, 1]
+              );
+
+              // 2. 縮放：從 3 倍大飛入 (稍微減小倍率以免穿幫)
+              // eslint-disable-next-line react-hooks/rules-of-hooks
+              const scale = useTransform(scrollYProgress, [start, end], [3, 1]);
+
+              // 3. 位移：從左/中/右飛入 (解決問題 4)
+              // eslint-disable-next-line react-hooks/rules-of-hooks
+              const x = useTransform(
+                scrollYProgress,
+                [start, end],
+                [card.startX, card.endX]
+              );
+              // eslint-disable-next-line react-hooks/rules-of-hooks
+              const y = useTransform(
+                scrollYProgress,
+                [start, end],
+                [100, card.endY]
+              ); // Y 軸稍微從下方往上
+
+              // 旋轉
+              // eslint-disable-next-line react-hooks/rules-of-hooks
+              const rotate = useTransform(
+                scrollYProgress,
+                [start, end],
+                [card.endRotate * 3, card.endRotate]
+              );
+
+              return (
+                <motion.div
+                  key={card.id}
+                  style={{
+                    scale,
+                    opacity,
+                    x,
+                    y,
+                    rotate,
+                    zIndex: i,
+                  }}
+                  className="absolute inset-0"
+                >
+                  <div className="w-full h-full rounded-box border border-base-content/10 shadow-xl flex flex-col p-6 justify-between overflow-hidden relative bg-base-100">
+                    {/* 內容 */}
+                    <div className="relative z-10 flex justify-between items-start">
+                      <img
+                        src={`https://image.cooperativeshops.org/${card.icon}`}
+                        alt="School Logo"
+                        className="w-16 h-16 object-contain rounded-lg bg-white/50 p-1"
+                      />
+                      <div className="w-16 h-4 bg-base-content/20 rounded-full" />
+                    </div>
+                    <div className="relative z-10">
+                      <div className="text-xs font-mono opacity-50 mb-1">
+                        STUDENT ID
+                      </div>
+                      <div className="text-2xl font-black opacity-90 tracking-widest text-base-content">
+                        {getSchoolAbbr(card.icon)}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+
+          {/* 2. 統一 Card (The Unified Solution) */}
+          <motion.div
+            style={{ scale: finalCardScale, opacity: finalCardOpacity }}
+            className="absolute inset-0 z-20"
+          >
+            <div className="absolute -inset-6">
+              {/* 光暈 */}
+              <div className="absolute inset-6 -m-1 bg-gradient-to-r from-primary/60 to-secondary/60 opacity-30 blur-lg rounded-box" />
+
+              {/* 卡片本體 */}
+              <div className="absolute inset-6 rounded-box border border-base-300 backdrop-blur-xl overflow-hidden group">
+                <div className="absolute inset-0 bg-white" />
+                {/* 其餘內容 */}
+              </div>
+            </div>
+
+            <div className="relative w-full h-full rounded-box border border-base-300 backdrop-blur-xl overflow-hidden group">
+              <div className="absolute inset-0 bg-white" />
+
+              <div className="relative p-6 h-full flex flex-col justify-between text-base-content">
+                <div className="flex justify-between items-start">
+                  <img
+                    src={Logo}
+                    alt="Logo"
+                    className="w-16 h-16 rounded-2xl shadow-md bg-white"
+                  />
+                  <ScanLine className="w-8 h-8 opacity-50" />
+                </div>
+                <div>
+                  <div className="font-mono text-sm opacity-50 mb-1">
+                    2026 COOPERATIVE
+                  </div>
+                  <div className="text-2xl font-bold tracking-widest uppercase">
+                    GAGAGA
+                  </div>
+                </div>
+                <div className="flex justify-between items-end font-mono text-xs opacity-50">
+                  <span>TAINAN UNION</span>
+                  <span>VERIFIED</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const FeatureGrid = () => {
+  return (
+    <section className="py-24 px-4 bg-base-100">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl lg:text-5xl font-bold mb-4">
+            簡單三步，立即享受
+          </h2>
+          <p className="text-base-content/60">無須繁瑣註冊，使用學校帳號即可</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {/* Card 1 */}
+          <div className="card bg-base-200/50 border border-base-200 hover:border-primary/50 transition-colors p-8 flex flex-col items-center text-center">
+            <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mb-6">
+              <School className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">1. 選擇學校</h3>
+            <p className="text-base-content/60">
+              支援台南 26 所高中職，選擇你的學校並使用 Google 帳號登入。
+            </p>
+          </div>
+
+          {/* Card 2 */}
+          <div className="card bg-base-200/50 border border-base-200 hover:border-primary/50 transition-colors p-8 flex flex-col items-center text-center relative overflow-hidden">
+            {/* 連接線示意 (Desktop only) */}
+            <div className="hidden md:block absolute top-1/2 -left-4 w-8 h-[2px] bg-base-300" />
+
+            <div className="w-16 h-16 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center mb-6">
+              <Smartphone className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">2. 獲取憑證</h3>
+            <p className="text-base-content/60">
+              系統將自動生成你的專屬 QR Code，這就是你的數位學生證。
+            </p>
+          </div>
+
+          {/* Card 3 */}
+          <div className="card bg-base-200/50 border border-base-200 hover:border-primary/50 transition-colors p-8 flex flex-col items-center text-center relative">
+            <div className="hidden md:block absolute top-1/2 -left-4 w-8 h-[2px] bg-base-300" />
+
+            <div className="w-16 h-16 rounded-2xl bg-green-100 text-green-600 flex items-center justify-center mb-6">
+              <Zap className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">3. 結帳出示</h3>
+            <p className="text-base-content/60">
+              在合作店家結帳時出示 QR Code，店家掃描後即享優惠。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const CTA = () => {
+  return (
+    <section className="py-32 bg-base-100 relative overflow-hidden">
+      {/* 背景圓圈裝飾 */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-base-content/5 rounded-full" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-base-content/5 rounded-full" />
+
+      <div className="container mx-auto px-4 relative z-10 text-center">
+        <h2 className="text-4xl lg:text-6xl font-bold mb-6">即刻開始</h2>
+        <p className="text-xl text-base-content/60 mb-10 max-w-2xl mx-auto">
+          加入數萬名台南高中生的行列，探索城市中的專屬優惠。
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <a
+            href="/choose-school"
+            className="btn btn-primary btn-lg rounded-full px-12 text-lg"
+          >
+            立即綁定帳號
+            <ArrowRight className="w-5 h-5 ml-1" />
+          </a>
+        </div>
+
+        <div className="mt-12 flex items-center justify-center gap-6 text-sm text-base-content/40 font-mono">
+          <span className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4" /> 免費使用
+          </span>
+          <span className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4" /> 安全認證
+          </span>
+          <span className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4" /> 持續更新
+          </span>
+        </div>
+      </div>
+    </section>
   );
 };
 
 const Footer = () => {
   return (
-    <>
-      <footer className="footer sm:footer-horizontal bg-base-300 text-base-content p-10">
-        <nav>
-          <h6 className="footer-title">Pages</h6>
-          <a className="link link-hover" href="/qr-scanner">
-            QR Scanner
-          </a>
-          <a className="link link-hover" href="/home">
-            Home
-          </a>
-          <a className="link link-hover" href="/choose-school">
-            Login
-          </a>
-        </nav>
-        <nav>
-          <h6 className="footer-title">Legal</h6>
-          <a href="/privacy-policy.html">隱私政策</a>
-          <a href="/cookie-policy.html">Cookie 政策</a>
-          <p>© 林禹澔 {new Date().getFullYear()} - All right reserved</p>
-        </nav>
-        <nav>
-          <h6 className="footer-title">Social</h6>
-          <div className="grid grid-flow-col gap-4">
+    <footer className="bg-base-100 border-t border-base-200">
+      <div className="container mx-auto px-8 py-12">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+          {/* Logo & Copyright */}
+          <div className="flex flex-col flex-1 gap-2">
+            <div className="flex items-center gap-2 opacity-80">
+              <img src={Logo} alt="Logo" className="w-8 h-8 rounded-lg" />
+              <span className="font-bold text-sm tracking-widest uppercase">
+                Cooperative Shops
+              </span>
+            </div>
+            <p className="text-xs text-base-content/40 mt-2">
+              © 2026 嘎嘎嘎. All rights reserved.
+            </p>
+          </div>
+
+          {/* Links - Mobile: Vertical Left, Desktop: Horizontal */}
+          <div className="flex flex-col flex-2 justify-center md:flex-row gap-6 md:gap-8 text-sm text-base-content/60 font-medium">
+            <a href="/home" className="hover:text-primary transition-colors">
+              QR Code
+            </a>
+            <a href="/schools" className="hover:text-primary transition-colors">
+              合作校
+            </a>
+            <a href="/schools" className="hover:text-primary transition-colors">
+              合作商家
+            </a>
+            <a
+              href="/qr-scanner"
+              className="hover:text-primary transition-colors"
+            >
+              店家掃描
+            </a>
+            <a
+              href="/privacy-policy.html"
+              className="hover:text-primary transition-colors"
+            >
+              隱私政策
+            </a>
+          </div>
+
+          {/* Social */}
+          <div className="flex flex-1 justify-end gap-4">
             <a
               href="https://www.instagram.com/cooperativeshops_2026/"
               target="_blank"
+              className="opacity-40 hover:opacity-100 transition-opacity"
             >
-              <Instagram />
+              <Instagram className="w-5 h-5" />
             </a>
-            <a
-              href="https://youtu.be/xvFZjo5PgG0?si=yd4-GfTLyVF-3RCy"
-              target="_blank"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                className="fill-current"
-              >
-                <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"></path>
-              </svg>
-            </a>
-            <a href="mailto:cooperativeshops2025@gmail.com">
-              <Mail />
-            </a>
-
             <a
               href="https://github.com/haner0834/CooperativeShop"
               target="_blank"
+              className="opacity-40 hover:opacity-100 transition-opacity"
             >
-              <Github />
+              <Github className="w-5 h-5" />
             </a>
           </div>
-        </nav>
-      </footer>
-
-      <footer className="footer sm:footer-horizontal bg-base-300 text-base-content p-10">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex items-center space-x-2">
-            <Frog className="avator w-15 rounded-full border-1 border-black/5" />
-            <div>
-              <p className="text-sm opacity-60">Created by</p>
-              <h6 className="text-lg font-bold">林禹澔</h6>
-            </div>
-          </div>
-
-          {/* <div className="flex items-center space-x-2">
-            <FangHead className="avator w-15 h-15 object-cover rounded-full border-1 border-black/5" />
-            <div>
-              <p className="text-sm opacity-60">Supported by</p>
-              <h6 className="text-lg font-bold">方允可</h6>
-            </div>
-          </div> */}
         </div>
-      </footer>
-    </>
+      </div>
+    </footer>
   );
 };
 
 const Intro = () => {
   const { setNavbarButtons } = useNavbarButtons();
+
   useEffect(() => {
     const baseButtons: NavbarButton[] = (
       ["logo", "login"] as NavbarButtonType[]
@@ -421,37 +729,31 @@ const Intro = () => {
 
     setNavbarButtons([...baseButtons, scanButton]);
 
-    setTimeout(() => {
-      document.documentElement.setAttribute("data-theme", "light");
-    }, 0);
-
-    return () => {
-      const storedTheme = localStorage.getItem("theme");
-      const isDarkMode =
-        storedTheme === "dark" ||
-        (!storedTheme &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches);
-      document.documentElement.setAttribute(
-        "data-theme",
-        isDarkMode ? "dark" : "light"
-      );
-    };
-  }, []);
+    const storedTheme = localStorage.getItem("theme");
+    const isDarkMode =
+      storedTheme === "dark" ||
+      (!storedTheme &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.setAttribute(
+      "data-theme",
+      isDarkMode ? "dark" : "light"
+    );
+  }, [setNavbarButtons]);
 
   return (
     <>
       <PageMeta {...routesMeta.intro} />
       <link rel="canonical" href="https://cooperativeshops.org/" />
 
-      <div className="min-h-screen w-screen">
-        <Banner />
-        <SecondPage />
-        <ThirdPage />
-        <FourthPage />
-        <FifthPage />
-        <SixthPage />
+      <main className="w-full bg-base-100 selection:bg-primary selection:text-base-100 pt-18">
+        <Hero />
+        <SchoolTicker />
+        <NarrativeScroll />
+        <CardReplacementAnimation />
+        <FeatureGrid />
+        <CTA />
         <Footer />
-      </div>
+      </main>
     </>
   );
 };

@@ -12,9 +12,11 @@ import { ImageWithFallback } from "../../widgets/ImageWithFallback";
 
 const ShopImagesBlock = ({
   images,
+  showHint,
   setImages,
 }: {
   images: SelectedImage[];
+  showHint: boolean;
   setImages: Dispatch<React.SetStateAction<SelectedImage[]>>;
 }) => {
   const { authedFetch } = useAuthFetch();
@@ -223,6 +225,8 @@ const ShopImagesBlock = ({
       title="圖片"
       status={images.length >= 1 ? "ok" : "required"}
       description="於此上傳商家的照片。至多上傳 10 張。"
+      hint="至少一張照片"
+      showHint={showHint}
     >
       <div
         className="overflow-x-scroll flex space-x-4 h-40"

@@ -52,9 +52,11 @@ const ModalContent = ({
 
 const ShopContactInfoBlock = ({
   contactInfo,
+  showHint,
   setContactInfo,
 }: {
   contactInfo: ContactInfo[];
+  showHint: boolean;
   setContactInfo: Dispatch<React.SetStateAction<ContactInfo[]>>;
 }) => {
   const addContact = (category: ContactCategory) => {
@@ -106,6 +108,8 @@ const ShopContactInfoBlock = ({
       title="聯絡資訊"
       status={isMeetRequires() ? "ok" : "required"}
       description="至多填寫 5 個聯絡方式。"
+      hint="尚未填寫聯絡資訊"
+      showHint={showHint}
     >
       <dialog id="new_contact_modal" className="modal">
         <ModalContent handleAddContact={handleAddContact} />

@@ -1,5 +1,5 @@
 // src/auth/dto/auth.dto.ts
-import { IsString, IsNotEmpty, MinLength } from 'class-validator';
+import { IsString, IsNotEmpty, MinLength, IsOptional } from 'class-validator';
 
 export class RegisterDto {
   @IsString()
@@ -48,4 +48,8 @@ export class GoogleLoginQueryDto {
   @IsString()
   @IsNotEmpty()
   deviceId: string;
+
+  @IsString()
+  @IsOptional()
+  to?: string;
 }

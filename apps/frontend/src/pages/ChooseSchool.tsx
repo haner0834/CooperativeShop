@@ -4,7 +4,7 @@ import {
   useNavbarButtons,
 } from "../widgets/NavbarButtonsContext";
 import type { School } from "../types/school";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Google } from "@icons";
 import { IdCard, CircleQuestionMark } from "lucide-react";
 import { useModal } from "../widgets/ModalContext";
@@ -22,8 +22,11 @@ const SchoolCard = ({
   switchableAccounts: SwitchableAccount[];
 }) => {
   const navigate = useNavigate();
-  const toPath = () =>
-    navigate(`/login/${school.loginMethod}?school=${school.id}`);
+  const [searchParams] = useSearchParams();
+  const toPath = () => {
+    const to = searchParams.get("to");
+    navigate(`/login/${school.loginMethod}?school=${school.id}&to=${to}`);
+  };
   return (
     <li className="w-full indicator">
       <span className="indicator-item badge badge-soft badge-info me-5 mt-5 p-1 h-7.5">

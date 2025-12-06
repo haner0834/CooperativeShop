@@ -41,7 +41,7 @@ const httpOnlyCookieOptions = {
   path: '/api/auth',
 } as const;
 
-@Throttle({ default: { ttl: 1 * 60 * 1000, limit: 7 } })
+@Throttle({ default: { ttl: 1 * 60 * 1000, limit: 20 } })
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -108,6 +108,7 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { ttl: 1 * 60 * 1000, limit: 100 } })
   async refreshToken(
     @Req() req: express.Request,
     @Headers('x-device-id') deviceId: string,
@@ -130,6 +131,7 @@ export class AuthController {
 
   @Post('restore')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { ttl: 1 * 60 * 1000, limit: 100 } })
   async restoreSession(
     @Req() req: express.Request,
     @Headers('x-device-id') deviceId: string,
@@ -190,11 +192,18 @@ export class AuthController {
   ) {
     const user = req.user as any;
     const deviceId = user.deviceId;
+    const to = user.to;
+    let redirectUrl = '';
+    if (to) {
+      redirectUrl = env('FRONTEND_URL_ROOT', '') + decodeURIComponent(to);
+    }
 
     await this.handleAuthSuccess(res, user, deviceId);
 
     // 重定向到前端
     const frontendUrl = env('FRONTEND_URL', '/home');
-    res.redirect(frontendUrl);
+    setTimeout(() => {
+      res.redirect(redirectUrl ? redirectUrl : frontendUrl);
+    }, 1000);
   }
 }

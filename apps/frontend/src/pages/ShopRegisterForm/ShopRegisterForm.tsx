@@ -1,20 +1,23 @@
-import { CircleDotDashed, Plus } from "lucide-react";
+import { CircleAlert, CircleDotDashed, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import FormHeader from "./FormHeader";
 import ShopTitleBlock from "./ShopTitleBlock";
 import ShopDescriptionBlock from "./ShopDescriptionBlock";
 import ShopContactInfoBlock from "./ShopContactInfoBlock";
 import ShopImagesBlock from "./ShopImagesBlock";
 import ShopLocationBlock from "./ShopLocationBlock";
-import ShopWorkSchedulesBlock, {
-  type WorkSchedule,
-  DEFAULT_WORKSCHEDULE,
-} from "./ShopWorkSchedulesBlock";
+import ShopWorkSchedulesBlock from "./ShopWorkSchedulesBlock";
+import { type WorkSchedule, DEFAULT_WORKSCHEDULE } from "../../types/shop";
 import type { SelectedImage } from "../../types/selectedImage";
-import type { ContactInfo, ShopDraft } from "../../types/shop";
-import { categoryMap } from "../../utils/contactInfoMap";
+import type { ContactInfo, PersistentShopDraft } from "../../types/shop";
 import type { Point } from "./ShopLocationBlock";
+import { getDraft } from "../../utils/draft";
+import ShopDiscountBlock from "./ShopDiscountBlock";
+import { useToast } from "../../widgets/Toast/ToastProvider";
+import { useAutoLogin } from "../../utils/useAuthLogin";
+import { useAuth } from "../../auth/AuthContext";
+import { useModal } from "../../widgets/ModalContext";
 
 const Navbar = () => {
   return (
@@ -40,12 +43,17 @@ const ShopRegisterForm = () => {
   const [title, setTitle] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   const [description, setDescription] = useState("");
+  const [discount, setDiscount] = useState("");
   const [address, setAddress] = useState("");
   const [selectedPoint, setSelectedPoint] = useState<Point | null>(null);
   const [contactInfo, setContactInfo] = useState<ContactInfo[]>([]);
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([
     DEFAULT_WORKSCHEDULE,
   ]);
+  const [showHint, setShowHint] = useState(false);
+  const { showToast } = useToast();
+  const { showModal } = useModal();
+  const navigate = useNavigate();
 
   const [images, setImages] = useState<SelectedImage[]>([]); // 用 base64 URL 預覽
 
@@ -56,32 +64,45 @@ const ShopRegisterForm = () => {
       setSearchParams(searchParams, { replace: true });
     }
 
-    // read data if existed
-    const draft = localStorage.getItem("SHOP_DRAFT_" + searchParams.get("id"));
+    const id = searchParams.get("id") ?? "FUCK";
+    const draft = getDraft(id);
     if (draft) {
-      const shop = JSON.parse(draft);
-      setTitle(shop.data.title);
-      setDescription(shop.data.description);
-      setImages(shop.data.images);
-      setWorkSchedules(shop.data.workSchedules);
-      setAddress(shop.data.address);
-      setSelectedPoint(shop.data.selectedPoint);
-
-      // update contact info
-      const contactInfo: ContactInfo[] = shop.data.contactInfo.map(
-        (props: Omit<ContactInfo, "validator" | "formatter">) => {
-          const { icon, ...rest } = props;
-          return {
-            icon: categoryMap[props.category].icon,
-            ...rest,
-            validator: categoryMap[props.category].validator,
-            formatter: categoryMap[props.category].formatter,
-          };
-        }
-      );
-      setContactInfo(contactInfo);
+      setTitle(draft.data.title);
+      setDescription(draft.data.description);
+      setDiscount(draft.data.discount);
+      setImages(draft.data.images);
+      setWorkSchedules(draft.data.workSchedules);
+      setAddress(draft.data.address);
+      setSelectedPoint(draft.data.selectedPoint);
+      setContactInfo(draft.data.contactInfo);
     }
   }, []);
+
+  // Force login
+  const hasAttemptedRestore = useAutoLogin();
+  const { activeUser } = useAuth();
+  useEffect(() => {
+    const toLogin = () => {
+      const target = `/shops/register?id=${searchParams.get("id")}`;
+      const url = `/choose-school?to=${encodeURIComponent(target)}`;
+      navigate(url);
+    };
+    if (hasAttemptedRestore && !activeUser) {
+      // Failed to restore session
+      showModal({
+        title: "請先登入帳號",
+        description: "必須登入帳號才可進行下一步操作。",
+        buttons: [
+          {
+            label: "繼續",
+            style: "btn-primary",
+            role: "primary",
+            onClick: toLogin,
+          },
+        ],
+      });
+    }
+  }, [hasAttemptedRestore, activeUser]);
 
   useEffect(() => {
     const id = searchParams.get("id");
@@ -92,12 +113,13 @@ const ShopRegisterForm = () => {
         const { icon, formatter, validator, ...infoToStore } = info;
         return infoToStore;
       });
-      const shop: ShopDraft = {
+      const shop: PersistentShopDraft = {
         key,
         dateISOString: new Date().toISOString(),
         data: {
           title,
           description,
+          discount,
           contactInfo: contactInfoToStore,
           workSchedules,
           images,
@@ -112,12 +134,41 @@ const ShopRegisterForm = () => {
   }, [
     title,
     description,
+    discount,
     contactInfo,
     workSchedules,
     images,
     address,
     selectedPoint,
   ]);
+
+  const handleSubmit = () => {
+    let isAvailable = true;
+    const texts = [title, description, discount, address];
+    if (texts.filter((t) => t !== "").length != texts.length) {
+      isAvailable = false;
+    }
+
+    const arrays = [contactInfo, images];
+    if (arrays.filter((t) => t.length >= 1).length != arrays.length) {
+      isAvailable = false;
+    }
+
+    if (workSchedules.flatMap((w) => w.weekdays).length === 0) {
+      isAvailable = false;
+    }
+
+    setShowHint(true);
+    if (!isAvailable) {
+      showToast({
+        title: "尚有未完成的欄位",
+        placement: "top-right",
+        replace: true,
+        icon: <CircleAlert className="text-error" />,
+        duration: 5_000, // 5s
+      });
+    }
+  };
 
   return (
     <div className="select-none md:select-auto">
@@ -127,35 +178,60 @@ const ShopRegisterForm = () => {
         <div className="max-w-xl w-full p-4 space-y-4">
           <FormHeader />
 
-          <ShopTitleBlock title={title} setTitle={setTitle} />
+          <ShopTitleBlock
+            title={title}
+            showHint={showHint}
+            setTitle={setTitle}
+          />
 
           <ShopDescriptionBlock
             description={description}
+            showHint={showHint}
             setDescription={setDescription}
+          />
+
+          <ShopDiscountBlock
+            discount={discount}
+            showHint={showHint}
+            setDiscount={setDiscount}
           />
 
           <ShopContactInfoBlock
             contactInfo={contactInfo}
+            showHint={showHint}
             setContactInfo={setContactInfo}
           />
 
-          <ShopImagesBlock images={images} setImages={setImages} />
+          <ShopImagesBlock
+            images={images}
+            showHint={showHint}
+            setImages={setImages}
+          />
 
           <ShopLocationBlock
             address={address}
             selectedPoint={selectedPoint}
+            showHint={showHint}
             setAddress={setAddress}
             setSelectedPoint={setSelectedPoint}
           />
 
           <ShopWorkSchedulesBlock
             workSchedules={workSchedules}
+            showHint={showHint}
             setWorkSchedules={setWorkSchedules}
           />
 
           <div className="flex space-x-4">
-            <button className="btn flex-1">預覽</button>
-            <button className="btn btn-primary flex-1">提交</button>
+            <a
+              href={`/shops/preview?id=${searchParams.get("id")}`}
+              className="btn flex-1"
+            >
+              預覽
+            </a>
+            <button onClick={handleSubmit} className="btn btn-primary flex-1">
+              提交
+            </button>
           </div>
         </div>
       </main>

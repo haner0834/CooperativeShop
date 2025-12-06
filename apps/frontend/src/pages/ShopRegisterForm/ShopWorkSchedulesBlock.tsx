@@ -2,42 +2,13 @@ import { useState, type Dispatch } from "react";
 import QuestionBlock from "./QuestionBlock";
 import { Trash, Plus, Check } from "lucide-react";
 import DoubleSlider from "../../widgets/RangeSlider";
-
-export type Weekday = "SUN" | "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT";
-
-export interface WorkSchedule {
-  weekdays: Weekday[];
-  range: [number, number];
-}
-
-export const DEFAULT_WORKSCHEDULE: WorkSchedule = {
-  weekdays: [],
-  range: [8, 17],
-};
-
-export const weekdayOrder: Weekday[] = [
-  "MON",
-  "TUE",
-  "WED",
-  "THU",
-  "FRI",
-  "SAT",
-  "SUN",
-];
-
-export const getChineseWeekdayName = (weekday: Weekday): string => {
-  const zhMap: Record<Weekday, string> = {
-    SUN: "週日",
-    MON: "週一",
-    TUE: "週二",
-    WED: "週三",
-    THU: "週四",
-    FRI: "週五",
-    SAT: "週六",
-  };
-
-  return zhMap[weekday];
-};
+import {
+  type Weekday,
+  weekdayOrder,
+  getChineseWeekdayName,
+  type WorkSchedule,
+  DEFAULT_WORKSCHEDULE,
+} from "../../types/shop";
 
 const WeekdaySelector = ({
   defaultValue,
@@ -117,9 +88,11 @@ const WeekdaySelector = ({
 
 const ShopWorkSchedulesBlock = ({
   workSchedules,
+  showHint,
   setWorkSchedules,
 }: {
   workSchedules: WorkSchedule[];
+  showHint: boolean;
   setWorkSchedules: Dispatch<React.SetStateAction<WorkSchedule[]>>;
 }) => {
   const [workScheduleIndex, setWorkScheduleIndex] = useState<
@@ -234,7 +207,9 @@ const ShopWorkSchedulesBlock = ({
   return (
     <QuestionBlock
       title="營業時間"
-      status={selectedWeekdays().length === 7 ? "ok" : "required"}
+      status={selectedWeekdays().length >= 1 ? "ok" : "required"}
+      hint="工作日尚未指定"
+      showHint={showHint}
     >
       <>
         <dialog id="my_modal_1" className="modal">

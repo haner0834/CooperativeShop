@@ -10,6 +10,7 @@ import { env } from 'src/common/utils/env.utils';
 interface State {
   schoolId: string;
   deviceId?: string;
+  to?: string;
 }
 
 @Injectable()
@@ -96,6 +97,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
       // 將 deviceId 附加到 user 物件上
       (user as any).deviceId = state.deviceId;
+      (user as any).to = state.to;
 
       return user;
     } catch (error) {
