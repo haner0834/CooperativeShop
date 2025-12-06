@@ -19,9 +19,18 @@ export interface Shop {
 
 export type Weekday = "SUN" | "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT";
 
+export interface WorkScheduleBackend {
+  id: string;
+  weekday: Weekday;
+  startMinuteOfDay: number;
+  endMinuteOfDay: number;
+}
+
+// Seperate them because this interface match more to the
+// interaction in shop register form.
 export interface WorkSchedule {
   weekdays: Weekday[];
-  range: [number, number];
+  range: [number, number]; // 0 ~ 23.5
 }
 
 export const DEFAULT_WORKSCHEDULE: WorkSchedule = {
