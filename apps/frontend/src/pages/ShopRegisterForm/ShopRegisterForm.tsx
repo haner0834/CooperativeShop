@@ -7,10 +7,8 @@ import ShopDescriptionBlock from "./ShopDescriptionBlock";
 import ShopContactInfoBlock from "./ShopContactInfoBlock";
 import ShopImagesBlock from "./ShopImagesBlock";
 import ShopLocationBlock from "./ShopLocationBlock";
-import ShopWorkSchedulesBlock, {
-  type WorkSchedule,
-  DEFAULT_WORKSCHEDULE,
-} from "./ShopWorkSchedulesBlock";
+import ShopWorkSchedulesBlock from "./ShopWorkSchedulesBlock";
+import { type WorkSchedule, DEFAULT_WORKSCHEDULE } from "../../types/shop";
 import type { SelectedImage } from "../../types/selectedImage";
 import type { ContactInfo, PersistentShopDraft } from "../../types/shop";
 import type { Point } from "./ShopLocationBlock";

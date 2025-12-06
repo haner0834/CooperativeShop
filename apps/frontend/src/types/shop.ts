@@ -1,5 +1,4 @@
 import type { Point } from "../pages/ShopRegisterForm/ShopLocationBlock";
-import type { WorkSchedule } from "../pages/ShopRegisterForm/ShopWorkSchedulesBlock";
 import type { SelectedImage } from "./selectedImage";
 
 export interface Shop {
@@ -17,6 +16,42 @@ export interface Shop {
   longitude: number;
   latitude: number;
 }
+
+export type Weekday = "SUN" | "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT";
+
+export interface WorkSchedule {
+  weekdays: Weekday[];
+  range: [number, number];
+}
+
+export const DEFAULT_WORKSCHEDULE: WorkSchedule = {
+  weekdays: [],
+  range: [8, 17],
+};
+
+export const weekdayOrder: Weekday[] = [
+  "MON",
+  "TUE",
+  "WED",
+  "THU",
+  "FRI",
+  "SAT",
+  "SUN",
+];
+
+export const getChineseWeekdayName = (weekday: Weekday): string => {
+  const zhMap: Record<Weekday, string> = {
+    SUN: "週日",
+    MON: "週一",
+    TUE: "週二",
+    WED: "週三",
+    THU: "週四",
+    FRI: "週五",
+    SAT: "週六",
+  };
+
+  return zhMap[weekday];
+};
 
 export type ContactCategory =
   | "phone-number"
