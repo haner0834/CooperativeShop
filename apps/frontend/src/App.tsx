@@ -3,6 +3,7 @@ import { lazy, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import Root from "./pages/Root";
 import Navbar from "./widgets/Navbar";
+const QrVerification = lazy(() => import("./pages/QRVerification"));
 const ShopPreview = lazy(() => import("./pages/ShopRegisterForm/ShopPreview"));
 const Intro = lazy(() => import("./pages/Intro"));
 const ChooseSchool = lazy(() => import("./pages/ChooseSchool"));
@@ -41,6 +42,7 @@ function App() {
         <Route path="login/:method" element={<Login />} />
         <Route path="login-failed" element={<LoginFailed />} />
         <Route path="qr-scanner" element={<QrScannerRef />} />
+        <Route path="qr-verification" element={<QrVerification />} />
         <Route path="schools" element={<Schools />} />
         <Route
           path="home"
