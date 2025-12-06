@@ -193,8 +193,9 @@ export class AuthController {
     const user = req.user as any;
     const deviceId = user.deviceId;
     const to = user.to;
+    console.log('to:', to);
     let redirectUrl = '';
-    if (to) {
+    if (to && to != 'null') {
       redirectUrl = env('FRONTEND_URL_ROOT', '') + decodeURIComponent(to);
     }
 
@@ -202,8 +203,7 @@ export class AuthController {
 
     // 重定向到前端
     const frontendUrl = env('FRONTEND_URL', '/home');
-    setTimeout(() => {
-      res.redirect(redirectUrl ? redirectUrl : frontendUrl);
-    }, 1000);
+
+    return res.redirect(redirectUrl ? redirectUrl : frontendUrl);
   }
 }
