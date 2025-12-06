@@ -4,9 +4,11 @@ import AdaptiveTextArea from "../../widgets/AdaptiveTextArea";
 
 const ShopDescriptionBlock = ({
   description,
+  showHint,
   setDescription,
 }: {
   description: string;
+  showHint: boolean;
   setDescription: Dispatch<React.SetStateAction<string>>;
 }) => {
   return (
@@ -14,6 +16,8 @@ const ShopDescriptionBlock = ({
       title="描述"
       status={description ? "ok" : "required"}
       description="對店家的介紹，介於 100 至 500 字。"
+      hint="尚未填寫店家介紹"
+      showHint={showHint}
     >
       <AdaptiveTextArea
         value={description}

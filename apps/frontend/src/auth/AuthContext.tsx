@@ -65,6 +65,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     tokenRef.current = accessToken;
   }, [accessToken]);
 
+  useEffect(() => {
+    if (!activeUser) {
+      restoreSession();
+    }
+  }, []);
+
   // --- 2. 處理認證成功後的通用邏輯 ---
   const handleAuthSuccess = (data: any) => {
     const { accessToken, user, switchableAccounts } = data;

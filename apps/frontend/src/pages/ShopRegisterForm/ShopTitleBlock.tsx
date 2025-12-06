@@ -4,12 +4,19 @@ import QuestionBlock from "./QuestionBlock";
 const ShopTitleBlock = ({
   title,
   setTitle,
+  showHint,
 }: {
   title: string;
   setTitle: Dispatch<React.SetStateAction<string>>;
+  showHint: boolean;
 }) => {
   return (
-    <QuestionBlock title="店家名稱" status={title ? "ok" : "required"}>
+    <QuestionBlock
+      title="店家名稱"
+      status={title ? "ok" : "required"}
+      hint="尚未填寫店家名稱"
+      showHint={showHint}
+    >
       <input
         type="text"
         value={title}

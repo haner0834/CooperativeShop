@@ -322,11 +322,13 @@ type Mode = "geocoding" | "current-location" | "manually-point";
 const ShopLocationBlock = ({
   address,
   selectedPoint,
+  showHint,
   setAddress,
   setSelectedPoint,
 }: {
   address: string;
   selectedPoint: Point | null;
+  showHint: boolean;
   setAddress: Dispatch<React.SetStateAction<string>>;
   setSelectedPoint: Dispatch<React.SetStateAction<Point | null>>;
 }) => {
@@ -442,7 +444,12 @@ const ShopLocationBlock = ({
   };
 
   return (
-    <QuestionBlock title="地點">
+    <QuestionBlock
+      title="地點"
+      status={address && selectedPoint ? "ok" : "required"}
+      hint={!address ? "尚未填寫地址" : selectedPoint ? "" : "尚未選擇地點"}
+      showHint={showHint}
+    >
       <input
         type="text"
         className="input w-full"

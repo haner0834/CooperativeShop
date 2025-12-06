@@ -2,10 +2,10 @@ import { useEffect } from "react";
 import { useAuth } from "../auth/AuthContext";
 
 export const useAutoLogin = () => {
-  const { hasAttemptedRestore, restoreSession } = useAuth();
+  const { hasAttemptedRestore, activeUser, restoreSession } = useAuth();
 
   useEffect(() => {
-    if (!hasAttemptedRestore) {
+    if (!hasAttemptedRestore || !activeUser) {
       restoreSession();
     }
   }, [hasAttemptedRestore, restoreSession]);

@@ -52,7 +52,6 @@ const ShopDrafts = () => {
       }
     }
 
-    console.log(drafts);
     setDrafts(sortDraftByDate(drafts));
   }, []);
 
@@ -96,6 +95,7 @@ const ShopDrafts = () => {
   };
 
   const getDraftId = (key: string): string => {
+    if (!key) return "";
     return key.replace("SHOP_DRAFT_", "");
   };
 
@@ -126,6 +126,7 @@ const ShopDrafts = () => {
       data: {
         title: "",
         description: "",
+        discount: "",
         selectedPoint: null,
         address: "",
         images: [],

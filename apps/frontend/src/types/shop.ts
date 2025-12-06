@@ -45,6 +45,22 @@ export interface ShopDraft {
     title: string;
     description: string;
     images: SelectedImage[];
+    discount: string;
+    selectedPoint: Point | null;
+    address: string;
+    contactInfo: ContactInfo[];
+    workSchedules: WorkSchedule[];
+  };
+}
+
+export interface PersistentShopDraft {
+  key: string;
+  dateISOString: string;
+  data: {
+    title: string;
+    description: string;
+    images: SelectedImage[];
+    discount: string;
     selectedPoint: Point | null;
     address: string;
     contactInfo: Omit<ContactInfo, "icon" | "formatter" | "validator">[];

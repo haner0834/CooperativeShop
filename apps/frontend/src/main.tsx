@@ -7,6 +7,7 @@ import { NavbarButtonsProvider } from "./widgets/NavbarButtonsContext.tsx";
 import { AuthProvider } from "./auth/AuthContext.tsx";
 import { DeviceProvider } from "./widgets/DeviceContext.tsx";
 import { ModalProvider } from "./widgets/ModalContext.tsx";
+import { ToastProvider } from "./widgets/Toast/ToastProvider.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -15,7 +16,9 @@ createRoot(document.getElementById("root")!).render(
         <DeviceProvider>
           <ModalProvider>
             <NavbarButtonsProvider>
-              <App />
+              <ToastProvider defaultOptions={{ maxStack: 5 }}>
+                <App />
+              </ToastProvider>
             </NavbarButtonsProvider>
           </ModalProvider>
         </DeviceProvider>

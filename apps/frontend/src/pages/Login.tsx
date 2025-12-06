@@ -18,10 +18,13 @@ const GooglePlaceholder = () => {
 
   const loginWithGoogle = (schoolId: string) => {
     const deviceId = getDeviceId();
+    const to = searchParams.get("to");
     // Let browser redirect automatically
-    navigate(`/api/auth/google?schoolId=${schoolId}&deviceId=${deviceId}`, {
-      replace: true,
-    });
+    location.replace(
+      path(
+        `/api/auth/google?schoolId=${schoolId}&deviceId=${deviceId}&to=${to}`
+      )
+    );
   };
 
   useEffect(() => {
@@ -89,7 +92,6 @@ const GooglePlaceholder = () => {
   return (
     <div className="h-screen flex flex-col justify-center items-center space-y-2">
       <span className="loading"></span>
-      <p className="text-sm font-medium opacity-60">Redirecting...</p>
 
       {seconds > 3 && (
         <p>
@@ -180,7 +182,9 @@ const CredentialLogin = () => {
       localStorage.setItem("isLoggedIn", "true");
       await new Promise((f) => setTimeout(f, 1000));
 
-      navigate("/", { replace: true });
+      const to = searchParams.get("to");
+
+      navigate(to ? to : "/", { replace: true });
     } else {
       showModal({
         title: "WTF is going on bruh",

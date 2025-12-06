@@ -3,6 +3,7 @@ import { lazy, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import Root from "./pages/Root";
 import Navbar from "./widgets/Navbar";
+const ShopPreview = lazy(() => import("./pages/ShopRegisterForm/ShopPreview"));
 const Intro = lazy(() => import("./pages/Intro"));
 const ChooseSchool = lazy(() => import("./pages/ChooseSchool"));
 const Login = lazy(() => import("./pages/Login"));
@@ -51,7 +52,10 @@ function App() {
         />
       </Route>
 
+      <Route path="shops/preview" element={<ShopPreview />} />
+
       <Route path="shops/register" element={<ShopRegisterForm />} />
+
       <Route path="shops/drafts" element={<ShopDrafts />} />
       <Route path="shops" element={<Shops />} />
       <Route path="shops/:id" element={<ShopDetail />} />

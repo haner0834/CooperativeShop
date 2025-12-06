@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 import ThemeToggle from "./ThemeToggle";
+import { useToast } from "./Toast/ToastProvider";
 
 // ✅ 受控 icon map，只包含實際會用到的 icons
 export const ICONS = {
@@ -96,14 +97,35 @@ export const Icon = ({
   return <LucideIcon className={`w-5 h-5 ${color ?? ""}`} />;
 };
 
-const SidebarItem = ({ item }: { item: MenuItem }) => {
+const SidebarItem = ({
+  item,
+  disabled = false,
+}: {
+  item: MenuItem;
+  disabled: boolean;
+}) => {
+  const { showToast } = useToast();
+  const hintUserTheyreInPreviewMode = () => {
+    showToast({
+      title: "預覽中無法使用",
+      placement: "top-left",
+    });
+  };
+
   return (
     <>
       <li>
-        <a href={item.href}>
-          <Icon name={item.icon} color={item.color} />
-          {item.label}
-        </a>
+        {disabled ? (
+          <button onClick={hintUserTheyreInPreviewMode}>
+            <Icon name={item.icon} color={item.color} />
+            {item.label}
+          </button>
+        ) : (
+          <a href={item.href}>
+            <Icon name={item.icon} color={item.color} />
+            {item.label}
+          </a>
+        )}
       </li>
 
       {item.children && (
@@ -111,7 +133,7 @@ const SidebarItem = ({ item }: { item: MenuItem }) => {
           <div className="self-stretch w-[1.5px] bg-neutral/10" />
           <ul className="w-full">
             {item.children.map((child, i) => (
-              <SidebarItem key={i} item={child} />
+              <SidebarItem key={i} item={child} disabled={disabled} />
             ))}
           </ul>
         </div>
@@ -120,11 +142,15 @@ const SidebarItem = ({ item }: { item: MenuItem }) => {
   );
 };
 
-export const SidebarContent = () => (
+export const SidebarContent = ({
+  disabled = false,
+}: {
+  disabled?: boolean;
+}) => (
   <div className="pt-18">
     <ul className="menu bg-base-100 min-h-full w-full space-y-2">
       {menu.map((item, i) => (
-        <SidebarItem key={i} item={item} />
+        <SidebarItem key={i} item={item} disabled={disabled} />
       ))}
     </ul>
 

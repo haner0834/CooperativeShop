@@ -117,9 +117,11 @@ const WeekdaySelector = ({
 
 const ShopWorkSchedulesBlock = ({
   workSchedules,
+  showHint,
   setWorkSchedules,
 }: {
   workSchedules: WorkSchedule[];
+  showHint: boolean;
   setWorkSchedules: Dispatch<React.SetStateAction<WorkSchedule[]>>;
 }) => {
   const [workScheduleIndex, setWorkScheduleIndex] = useState<
@@ -234,7 +236,9 @@ const ShopWorkSchedulesBlock = ({
   return (
     <QuestionBlock
       title="營業時間"
-      status={selectedWeekdays().length === 7 ? "ok" : "required"}
+      status={selectedWeekdays().length >= 1 ? "ok" : "required"}
+      hint="工作日尚未指定"
+      showHint={showHint}
     >
       <>
         <dialog id="my_modal_1" className="modal">
