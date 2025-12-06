@@ -5,6 +5,7 @@ import { BadRequestError } from 'src/types/error.types';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
 import type { UserPayload } from 'src/auth/types/auth.types';
+import { env } from 'src/common/utils/env.utils';
 
 @Controller('qr')
 export class QrController {
@@ -12,7 +13,7 @@ export class QrController {
 
   @Post('verify')
   async verify(@Body() body: VerifyUserQrDto) {
-    const { data } = body;
+    let { data } = body;
 
     if (!data) {
       throw new BadRequestError(
@@ -23,6 +24,10 @@ export class QrController {
 
     let qrData: QrCodePayload;
     try {
+      const urlPrefix = env('FRONTEND_URL_ROOT') + '/qr-verification?code=';
+      if (data.startsWith(urlPrefix)) {
+        data = data.replace(urlPrefix, '');
+      }
       const decoded = decodeURIComponent(data);
       qrData = JSON.parse(decoded);
     } catch (err) {

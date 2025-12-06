@@ -61,7 +61,9 @@ export class QrService {
     const signature = this.generateSignature(payload, user.salt);
 
     const rawData = JSON.stringify({ ...payload, signature });
-    const dataForQr = encodeURIComponent(rawData);
+    const encoded = encodeURIComponent(rawData);
+    const dataForQr =
+      env('FRONTEND_URL_ROOT') + '/qr-verification?code=' + encoded;
 
     return dataForQr;
   }
