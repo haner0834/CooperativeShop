@@ -51,5 +51,5 @@ export class GoogleLoginQueryDto {
 
   @IsString()
   @IsOptional()
-  to: string;
+  to?: string;
 }
