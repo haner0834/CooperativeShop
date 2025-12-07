@@ -154,9 +154,9 @@ const schoolIconFileNames: string[][] = [
   ],
   [
     "kmsh.gif",
-    "lmsh.jpg",
+    "lmsh.png",
     "mdsh.png",
-    "nkhs.jpeg",
+    "nkhs.png",
     "nnkieh.jpg",
     "nnsh.png",
     "pmai.jpg",
@@ -171,7 +171,7 @@ const schoolIconFileNames: string[][] = [
     "twais.png",
     "twvs.png",
     "yhsh.png",
-    "yrhs.jpg",
+    "yrhs.png",
   ],
 ];
 
@@ -728,16 +728,6 @@ const Intro = () => {
     };
 
     setNavbarButtons([...baseButtons, scanButton]);
-
-    const storedTheme = localStorage.getItem("theme");
-    const isDarkMode =
-      storedTheme === "dark" ||
-      (!storedTheme &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches);
-    document.documentElement.setAttribute(
-      "data-theme",
-      isDarkMode ? "dark" : "light"
-    );
   }, [setNavbarButtons]);
 
   return (

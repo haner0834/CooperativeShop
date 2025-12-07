@@ -12,12 +12,12 @@ const schoolIconFileNameMap: Record<string, string> = {
   hyivs: "hyivs.png",
   hysh: "hysh.png",
   kmsh: "kmsh.gif",
-  lmsh: "lmsh.jpg",
+  lmsh: "lmsh.png",
   mdsh: "mdsh.png",
-  nkhs: "nkhs.jpeg",
+  nkhs: "nkhs.png",
   nnkieh: "nnkieh.jpg",
   nnsh: "nnsh.png",
-  pmai: "pmai.jpg",
+  pmai: "pmai.png",
   sfsh: "sfsh.gif",
   tcjh: "tcjh.jpeg",
   tncvs: "tncvs.png",
@@ -27,7 +27,7 @@ const schoolIconFileNameMap: Record<string, string> = {
   twais: "twais.png",
   twvs: "twvs.png",
   yhsh: "yhsh.png",
-  yrhs: "yrhs.jpg",
+  yrhs: "yrhs.png",
 };
 
 const SchoolIcon = ({
