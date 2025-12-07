@@ -1,9 +1,10 @@
-import { Request } from "express";
+import { Request } from 'express';
 
 export interface UserPayload {
   id: string;
   name: string;
   schoolId: string;
+  schoolAbbr: string;
 }
 
 export interface AuthRequest extends Request {
