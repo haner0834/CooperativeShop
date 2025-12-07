@@ -566,7 +566,7 @@ const FeatureGrid = () => {
         <div className="grid md:grid-cols-3 gap-8">
           {/* Card 1 */}
           <div className="card bg-base-200/50 border border-base-200 hover:border-primary/50 transition-colors p-8 flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-blue-600/10 text-blue-600 flex items-center justify-center mb-6">
               <School className="w-8 h-8" />
             </div>
             <h3 className="text-xl font-bold mb-2">1. 選擇學校</h3>
@@ -580,7 +580,7 @@ const FeatureGrid = () => {
             {/* 連接線示意 (Desktop only) */}
             <div className="hidden md:block absolute top-1/2 -left-4 w-8 h-[2px] bg-base-300" />
 
-            <div className="w-16 h-16 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-purple-600/10 text-purple-600 flex items-center justify-center mb-6">
               <Smartphone className="w-8 h-8" />
             </div>
             <h3 className="text-xl font-bold mb-2">2. 獲取憑證</h3>
@@ -593,7 +593,7 @@ const FeatureGrid = () => {
           <div className="card bg-base-200/50 border border-base-200 hover:border-primary/50 transition-colors p-8 flex flex-col items-center text-center relative">
             <div className="hidden md:block absolute top-1/2 -left-4 w-8 h-[2px] bg-base-300" />
 
-            <div className="w-16 h-16 rounded-2xl bg-green-100 text-green-600 flex items-center justify-center mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-green-600/10 text-green-600 flex items-center justify-center mb-6">
               <Zap className="w-8 h-8" />
             </div>
             <h3 className="text-xl font-bold mb-2">3. 結帳出示</h3>
