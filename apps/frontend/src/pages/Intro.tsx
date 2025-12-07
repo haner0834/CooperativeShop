@@ -514,20 +514,20 @@ const CardReplacementAnimation = () => {
 
               {/* 卡片本體 */}
               <div className="absolute inset-6 rounded-box border border-base-300 backdrop-blur-xl overflow-hidden group">
-                <div className="absolute inset-0 bg-white" />
+                <div className="absolute inset-0 bg-base-100" />
                 {/* 其餘內容 */}
               </div>
             </div>
 
             <div className="relative w-full h-full rounded-box border border-base-300 backdrop-blur-xl overflow-hidden group">
-              <div className="absolute inset-0 bg-white" />
+              <div className="absolute inset-0 bg-base-100" />
 
               <div className="relative p-6 h-full flex flex-col justify-between text-base-content">
                 <div className="flex justify-between items-start">
                   <img
                     src={Logo}
                     alt="Logo"
-                    className="w-16 h-16 rounded-2xl shadow-md bg-white"
+                    className="w-16 h-16 rounded-2xl shadow-md bg-base-100"
                   />
                   <ScanLine className="w-8 h-8 opacity-50" />
                 </div>
