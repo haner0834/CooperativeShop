@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import type { Shop } from "../../types/shop";
+import { transformSchedules, type Shop } from "../../types/shop";
 import { useModal } from "../../widgets/ModalContext";
 import { getDraft } from "../../utils/draft";
 import { ShopDetailContent } from "../ShopDetail";
@@ -36,7 +36,7 @@ const ShopPreview = () => {
       });
       return;
     }
-    const data = draft.data;
+    const { workSchedules: storedWorkSchedules, ...data } = draft.data;
     console.log(draft);
     const shop: Shop = {
       ...data,
@@ -48,6 +48,7 @@ const ShopPreview = () => {
       isOpen: false,
       longitude: data.selectedPoint?.lng ?? 0,
       latitude: data.selectedPoint?.lat ?? 0,
+      workSchedules: transformSchedules(storedWorkSchedules),
     };
     setShop(shop);
   }, []);

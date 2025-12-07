@@ -3,13 +3,13 @@ import QuestionBlock from "./QuestionBlock";
 import { Trash, Plus, Check, CircleAlert } from "lucide-react";
 import DoubleSlider from "../../widgets/RangeSlider";
 import {
-  type Weekday,
   weekdayOrder,
   getChineseWeekdayName,
-  type WorkSchedule,
   DEFAULT_WORKSCHEDULE,
 } from "../../types/shop";
 import { useToast } from "../../widgets/Toast/ToastProvider";
+import { formatWeekdays } from "../../utils/formatWeekdays";
+import type { Weekday, WorkSchedule } from "../../types/workSchedule";
 
 const WeekdaySelector = ({
   defaultValue,
@@ -118,45 +118,14 @@ const ShopWorkSchedulesBlock = ({
 
   const formatWorkScheduleRange = (range: [number, number]): string => {
     const formatTime = (time: number): string => {
-      const hour = Math.floor(time);
-      const minute = (time - hour) * 60;
-      return `${hour}:${minute === 0 ? "00" : "30"}`;
+      const hour = Math.floor(time / 60);
+      const minute = time - hour * 60;
+      const formattedHour = String(hour).padStart(2, "0");
+      const formattedMin = String(minute).padStart(2, "0");
+      return `${formattedHour}:${formattedMin}`;
     };
 
     return `${formatTime(range[0])} ~ ${formatTime(range[1])}`;
-  };
-
-  const formatWeekdays = (weekdays: Weekday[]): string => {
-    // sort by actual weekday order
-    const sorted = [...weekdays].sort(
-      (a, b) => weekdayOrder.indexOf(a) - weekdayOrder.indexOf(b)
-    );
-
-    const ranges: string[] = [];
-    let startIdx = 0;
-
-    for (let i = 1; i <= sorted.length; i++) {
-      const prev = weekdayOrder.indexOf(sorted[i - 1]);
-      const curr = weekdayOrder.indexOf(sorted[i]);
-      // if not consecutive or reached end
-      if (i === sorted.length || curr !== prev + 1) {
-        const group = sorted.slice(startIdx, i);
-        if (group.length >= 3) {
-          ranges.push(
-            `${getChineseWeekdayName(group[0])} ~ ${getChineseWeekdayName(
-              group[group.length - 1]
-            )}`
-          );
-        } else {
-          ranges.push(group.map((d) => getChineseWeekdayName(d)).join("、"));
-        }
-        startIdx = i;
-      }
-    }
-
-    // combine ranges — use 、 between single days or short groups,
-    // use ， between separate ranges
-    return ranges.join("，");
   };
 
   const addWorkSchedule = () => {
@@ -261,9 +230,9 @@ const ShopWorkSchedulesBlock = ({
 
             <DoubleSlider
               min={0}
-              max={24}
-              step={0.5}
-              defaultValue={[8, 17]}
+              max={1440}
+              step={30}
+              defaultValue={[240, 510]}
               onChange={(newValue) => handleSliderRangeChange(newValue, i)}
             />
             <div className="flex justify-between">

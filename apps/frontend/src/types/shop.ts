@@ -1,5 +1,10 @@
 import type { Point } from "../pages/ShopRegisterForm/ShopLocationBlock";
 import type { SelectedImage } from "./selectedImage";
+import type {
+  WorkScheduleBackend,
+  WorkSchedule,
+  Weekday,
+} from "./workSchedule";
 
 export interface Shop {
   id: string;
@@ -15,28 +20,36 @@ export interface Shop {
   address: string;
   longitude: number;
   latitude: number;
-}
-
-export type Weekday = "SUN" | "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT";
-
-export interface WorkScheduleBackend {
-  id: string;
-  weekday: Weekday;
-  startMinuteOfDay: number;
-  endMinuteOfDay: number;
-}
-
-// Seperate them because this interface match more to the
-// interaction in shop register form.
-export interface WorkSchedule {
-  weekdays: Weekday[];
-  range: [number, number]; // 0 ~ 23.5
+  workSchedules: WorkScheduleBackend[];
 }
 
 export const DEFAULT_WORKSCHEDULE: WorkSchedule = {
   weekdays: [],
   range: [8, 17],
 };
+
+export function transformSchedules(
+  schedules: WorkSchedule[]
+): WorkScheduleBackend[] {
+  const result: WorkScheduleBackend[] = [];
+
+  schedules.forEach((schedule) => {
+    const [startHour, endHour] = schedule.range;
+    const startMinuteOfDay = Math.round(startHour * 60);
+    const endMinuteOfDay = Math.round(endHour * 60);
+
+    schedule.weekdays.forEach((weekday) => {
+      result.push({
+        id: crypto.randomUUID(),
+        weekday,
+        startMinuteOfDay,
+        endMinuteOfDay,
+      });
+    });
+  });
+
+  return result;
+}
 
 export const weekdayOrder: Weekday[] = [
   "MON",

@@ -8,7 +8,7 @@ import ShopContactInfoBlock from "./ShopContactInfoBlock";
 import ShopImagesBlock from "./ShopImagesBlock";
 import ShopLocationBlock from "./ShopLocationBlock";
 import ShopWorkSchedulesBlock from "./ShopWorkSchedulesBlock";
-import { type WorkSchedule, DEFAULT_WORKSCHEDULE } from "../../types/shop";
+import { DEFAULT_WORKSCHEDULE } from "../../types/shop";
 import type { SelectedImage } from "../../types/selectedImage";
 import type { ContactInfo, PersistentShopDraft } from "../../types/shop";
 import type { Point } from "./ShopLocationBlock";
@@ -18,6 +18,7 @@ import { useToast } from "../../widgets/Toast/ToastProvider";
 import { useAutoLogin } from "../../utils/useAuthLogin";
 import { useAuth } from "../../auth/AuthContext";
 import { useModal } from "../../widgets/ModalContext";
+import type { WorkSchedule } from "../../types/workSchedule";
 
 const Navbar = () => {
   return (
