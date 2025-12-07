@@ -671,9 +671,9 @@ const Footer = () => {
             <a href="/schools" className="hover:text-primary transition-colors">
               合作校
             </a>
-            <a href="/schools" className="hover:text-primary transition-colors">
+            {/* <a href="/schools" className="hover:text-primary transition-colors">
               合作商家
-            </a>
+            </a> */}
             <a
               href="/qr-scanner"
               className="hover:text-primary transition-colors"
