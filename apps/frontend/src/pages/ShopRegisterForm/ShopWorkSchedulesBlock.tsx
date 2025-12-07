@@ -1,6 +1,6 @@
 import { useState, type Dispatch } from "react";
 import QuestionBlock from "./QuestionBlock";
-import { Trash, Plus, Check } from "lucide-react";
+import { Trash, Plus, Check, CircleAlert } from "lucide-react";
 import DoubleSlider from "../../widgets/RangeSlider";
 import {
   type Weekday,
@@ -9,6 +9,7 @@ import {
   type WorkSchedule,
   DEFAULT_WORKSCHEDULE,
 } from "../../types/shop";
+import { useToast } from "../../widgets/Toast/ToastProvider";
 
 const WeekdaySelector = ({
   defaultValue,
@@ -98,6 +99,7 @@ const ShopWorkSchedulesBlock = ({
   const [workScheduleIndex, setWorkScheduleIndex] = useState<
     number | undefined
   >(undefined);
+  const { showToast } = useToast();
 
   const handleSliderRangeChange = (
     newValue: [number, number],
@@ -158,7 +160,13 @@ const ShopWorkSchedulesBlock = ({
   };
 
   const addWorkSchedule = () => {
-    // TODO: Add a used-weekdays checker
+    if (selectedWeekdays().length >= 7) {
+      showToast({
+        title: "所有工作日皆已選擇",
+        icon: <CircleAlert className="text-error" />,
+      });
+      return;
+    }
     const newSchedule = { ...DEFAULT_WORKSCHEDULE };
     setWorkSchedules([...workSchedules, newSchedule]);
   };
@@ -270,7 +278,6 @@ const ShopWorkSchedulesBlock = ({
 
         <button
           onClick={addWorkSchedule}
-          disabled={selectedWeekdays().length >= 7}
           className="w-full btn btn-soft btn-primary"
         >
           <Plus className="w-4 h-4" /> 新增時段
