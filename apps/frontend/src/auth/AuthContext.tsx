@@ -17,6 +17,7 @@ type UserPayload = {
   id: string;
   name: string;
   schoolId: string;
+  schoolAbbr: string;
 };
 
 // 後端回傳的可切換帳號資料
