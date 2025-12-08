@@ -13,6 +13,8 @@ export interface Shop {
   phoneNumbers: string[];
   contactInfo: ContactInfo[];
   googleMapsLink?: string | null;
+  schoolId: string;
+  schoolAbbr: string;
   imageLinks: string[];
   thumbnailLink: string;
   isOpen: boolean;
@@ -25,7 +27,7 @@ export interface Shop {
 
 export const DEFAULT_WORKSCHEDULE: WorkSchedule = {
   weekdays: [],
-  range: [8, 17],
+  range: [480, 1020],
 };
 
 export function transformSchedules(
@@ -103,6 +105,8 @@ export interface ShopDraft {
     description: string;
     images: SelectedImage[];
     discount: string;
+    schoolId: string;
+    schoolAbbr: string;
     selectedPoint: Point | null;
     address: string;
     contactInfo: ContactInfo[];
@@ -118,6 +122,8 @@ export interface PersistentShopDraft {
     description: string;
     images: SelectedImage[];
     discount: string;
+    schoolId: string;
+    schoolAbbr: string;
     selectedPoint: Point | null;
     address: string;
     contactInfo: Omit<ContactInfo, "icon" | "formatter" | "validator">[];

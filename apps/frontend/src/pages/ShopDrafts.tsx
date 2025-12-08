@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { ShopDraft } from "../types/shop";
 import { Ellipsis, Pencil, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useAuth } from "../auth/AuthContext";
 
 const Navbar = () => {
   return (
@@ -40,6 +41,7 @@ const AnimatedListItem = ({ children }: { children?: React.ReactNode }) => {
 
 const ShopDrafts = () => {
   const [drafts, setDrafts] = useState<ShopDraft[]>([]);
+  const { activeUser } = useAuth();
 
   useEffect(() => {
     let drafts: ShopDraft[] = [];
@@ -128,6 +130,8 @@ const ShopDrafts = () => {
         description: "",
         discount: "",
         selectedPoint: null,
+        schoolId: activeUser?.schoolId ?? "UNKNOWN",
+        schoolAbbr: activeUser?.schoolAbbr ?? "UNKNOWN",
         address: "",
         images: [],
         contactInfo: [],

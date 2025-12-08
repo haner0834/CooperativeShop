@@ -19,6 +19,7 @@ import { useAutoLogin } from "../../utils/useAuthLogin";
 import { useAuth } from "../../auth/AuthContext";
 import { useModal } from "../../widgets/ModalContext";
 import type { WorkSchedule } from "../../types/workSchedule";
+import ShopSignedSchool from "./ShopSignedSchool";
 
 const Navbar = () => {
   return (
@@ -126,6 +127,8 @@ const ShopRegisterForm = () => {
           images,
           selectedPoint,
           address,
+          schoolId: activeUser?.schoolId ?? "UNKNOWN",
+          schoolAbbr: activeUser?.schoolAbbr ?? "UNKNOWN",
         },
       };
       localStorage.setItem(key, JSON.stringify(shop));
@@ -141,6 +144,8 @@ const ShopRegisterForm = () => {
     images,
     address,
     selectedPoint,
+    activeUser?.schoolId,
+    activeUser?.schoolAbbr,
   ]);
 
   const handleSubmit = () => {
@@ -195,6 +200,11 @@ const ShopRegisterForm = () => {
             discount={discount}
             showHint={showHint}
             setDiscount={setDiscount}
+          />
+
+          <ShopSignedSchool
+            schoolAbbreviation={activeUser?.schoolAbbr ?? "UNKNOWN"}
+            showHint={showHint}
           />
 
           <ShopContactInfoBlock

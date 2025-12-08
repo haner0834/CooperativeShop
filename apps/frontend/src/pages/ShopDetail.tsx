@@ -10,7 +10,7 @@ import {
   ClipboardX,
   Copy,
   ImageOff,
-  Map,
+  // Map,
   MapPin,
   School,
   Tag,
@@ -46,6 +46,7 @@ const SaveButton = ({
     showToast({
       title: "預覽中無法使用",
       placement: "top-left",
+      replace: true,
     });
   };
   //   const { id } = useParams();
@@ -171,28 +172,28 @@ const RangeBlock = ({
   );
 };
 
+const getCurrentMinOfDay = () => {
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes();
+  return h * 60 + m;
+};
+
+const getCurrentWeekday = () => {
+  const today = new Date();
+  const standardIndex = today.getDay();
+
+  // Calculate the adjusted index (Monday = 0, Sunday = 6)
+  // We add 6 to move Sunday (0) to index 6, then use modulo 7 to wrap the others correctly.
+  const mondayBasedIndex = (standardIndex + 6) % 7;
+  return weekdayOrder[mondayBasedIndex];
+};
+
 const WorkScheduleDisplayer = ({
   workSchedulesBackend,
 }: {
   workSchedulesBackend: WorkScheduleBackend[] | undefined;
 }) => {
-  const getCurrentMinOfDay = () => {
-    const now = new Date();
-    const h = now.getHours();
-    const m = now.getMinutes();
-    return h * 60 + m;
-  };
-
-  const getCurrentWeekday = () => {
-    const today = new Date();
-    const standardIndex = today.getDay();
-
-    // Calculate the adjusted index (Monday = 0, Sunday = 6)
-    // We add 6 to move Sunday (0) to index 6, then use modulo 7 to wrap the others correctly.
-    const mondayBasedIndex = (standardIndex + 6) % 7;
-    return weekdayOrder[mondayBasedIndex];
-  };
-
   if (!workSchedulesBackend) return null;
 
   const workSchedules: WorkSchedule[] = (() => {
@@ -204,10 +205,16 @@ const WorkScheduleDisplayer = ({
       {workSchedules &&
         workSchedules.map((workSchedule, i) => (
           <li
-            className="flex flex-col space-x-4 space-y-2 whitespace-nowrap p-4 border border-base-300 rounded-box shadow-xs"
+            className="flex flex-col space-y-2 whitespace-nowrap p-4 border border-base-300 rounded-box shadow-xs"
             key={`WORK_SCHEDULE_${i}`}
           >
-            <p className="flex-1">{formatWeekdays(workSchedule.weekdays)}</p>
+            <div className="flex justify-between">
+              <p className="flex-1">{formatWeekdays(workSchedule.weekdays)}</p>
+
+              {workSchedule.weekdays.includes(getCurrentWeekday()) && (
+                <span className="badge badge-info badge-soft">當前</span>
+              )}
+            </div>
 
             <RangeBlock
               startMinOfDay={workSchedule.range[0]}
@@ -234,6 +241,17 @@ const WorkScheduleDisplayer = ({
     </ul>
   );
 };
+
+const OperatingStatusTag = ({ status }: { status: OperatingStatus }) => {
+  const style = status === "OPEN" ? "badge-success" : "badge-error";
+  return (
+    <span className={`badge badge-soft ${style} uppercase`}>
+      <Tag className="w-4 h-4" /> {status}
+    </span>
+  );
+};
+
+type OperatingStatus = "OPEN" | "CLOSED";
 
 export const ShopDetailContent = ({
   shop,
@@ -293,6 +311,27 @@ export const ShopDetailContent = ({
         replace: true,
       });
     }
+  };
+
+  const calculateOperatingStatus = (): OperatingStatus => {
+    if (!shop) return "CLOSED";
+    const currentWeekday = getCurrentWeekday();
+
+    const scheduleToday = shop.workSchedules.find(
+      (w) => w.weekday === currentWeekday
+    );
+
+    if (!scheduleToday) return "CLOSED";
+
+    const currentMinOfDay = getCurrentMinOfDay();
+    if (
+      scheduleToday.startMinuteOfDay < currentMinOfDay &&
+      scheduleToday.endMinuteOfDay > currentMinOfDay
+    ) {
+      return "OPEN";
+    }
+
+    return "CLOSED";
   };
 
   useEffect(() => {}, []);
@@ -455,13 +494,11 @@ export const ShopDetailContent = ({
             )}
 
             <div className="flex flex-wrap gap-2">
-              <span className="badge badge-soft badge-success uppercase">
-                <Tag className="w-4 h-4" /> open
-              </span>
+              <OperatingStatusTag status={calculateOperatingStatus()} />
               <a href="">
                 <span className="badge badge-soft badge-warning uppercase">
                   <School className="w-4 h-4" />
-                  KMSH
+                  {shop?.schoolAbbr ?? "UNKNOWN-ERR"}
                 </span>
               </a>
             </div>
@@ -499,9 +536,9 @@ export const ShopDetailContent = ({
               </button>
             </address>
 
-            <a className="btn btn-primary btn-soft rounded-full w-full md:hidden">
+            {/* <a className="btn btn-primary btn-soft rounded-full w-full md:hidden">
               <Map /> 在地圖中打開
-            </a>
+            </a> */}
 
             {/* SEO: Changed div to h2 for document outline, kept divider class for visuals */}
             <h2 className="divider divider-start text-neutral/50 text-xs">

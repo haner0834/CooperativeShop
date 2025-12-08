@@ -232,7 +232,7 @@ const ShopWorkSchedulesBlock = ({
               min={0}
               max={1440}
               step={30}
-              defaultValue={[240, 510]}
+              defaultValue={workSchedule.range}
               onChange={(newValue) => handleSliderRangeChange(newValue, i)}
             />
             <div className="flex justify-between">
