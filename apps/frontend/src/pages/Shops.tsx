@@ -29,6 +29,9 @@ export const testShops: Shop[] = [
     longitude: 121.5291,
     latitude: 25.0335,
     isOpen: true,
+    schoolId: "",
+    schoolAbbr: "",
+    workSchedules: [],
   },
   {
     id: "2",
@@ -50,6 +53,9 @@ export const testShops: Shop[] = [
     longitude: 121.5357,
     latitude: 25.0205,
     isOpen: false,
+    schoolId: "",
+    schoolAbbr: "",
+    workSchedules: [],
   },
   {
     id: "3",
@@ -67,6 +73,9 @@ export const testShops: Shop[] = [
     longitude: 121.5402,
     latitude: 25.0633,
     isOpen: true,
+    schoolId: "",
+    schoolAbbr: "",
+    workSchedules: [],
   },
   {
     id: "4",
@@ -87,6 +96,9 @@ export const testShops: Shop[] = [
     longitude: 121.5651,
     latitude: 25.0329,
     isOpen: true,
+    schoolId: "",
+    schoolAbbr: "",
+    workSchedules: [],
   },
   {
     id: "5",
@@ -107,6 +119,9 @@ export const testShops: Shop[] = [
     longitude: 121.5456,
     latitude: 25.0365,
     isOpen: true,
+    schoolId: "",
+    schoolAbbr: "",
+    workSchedules: [],
   },
 ];
 

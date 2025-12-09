@@ -15,7 +15,6 @@ import {
   School,
   Tag,
 } from "lucide-react";
-import { LazyLoadImage } from "react-lazy-load-image-component";
 import ImageGalleryModal from "../widgets/ImageGalleryModal";
 // import { path } from "../utils/path";
 // import { getErrorMessage } from "../utils/errors";
@@ -375,55 +374,7 @@ export const ShopDetailContent = ({
             isMobile ? "" : " flex flex-wrap justify-center lg:justify-start"
           }
         >
-          {isMobile ? (
-            <>
-              {/* TODO: Replace this with custom carousel,
-                    for better customization and fix hashtag sync issue */}
-              <div className="carousel w-full aspect-[4/3]">
-                {shop?.imageLinks.length === 0 ? (
-                  <div
-                    className={`w-full h-full bg-base-300 flex flex-col justify-center items-center ${
-                      isPreview ? "text-error" : ""
-                    }`}
-                  >
-                    <ImageOff className="w-12 h-12" />
-                    <p className="opacity-60 text-sm">沒有圖片</p>
-                  </div>
-                ) : (
-                  shop?.imageLinks.map((link, i) => (
-                    <div
-                      key={i}
-                      id={String(i)}
-                      className="carousel-item w-full overflow-clip"
-                    >
-                      {/* SEO: Added alt text and itemProp */}
-                      <LazyLoadImage
-                        src={link}
-                        alt={`${shop?.title || "商家"} - 照片 ${i + 1}`}
-                        itemProp="image"
-                        onClick={() => openModal(i)}
-                        className="carousel-item w-full object-cover cursor-pointer"
-                        placeholder={<div className="w-full skeleton" />}
-                      />
-                    </div>
-                  ))
-                )}
-              </div>
-              <div className="flex w-full justify-center gap-2 py-2">
-                {shop?.imageLinks.map((_, i) => (
-                  <a
-                    key={i}
-                    onClick={() => goToItem(`#${i}`)}
-                    className={`btn btn-xs btn-soft ${
-                      activeIndex === i ? "btn-primary" : ""
-                    }`}
-                  >
-                    {i + 1}
-                  </a>
-                ))}
-              </div>
-            </>
-          ) : shop?.imageLinks.length === 0 ? (
+          {shop?.imageLinks.length === 0 ? (
             <div
               className={`w-120 h-120 mt-4 ms-4 bg-base-300 rounded-field flex flex-col justify-center items-center text-accent ${
                 isPreview ? "text-error" : ""
@@ -433,7 +384,7 @@ export const ShopDetailContent = ({
               <p className="opacity-60 text-sm">沒有圖片</p>
             </div>
           ) : (
-            <div className="ms-4 mt-4 flex">
+            <div className="mx-4 mt-4 flex">
               <div>
                 {(shop?.imageLinks.length ?? 0) > 0 && (
                   // SEO: Added alt text and itemProp
@@ -464,9 +415,11 @@ export const ShopDetailContent = ({
                 </div>
               </div>
 
-              <div className="flex flex-col ms-4">
-                <SaveButton style="square" enable={!isPreview} />
-              </div>
+              {!isMobile && (
+                <div className="flex flex-col ms-4">
+                  <SaveButton style="square" enable={!isPreview} />
+                </div>
+              )}
             </div>
           )}
           {/* Image Gallery Modal */}
@@ -478,7 +431,6 @@ export const ShopDetailContent = ({
               onClose={closeModal}
             />
           )}
-
           <div
             className={
               "mx-4 mt-4 space-y-4 flex flex-col " +
@@ -486,7 +438,7 @@ export const ShopDetailContent = ({
             }
           >
             {/* SEO: Added itemProp for name */}
-            <h1 className="font-bold text-2xl" itemProp="name">
+            <h1 className="font-bold text-3xl" itemProp="name">
               {shop?.title || "空的 :("}
             </h1>
             {isPreview && !shop?.title && (
@@ -496,7 +448,7 @@ export const ShopDetailContent = ({
             <div className="flex flex-wrap gap-2">
               <OperatingStatusTag status={calculateOperatingStatus()} />
               <a href="">
-                <span className="badge badge-soft badge-warning uppercase">
+                <span className="badge badge-soft uppercase">
                   <School className="w-4 h-4" />
                   {shop?.schoolAbbr ?? "UNKNOWN-ERR"}
                 </span>
@@ -541,7 +493,7 @@ export const ShopDetailContent = ({
             </a> */}
 
             {/* SEO: Changed div to h2 for document outline, kept divider class for visuals */}
-            <h2 className="divider divider-start text-neutral/50 text-xs">
+            <h2 className="divider divider-start text-neutral/50 text-xs my-4">
               商家介紹
             </h2>
 
@@ -552,7 +504,7 @@ export const ShopDetailContent = ({
             )}
 
             {/* SEO: Changed div to h2 for document outline */}
-            <h2 className="divider divider-start mt-0 text-neutral/50 text-xs">
+            <h2 className="divider divider-start my-4 text-neutral/50 text-xs">
               工作時段
             </h2>
 
