@@ -184,7 +184,7 @@ const CredentialLogin = () => {
 
       const to = searchParams.get("to");
 
-      navigate(to ? to : "/", { replace: true });
+      navigate(to && to !== "null" ? to : "/", { replace: true });
     } else {
       showModal({
         title: "WTF is going on bruh",

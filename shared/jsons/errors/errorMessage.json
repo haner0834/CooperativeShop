@@ -26,5 +26,9 @@
   "NO_PERMISSION": {
     "message": "沒有執行此操作的權限",
     "devNote": "User lacks required permission"
+  },
+  "INVALID_STUDENT_ID_FORMAT": {
+    "message": "學號格式錯誤",
+    "devNote": "Invalid Student ID format."
   }
 }
