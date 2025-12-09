@@ -151,6 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       headers: {
         "Content-Type": "application/json",
         "X-Device-ID": getDeviceId(),
+        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({ targetUserId }),
     });
