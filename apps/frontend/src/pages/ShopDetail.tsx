@@ -551,7 +551,9 @@ export const ShopDetailContent = ({
               關於商家
             </h2>
             <div className="prose prose-base text-base-content/80 leading-relaxed max-w-none">
-              <p itemProp="description">{shop?.description || "暫無介紹..."}</p>
+              <p itemProp="description" className="whitespace-pre-wrap">
+                {shop?.description || "暫無介紹..."}
+              </p>
             </div>
           </section>
           {/* Divider */}
