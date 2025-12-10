@@ -193,7 +193,6 @@ export class AuthController {
     const user = req.user as any;
     const deviceId = user.deviceId;
     const to = user.to;
-    console.log('to:', to);
     let redirectUrl = '';
     if (to && to != 'null') {
       redirectUrl = env('FRONTEND_URL_ROOT', '') + decodeURIComponent(to);
