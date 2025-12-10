@@ -182,7 +182,7 @@ const ContactInfoSheet = ({ contactInfo }: { contactInfo: ContactInfo[] }) => {
   };
 
   return (
-    <ul className="">
+    <ul className="space-y-4">
       {contactInfo.map((info, i) => (
         <li className="flex gap-2 items-center" key={`CONTACT_INFO_ITEM_${i}`}>
           <div className="p-2 border border-base-300 rounded-full">
