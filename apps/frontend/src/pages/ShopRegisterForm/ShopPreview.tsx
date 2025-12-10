@@ -41,7 +41,6 @@ const ShopPreview = () => {
     const shop: Shop = {
       ...data,
       id: crypto.randomUUID(),
-      phoneNumbers: [],
       imageLinks: data.images.map((l) => l.previewUrl),
       thumbnailLink:
         data.images.length > 0 ? data.images.map((l) => l.previewUrl)[0] : "",

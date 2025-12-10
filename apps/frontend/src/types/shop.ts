@@ -11,7 +11,6 @@ export interface Shop {
   title: string;
   subTitle?: string;
   description: string;
-  phoneNumbers: string[];
   contactInfo: ContactInfo[];
   googleMapsLink?: string | null;
   schoolId: string;

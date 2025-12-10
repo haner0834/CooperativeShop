@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronRight, Menu, Phone, Search, Tag, X } from "lucide-react";
+import { ChevronRight, Menu, Search, Tag, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../widgets/Sidebar";
 import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
@@ -15,7 +15,6 @@ export const testShops: Shop[] = [
     title: "Brew & Bloom Café",
     description:
       "A warm café known for its floral-themed interior and artisan coffee.",
-    phoneNumbers: ["0912345678"],
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
@@ -39,7 +38,6 @@ export const testShops: Shop[] = [
     title: "Midnight Noodles",
     description:
       "Popular late-night eatery serving traditional Taiwanese noodles and snacks.",
-    phoneNumbers: ["0988776655", "0222334455"],
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
@@ -64,7 +62,6 @@ export const testShops: Shop[] = [
     title: "Leafy Market",
     description:
       "Fresh produce and organic groceries with a focus on local farmers.",
-    phoneNumbers: ["0977001122"],
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
@@ -85,7 +82,6 @@ export const testShops: Shop[] = [
     title: "Pixel Studio",
     description:
       "Creative space offering photography, design, and branding services.",
-    phoneNumbers: ["0901112233"],
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
@@ -109,7 +105,6 @@ export const testShops: Shop[] = [
     title: "Sunrise Books",
     description:
       "Independent bookstore featuring local authors and cozy reading spaces.",
-    phoneNumbers: ["0934556677"],
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
@@ -165,9 +160,9 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
             <span className={`badge ${badgeStyle} badge-soft uppercase mt-2`}>
               <Tag className="w-4 h-4" /> {shop.isOpen ? "open" : "closed"}
             </span>
-            <span className={`badge badge-info badge-soft uppercase mt-2`}>
-              <Phone className="w-4 h-4" /> {shop?.phoneNumbers[0] ?? "UNKNOWN"}
-            </span>
+            {/* <span className={`badge badge-info badge-soft uppercase mt-2`}>
+              <Phone className="w-4 h-4" /> {shop?.contactInfo[0].content ?? "UNKNOWN"}
+            </span> */}
           </div>
         </div>
       </article>
