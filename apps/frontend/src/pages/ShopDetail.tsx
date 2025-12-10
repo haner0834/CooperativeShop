@@ -183,6 +183,7 @@ const ContactInfoSheet = ({ contactInfo }: { contactInfo: ContactInfo[] }) => {
 
   return (
     <ul className="space-y-4">
+      <div className="divider"></div>
       {contactInfo.map((info, i) => (
         <li className="flex gap-2 items-center" key={`CONTACT_INFO_ITEM_${i}`}>
           <div className="p-2 border border-base-300 rounded-full">
@@ -194,7 +195,7 @@ const ContactInfoSheet = ({ contactInfo }: { contactInfo: ContactInfo[] }) => {
           {info.category === "phone-number" ? (
             <a
               href={info.href || buildHref(info.category, info.content)}
-              className="btn btn-circle btn-soft"
+              className="btn btn-circle"
             >
               <Phone className="w-5 h-5 text-primary fill-primary" />
             </a>
@@ -202,14 +203,14 @@ const ContactInfoSheet = ({ contactInfo }: { contactInfo: ContactInfo[] }) => {
             <a
               href={info.href || buildHref(info.category, info.content)}
               target="_blank"
-              className="btn btn-circle btn-soft"
+              className="btn btn-circle"
             >
               <ExternalLink className="w-5 h-5" />
             </a>
           )}
 
           <button
-            className="btn btn-circle btn-soft"
+            className="btn btn-circle"
             onClick={() => copyContent(info.content)}
           >
             <Copy className="w-5 h-5" />
