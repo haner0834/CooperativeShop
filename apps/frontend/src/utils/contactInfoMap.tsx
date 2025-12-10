@@ -1,4 +1,4 @@
-import { TintedInstagram, Line, Facebook, Instagram } from "@icons";
+import { TintedInstagram, Line, Facebook } from "@icons";
 import { Phone, Globe, Ellipsis, CircleX } from "lucide-react";
 import type { ContactCategory, ContactInfo } from "../types/shop";
 
@@ -188,7 +188,7 @@ export const ContactCategoryIcon = ({
     case "facebook":
       return <Facebook {...{ className }} />;
     case "instagram":
-      return <Instagram {...{ className }} />;
+      return <TintedInstagram {...{ className }} />;
     case "line":
       return <Line {...{ className }} />;
     case "website":
