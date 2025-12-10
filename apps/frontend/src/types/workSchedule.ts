@@ -59,8 +59,8 @@ export function fromBackendSchedules(
   // Convert groups to WorkSchedule format
   const result: WorkSchedule[] = [];
   grouped.forEach((schedules) => {
-    const startHour = schedules[0].startMinuteOfDay / 60;
-    const endHour = schedules[0].endMinuteOfDay / 60;
+    const startHour = schedules[0].startMinuteOfDay;
+    const endHour = schedules[0].endMinuteOfDay;
     const weekdays = schedules.map((s) => s.weekday);
 
     result.push({

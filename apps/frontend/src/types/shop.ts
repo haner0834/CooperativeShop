@@ -37,9 +37,7 @@ export function transformSchedules(
   const result: WorkScheduleBackend[] = [];
 
   schedules.forEach((schedule) => {
-    const [startHour, endHour] = schedule.range;
-    const startMinuteOfDay = Math.round(startHour * 60);
-    const endMinuteOfDay = Math.round(endHour * 60);
+    const [startMinuteOfDay, endMinuteOfDay] = schedule.range;
 
     schedule.weekdays.forEach((weekday) => {
       result.push({
