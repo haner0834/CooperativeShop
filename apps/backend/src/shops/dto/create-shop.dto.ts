@@ -72,10 +72,6 @@ export class CreateShopDto {
 
   @IsString()
   @IsNotEmpty()
-  category: string;
-
-  @IsString()
-  @IsNotEmpty()
   schoolId: string;
 
   @IsArray()

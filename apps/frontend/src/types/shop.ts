@@ -30,7 +30,6 @@ export interface CreateShopDto {
   subTitle: string | null;
   description: string;
   contactInfo: ContactInfoDto[];
-  category: string;
   schoolId: string;
   images: ImageDto[];
   thumbnailKey: string;

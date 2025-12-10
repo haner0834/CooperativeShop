@@ -70,10 +70,7 @@ export class ShopRankingService {
 
     const metrics = await this.getShopMetrics(sevenDaysAgo, today);
     const allShops = await this.prisma.shop.findMany({
-      select: {
-        id: true,
-        category: true,
-      },
+      select: { id: true },
     });
 
     const homeScores = allShops.map((shop) => {
@@ -81,7 +78,7 @@ export class ShopRankingService {
 
       return {
         shopId: shop.id,
-        score: this.calculateHomeScore(shop, metric),
+        score: this.calculateHomeScore(metric),
         rank: 0,
       };
     });
@@ -141,7 +138,6 @@ export class ShopRankingService {
         address: shop.address,
         longitude: shop.longitude,
         latitude: shop.latitude,
-        category: shop.category,
         schoolId: shop.schoolId,
         distance: shop.distance,
         score,
@@ -188,10 +184,7 @@ export class ShopRankingService {
     );
   }
 
-  private calculateHomeScore(
-    shop: { id: string; category: string },
-    metrics?: ShopEngagementMetrics,
-  ): number {
+  private calculateHomeScore(metrics?: ShopEngagementMetrics): number {
     let score = 0;
 
     // 40% Engagement
@@ -390,7 +383,6 @@ export class ShopRankingService {
       address: shop.address,
       longitude: shop.longitude,
       latitude: shop.latitude,
-      category: shop.category,
       schoolId: shop.schoolId,
       rank: shop.rankings[0]?.rank,
       score: shop.rankings[0]?.score,
@@ -459,7 +451,6 @@ export class ShopRankingService {
       address: shop.address,
       longitude: shop.longitude,
       latitude: shop.latitude,
-      category: shop.category,
       schoolId: shop.schoolId,
       rank: shop.rankings[0]?.rank,
       score: shop.rankings[0]?.score,

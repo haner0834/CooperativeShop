@@ -11,7 +11,6 @@ export interface ShopWithRanking {
   address: string;
   longitude: number;
   latitude: number;
-  category: string;
   schoolId: string;
   rank?: number;
   score?: number;

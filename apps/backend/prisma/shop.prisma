@@ -15,7 +15,6 @@ model Shop {
     schoolId     String
     dailyStats   ShopDailyStat[]
     rankings     ShopRanking[]
-    category     String
 
     @@index([title])
 }

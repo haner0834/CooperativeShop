@@ -208,7 +208,6 @@ const ShopRegisterForm = () => {
       longitude: selectedPoint.lng,
       latitude: selectedPoint.lat,
       schedules: toBackendSchedules(workSchedules),
-      category: "",
       discount: discount || null,
     };
 
