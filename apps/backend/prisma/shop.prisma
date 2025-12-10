@@ -24,7 +24,7 @@ model ShopImage {
     id     String     @id @default(cuid())
     file   FileRecord @relation(fields: [fileId], references: [id], onDelete: Cascade)
     fileId String     @unique
-    shop   Shop       @relation(fields: [shopId], references: [id])
+    shop   Shop       @relation(fields: [shopId], references: [id], onDelete: Cascade)
     shopId String
     order  Int
 }
