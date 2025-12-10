@@ -127,6 +127,7 @@ const ShopDrafts = () => {
       dateISOString: new Date().toISOString(),
       data: {
         title: "",
+        subTitle: "",
         description: "",
         discount: "",
         selectedPoint: null,

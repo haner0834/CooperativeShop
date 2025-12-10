@@ -20,6 +20,7 @@ import { useAuth } from "../../auth/AuthContext";
 import { useModal } from "../../widgets/ModalContext";
 import type { WorkSchedule } from "../../types/workSchedule";
 import ShopSignedSchool from "./ShopSignedSchool";
+import ShopSubtitleBlock from "./ShopSubtitleBlock";
 
 const Navbar = () => {
   return (
@@ -43,6 +44,7 @@ const Navbar = () => {
 
 const ShopRegisterForm = () => {
   const [title, setTitle] = useState("");
+  const [subTitle, setSubTitle] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   const [description, setDescription] = useState("");
   const [discount, setDiscount] = useState("");
@@ -70,6 +72,7 @@ const ShopRegisterForm = () => {
     const draft = getDraft(id);
     if (draft) {
       setTitle(draft.data.title);
+      setSubTitle(draft.data.subTitle ?? "");
       setDescription(draft.data.description);
       setDiscount(draft.data.discount);
       setImages(draft.data.images);
@@ -120,6 +123,7 @@ const ShopRegisterForm = () => {
         dateISOString: new Date().toISOString(),
         data: {
           title,
+          subTitle,
           description,
           discount,
           contactInfo: contactInfoToStore,
@@ -137,6 +141,7 @@ const ShopRegisterForm = () => {
     return () => clearTimeout(handler); // ← Cancel the previous timer (to prevent duplicate storage).
   }, [
     title,
+    subTitle,
     description,
     discount,
     contactInfo,
@@ -189,6 +194,8 @@ const ShopRegisterForm = () => {
             showHint={showHint}
             setTitle={setTitle}
           />
+
+          <ShopSubtitleBlock subTitle={subTitle} setSubtitle={setSubTitle} />
 
           <ShopDescriptionBlock
             description={description}

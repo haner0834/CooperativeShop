@@ -32,6 +32,7 @@ export const testShops: Shop[] = [
     schoolId: "",
     schoolAbbr: "",
     workSchedules: [],
+    subTitle: "",
   },
   {
     id: "2",
@@ -56,6 +57,7 @@ export const testShops: Shop[] = [
     schoolId: "",
     schoolAbbr: "",
     workSchedules: [],
+    subTitle: "",
   },
   {
     id: "3",
@@ -76,6 +78,7 @@ export const testShops: Shop[] = [
     schoolId: "",
     schoolAbbr: "",
     workSchedules: [],
+    subTitle: "",
   },
   {
     id: "4",
@@ -99,6 +102,7 @@ export const testShops: Shop[] = [
     schoolId: "",
     schoolAbbr: "",
     workSchedules: [],
+    subTitle: "",
   },
   {
     id: "5",
@@ -122,6 +126,7 @@ export const testShops: Shop[] = [
     schoolId: "",
     schoolAbbr: "",
     workSchedules: [],
+    subTitle: "",
   },
 ];
 

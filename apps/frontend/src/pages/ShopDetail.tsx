@@ -1,175 +1,35 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { weekdayOrder, type Shop } from "../types/shop";
+import { useEffect, useState, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { weekdayOrder, type ContactInfo, type Shop } from "../types/shop";
 import { testShops } from "./Shops";
 import {
-  BadgeDollarSign,
   Bookmark,
   ChevronLeft,
-  ClipboardCheck,
-  ClipboardX,
+  ChevronRight,
   Copy,
   ImageOff,
-  // Map,
   MapPin,
+  Clock,
   School,
-  Tag,
+  Share2,
+  TicketPercent,
+  BadgeDollarSign,
+  ExternalLink,
+  Phone,
+  CircleUserRound,
+  CircleX,
+  MapPinX,
 } from "lucide-react";
 import ImageGalleryModal from "../widgets/ImageGalleryModal";
-// import { path } from "../utils/path";
-// import { getErrorMessage } from "../utils/errors";
 import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
 import Sidebar from "../widgets/Sidebar";
 import { SidebarContent } from "../widgets/SidebarContent";
 import { useDevice } from "../widgets/DeviceContext";
-import BackButton from "../widgets/BackButton";
 import { useToast } from "../widgets/Toast/ToastProvider";
-import {
-  fromBackendSchedules,
-  type WorkSchedule,
-  type WorkScheduleBackend,
-} from "../types/workSchedule";
+import { fromBackendSchedules } from "../types/workSchedule";
 import { formatWeekdays } from "../utils/formatWeekdays";
-
-const SaveButton = ({
-  style = "circle",
-  enable = true,
-}: {
-  style?: "circle" | "square";
-  enable?: boolean;
-}) => {
-  // btn-circle btn-square
-  const [isSaved, setIsSaved] = useState(false);
-  const { showToast } = useToast();
-  const hintUserTheyreInPreviewMode = () => {
-    showToast({
-      title: "預覽中無法使用",
-      placement: "top-left",
-      replace: true,
-    });
-  };
-  //   const { id } = useParams();
-
-  useEffect(() => {
-    // check();
-  }, []);
-
-  const save = async () => {
-    if (!enable) {
-      hintUserTheyreInPreviewMode();
-      return;
-    }
-    setIsSaved((prev) => !prev);
-    // const res = await fetch(path(`/api/shops/${id}/save`), { method: "POST" });
-    // const { success, error } = await res.json();
-    // if (!success) {
-    //   setIsSaved((prev) => !prev);
-    //   console.log(error);
-    //   showModal({
-    //     title: "保存錯誤",
-    //     description: getErrorMessage(error.code),
-    //     showDismissButton: true,
-    //   });
-    // }
-  };
-
-  //   const check = async () => {
-  //     const res = await fetch(path(`/api/shops/${id}/save`));
-  //     const { success, body, error } = await res.json();
-  //     if (success) {
-  //       setIsSaved(body);
-  //     } else {
-  //       console.log(error);
-  //     }
-  //   };
-
-  return (
-    <button onClick={save} className={`btn btn-${style} select-none`}>
-      <Bookmark
-        className={`duration-200 ease-in-out transition-color
-          ${isSaved ? "fill-neutral" : "fill-transparent"}`}
-      />
-    </button>
-  );
-};
-
-interface RangeBlockProps {
-  startMinOfDay: number;
-  endMinOfDay: number;
-  tagAt?: number;
-  total?: number; // total range
-}
-
-const RangeBlock = ({
-  startMinOfDay,
-  endMinOfDay,
-  tagAt,
-  total = 1440,
-}: RangeBlockProps) => {
-  const start = (startMinOfDay / total) * 100; // %
-  const length = ((endMinOfDay - startMinOfDay) / total) * 100; // %
-  const tagStart = tagAt ? (tagAt / total) * 100 : null; // %
-
-  const formatMinutesToTime = (minutes: number) => {
-    // Ensure the input is within a valid day range (0 to 1439)
-    minutes = minutes % 1440;
-
-    const hours24 = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-
-    // Determine AM/PM and convert to 12-hour format
-    const period = hours24 >= 12 ? "PM" : "AM";
-    const hours12 = hours24 % 12 || 12; // 0 hour should be 12 AM
-
-    // Pad minutes with a leading zero if needed (e.g., 9 becomes 09)
-    const formattedMins = mins < 10 ? `0${mins}` : mins;
-
-    return `${hours12}:${formattedMins} ${period}`;
-  };
-
-  const formatTimeRange = (startMinOfDay: number, endMinOfDay: number) => {
-    const startTime = formatMinutesToTime(startMinOfDay);
-    const endTime = formatMinutesToTime(endMinOfDay);
-
-    return `${startTime} ~ ${endTime}`;
-  };
-
-  return (
-    <div className="relative w-full h-10 bg-base-200 rounded-field">
-      <div
-        className="absolute flex flex-col items-center justify-center top-0 h-full bg-info/20 rounded-field tooltip"
-        data-tip={formatTimeRange(startMinOfDay, endMinOfDay)}
-        style={{
-          left: `${start}%`,
-          width: `${length}%`,
-        }}
-      >
-        <p className="text-blue-500/90 text-sm line-clamp-1">
-          {formatTimeRange(startMinOfDay, endMinOfDay)}
-        </p>
-      </div>
-
-      {tagAt &&
-        (tagAt > startMinOfDay && tagAt < endMinOfDay ? (
-          <>
-            <div
-              className="absolute h-3 top-1 -translate-y-1/2 w-1 bg-blue-500/70 rounded"
-              style={{ left: `${tagStart!}%` }}
-            />
-            <div
-              className="absolute h-3 bottom-1 translate-y-1/2 w-1 bg-blue-500/70 rounded"
-              style={{ left: `${tagStart!}%` }}
-            />
-          </>
-        ) : (
-          <div
-            className="absolute h-2/3 top-1/2 -translate-y-1/2 w-1 bg-blue-500/70 rounded"
-            style={{ left: `${tagStart!}%` }}
-          />
-        ))}
-    </div>
-  );
-};
+import { buildHref, ContactCategoryIcon } from "../utils/contactInfoMap";
+import ResponsiveSheet from "../widgets/ResponsiveSheet";
 
 const getCurrentMinOfDay = () => {
   const now = new Date();
@@ -181,76 +41,186 @@ const getCurrentMinOfDay = () => {
 const getCurrentWeekday = () => {
   const today = new Date();
   const standardIndex = today.getDay();
-
-  // Calculate the adjusted index (Monday = 0, Sunday = 6)
-  // We add 6 to move Sunday (0) to index 6, then use modulo 7 to wrap the others correctly.
   const mondayBasedIndex = (standardIndex + 6) % 7;
   return weekdayOrder[mondayBasedIndex];
 };
 
-const WorkScheduleDisplayer = ({
-  workSchedulesBackend,
-}: {
-  workSchedulesBackend: WorkScheduleBackend[] | undefined;
-}) => {
-  if (!workSchedulesBackend) return null;
+type OperatingStatus = "OPEN" | "CLOSED";
 
-  const workSchedules: WorkSchedule[] = (() => {
-    return fromBackendSchedules(workSchedulesBackend);
-  })();
+const StatusIndicator = ({ status }: { status: OperatingStatus }) => {
+  const isOpen = status === "OPEN";
+  return (
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-base-100 border border-base-300 w-fit">
+      <span
+        className={`status w-2.5 h-2.5 ${
+          isOpen ? "status-success" : "status-error"
+        }`}
+      ></span>
+      <span
+        className={`text-xs font-semibold tracking-wide ${
+          isOpen ? "text-success" : "text-error"
+        }`}
+      >
+        {isOpen ? "營業中" : "休息中"}
+      </span>
+    </div>
+  );
+};
+
+const ActionButton = ({
+  icon: Icon,
+  label,
+  onClick,
+  active = false,
+  variant = "secondary",
+}: {
+  icon: any;
+  label?: string;
+  onClick?: () => void;
+  active?: boolean;
+  variant?: "primary" | "secondary" | "ghost";
+}) => {
+  const baseClass = "btn btn-sm sm:btn-md gap-2 transition-all duration-300";
+  const variants = {
+    primary: "btn-primary shadow-lg shadow-primary/20 text-white",
+    secondary:
+      "bg-base-100 border border-base-200 shadow-sm hover:border-base-300 hover:bg-base-200 text-base-content",
+    ghost: "btn-ghost hover:bg-base-200/50",
+  };
 
   return (
-    <ul className="space-y-4">
-      {workSchedules &&
-        workSchedules.map((workSchedule, i) => (
-          <li
-            className="flex flex-col space-y-2 whitespace-nowrap p-4 border border-base-300 rounded-box shadow-xs"
-            key={`WORK_SCHEDULE_${i}`}
+    <button onClick={onClick} className={`${baseClass} ${variants[variant]}`}>
+      <Icon
+        className={`w-5 h-5 ${active ? "fill-current" : ""} ${
+          variant === "primary" ? "text-white" : ""
+        }`}
+      />
+      {label && <span className="hidden sm:inline font-medium">{label}</span>}
+    </button>
+  );
+};
+
+// --- Refined Timeline Component ---
+
+const MinimalRangeBlock = ({
+  startMinOfDay,
+  endMinOfDay,
+  isToday,
+}: {
+  startMinOfDay: number;
+  endMinOfDay: number;
+  isToday: boolean;
+}) => {
+  const total = 1440;
+  const startPct = (startMinOfDay / total) * 100;
+  const lengthPct = ((endMinOfDay - startMinOfDay) / total) * 100;
+  const currentMin = getCurrentMinOfDay();
+  const currentPct = (currentMin / total) * 100;
+
+  const formatTime = (mins: number) => {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+  };
+
+  // Determine if current time is within this specific block
+  const isNowInBlock =
+    isToday && currentMin >= startMinOfDay && currentMin <= endMinOfDay;
+
+  return (
+    <div className="flex flex-col w-full group">
+      {/* Time Labels */}
+      <div className="flex justify-between text-xs text-base-content/40 mb-1 font-mono">
+        <span>{formatTime(startMinOfDay)}</span>
+        <span>{formatTime(endMinOfDay)}</span>
+      </div>
+
+      {/* Bar Container */}
+      <div className="relative h-2 w-full bg-base-200 rounded-full overflow-hidden">
+        {/* Active Range */}
+        <div
+          className={`absolute h-full rounded-full transition-colors duration-500 ${
+            isToday
+              ? isNowInBlock
+                ? "bg-primary"
+                : "bg-primary/40"
+              : "bg-base-content/20 group-hover:bg-base-content/30"
+          }`}
+          style={{ left: `${startPct}%`, width: `${lengthPct}%` }}
+        />
+
+        {/* Current Time Indicator (Only if today) */}
+        {isToday && (
+          <div
+            className="absolute top-0 bottom-0 w-0.5 bg-error z-10 shadow-[0_0_8px_rgba(255,0,0,0.5)]"
+            style={{ left: `${currentPct}%` }}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+const ContactInfoSheet = ({ contactInfo }: { contactInfo: ContactInfo[] }) => {
+  const { showToast } = useToast();
+
+  const copyContent = async (content: string) => {
+    try {
+      if (!content) throw new Error();
+      await navigator.clipboard.writeText(content);
+      showToast({
+        title: "複製成功",
+        icon: <Copy className="text-success" />,
+      });
+    } catch {
+      showToast({
+        title: "複製失敗",
+        replace: true,
+        icon: <CircleX className="text-error" />,
+      });
+    }
+  };
+
+  return (
+    <ul className="">
+      {contactInfo.map((info) => (
+        <li className="flex gap-2 items-center">
+          <div className="p-2 border border-base-300 rounded-full">
+            <ContactCategoryIcon category={info.category} className="w-6 h-6" />
+          </div>
+
+          <p className="truncate flex-1">{info.formatter(info.content)}</p>
+
+          {info.category === "phone-number" ? (
+            <a
+              href={info.href || buildHref(info.category, info.content)}
+              className="btn btn-circle btn-soft"
+            >
+              <Phone className="w-5 h-5 text-primary fill-primary" />
+            </a>
+          ) : (
+            <a
+              href={info.href || buildHref(info.category, info.content)}
+              target="_blank"
+              className="btn btn-circle btn-soft"
+            >
+              <ExternalLink className="w-5 h-5" />
+            </a>
+          )}
+
+          <button
+            className="btn btn-circle btn-soft"
+            onClick={() => copyContent(info.content)}
           >
-            <div className="flex justify-between">
-              <p className="flex-1">{formatWeekdays(workSchedule.weekdays)}</p>
-
-              {workSchedule.weekdays.includes(getCurrentWeekday()) && (
-                <span className="badge badge-info badge-soft">當前</span>
-              )}
-            </div>
-
-            <RangeBlock
-              startMinOfDay={workSchedule.range[0]}
-              endMinOfDay={workSchedule.range[1]}
-              tagAt={
-                workSchedule.weekdays.includes(getCurrentWeekday())
-                  ? getCurrentMinOfDay()
-                  : undefined
-              }
-            />
-
-            <div className="flex-1 flex justify-between">
-              {[0, 6, 12, 18, 24].map((num, i) => (
-                <p
-                  key={`RANGE_SLIDER_LABEL_${i}`}
-                  className="text-xs opacity-50"
-                >
-                  {num}
-                </p>
-              ))}
-            </div>
-          </li>
-        ))}
+            <Copy className="w-5 h-5" />
+          </button>
+        </li>
+      ))}
     </ul>
   );
 };
 
-const OperatingStatusTag = ({ status }: { status: OperatingStatus }) => {
-  const style = status === "OPEN" ? "badge-success" : "badge-error";
-  return (
-    <span className={`badge badge-soft ${style} uppercase`}>
-      <Tag className="w-4 h-4" /> {status}
-    </span>
-  );
-};
-
-type OperatingStatus = "OPEN" | "CLOSED";
+// --- Main Components ---
 
 export const ShopDetailContent = ({
   shop,
@@ -260,68 +230,22 @@ export const ShopDetailContent = ({
   isPreview?: boolean;
 }) => {
   const { isMobile } = useDevice();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [initialImageIndex, setInitialImageIndex] = useState(0);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const navigate = useNavigate();
   const { showToast } = useToast();
 
-  // 可以監聽 hash 變化，更新 activeIndex
-  useEffect(() => {
-    function onHashChange() {
-      const hash = window.location.hash.replace("#", "");
-      const index = parseInt(hash);
-      if (!isNaN(index)) setActiveIndex(index);
-    }
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeImgIndex, setActiveImgIndex] = useState(0);
+  const [isSaved, setIsSaved] = useState(false);
+  const [isContactSheetOpen, setIsContactSheetOpen] = useState(false);
 
-    window.addEventListener("hashchange", onHashChange);
-
-    // 初始化
-    onHashChange();
-
-    return () => window.removeEventListener("hashchange", onHashChange);
-  }, []);
-
-  const openModal = (index: number) => {
-    setInitialImageIndex(index);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const goToItem = (hash: string) => {
-    window.location.replace(window.location.pathname + hash);
-  };
-
-  const copyText = async (textToCopy: string | undefined) => {
-    try {
-      if (!textToCopy) throw new Error("Nothing to copy");
-      await navigator.clipboard.writeText(textToCopy);
-      showToast({
-        title: "已複製地址",
-        icon: <ClipboardCheck className="text-success" />,
-        replace: true,
-      });
-    } catch (err) {
-      showToast({
-        title: "複製失敗",
-        icon: <ClipboardX className="text-error" />,
-        replace: true,
-      });
-    }
-  };
-
-  const calculateOperatingStatus = (): OperatingStatus => {
+  // Status Logic
+  const status: OperatingStatus = useMemo(() => {
     if (!shop) return "CLOSED";
     const currentWeekday = getCurrentWeekday();
-
     const scheduleToday = shop.workSchedules.find(
       (w) => w.weekday === currentWeekday
     );
-
     if (!scheduleToday) return "CLOSED";
-
     const currentMinOfDay = getCurrentMinOfDay();
     if (
       scheduleToday.startMinuteOfDay < currentMinOfDay &&
@@ -329,193 +253,367 @@ export const ShopDetailContent = ({
     ) {
       return "OPEN";
     }
-
     return "CLOSED";
+  }, [shop]);
+
+  const copyText = async (textToCopy: string | null | undefined) => {
+    try {
+      if (!textToCopy) throw new Error();
+      await navigator.clipboard.writeText(textToCopy);
+      showToast({
+        title: "複製成功",
+        icon: <Copy className="text-success" />,
+      });
+    } catch {
+      showToast({
+        title: "複製失敗",
+        icon: <CircleX className="text-error" />,
+      });
+    }
   };
 
-  useEffect(() => {}, []);
+  const copyAddress = () => {
+    copyText(shop?.address);
+  };
+
+  const copyLink = () => {
+    const link = window.location.href;
+    copyText(link);
+  };
+
+  const handleSave = () => {
+    if (isPreview) {
+      showToast({ title: "預覽模式無法收藏", placement: "top" });
+      return;
+    }
+    //TODO: Add actual api
+    setIsSaved(!isSaved);
+    showToast({
+      title: isSaved ? "已取消收藏" : "已收藏",
+      icon: (
+        <Bookmark
+          size={16}
+          className={!isSaved ? "fill-primary text-primary" : ""}
+        />
+      ),
+    });
+  };
+
+  const openContactInfoSheet = () => {
+    setIsContactSheetOpen((prev) => !prev);
+  };
+
+  if (!shop && !isPreview)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="loading loading-spinner text-primary"></span>
+      </div>
+    );
+
+  const renderSchedule = () => {
+    if (!shop?.workSchedules) return null;
+    const schedules = fromBackendSchedules(shop.workSchedules);
+    const today = getCurrentWeekday();
+
+    return (
+      <div className="space-y-4">
+        {schedules.map((schedule, idx) => {
+          const isToday = schedule.weekdays.includes(today);
+          return (
+            <div
+              key={idx}
+              className={`flex flex-col sm:flex-row gap-3 sm:gap-6 p-4 rounded-2xl transition-all ${
+                isToday
+                  ? "bg-primary/5 border border-primary/10"
+                  : "bg-base-100 border border-base-200/50 hover:border-base-300"
+              }`}
+            >
+              <div className="w-full sm:w-24 flex-shrink-0 flex items-center justify-between sm:justify-start">
+                <span
+                  className={`font-medium ${
+                    isToday ? "text-primary" : "text-base-content/70"
+                  }`}
+                >
+                  {formatWeekdays(schedule.weekdays)}
+                </span>
+                {isToday && (
+                  <span className="sm:hidden badge badge-xs badge-primary badge-soft">
+                    Today
+                  </span>
+                )}
+              </div>
+
+              <div className="flex-1 w-full">
+                <MinimalRangeBlock
+                  startMinOfDay={schedule.range[0]}
+                  endMinOfDay={schedule.range[1]}
+                  isToday={isToday}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
-    // SEO: Added itemScope and itemType for Schema.org Structured Data
-    <article itemScope itemType="https://schema.org/Store">
-      <div className="navbar bg-base-100 shadow-sm z-50 h-18 fixed overflow-hidden">
-        <div className="navbar-start">
-          <Logo className="h-10 w-auto hidden sm:block" />
+    <article
+      className="min-h-screen bg-base-50/50"
+      itemScope
+      itemType="https://schema.org/Store"
+    >
+      {/* 1. Header / Navigation (Sticky, blurred) */}
+      <nav className="fixed top-0 left-0 right-0 z-50 px-4 h-16 flex items-center justify-between bg-base-100 border-b border-base-300">
+        <div className="flex items-center gap-3">
+          {isMobile ? (
+            <>
+              <button
+                onClick={() => (isPreview ? null : navigate(-1))}
+                className="btn btn-circle btn-sm btn-ghost hover:bg-base-content/10"
+              >
+                <ChevronLeft size={20} />
+              </button>
 
-          <div className="sm:hidden">
-            <BackButton />
-          </div>
+              <div
+                className="hidden sm:block opacity-0 animate-fade-in animation-delay-300 transition-opacity duration-300"
+                style={{ opacity: status ? 1 : 0 }}
+              >
+                <span className="font-semibold text-sm line-clamp-1">
+                  {shop?.title}
+                </span>
+              </div>
+            </>
+          ) : (
+            <Logo className="h-10 w-auto" />
+          )}
         </div>
 
-        <div className="navbar-center"></div>
-
-        <div className="navbar-end">
-          <div className="md:hidden">
-            <SaveButton enable={!isPreview} />
-          </div>
+        <div className="flex items-center gap-2">
+          <ActionButton
+            icon={Bookmark}
+            onClick={handleSave}
+            active={isSaved}
+            variant="ghost"
+          />
+          <ActionButton icon={Share2} onClick={copyLink} variant="ghost" />
         </div>
-      </div>
+      </nav>
 
       <Sidebar isOpen={false}>
         <SidebarContent disabled={isPreview} />
       </Sidebar>
 
-      <div className={"pt-18 min-h-screen w-full lg:ps-64 pb-20"}>
-        <div className="hidden sm:block">
-          <a
-            // href="/shops"
-            className="btn btn-ghost btn-xs ms-4 mt-4 opacity-70"
-          >
-            <ChevronLeft className="w-4 h-4" /> Back
-          </a>
-        </div>
-        <div
-          className={
-            isMobile ? "" : " flex flex-wrap justify-center lg:justify-start"
-          }
-        >
-          {shop?.imageLinks.length === 0 ? (
-            <div
-              className={`w-120 h-120 mt-4 ms-4 bg-base-300 rounded-field flex flex-col justify-center items-center text-accent ${
-                isPreview ? "text-error" : ""
-              }`}
-            >
-              <ImageOff className={`w-12 h-12`} />
-              <p className="opacity-60 text-sm">沒有圖片</p>
+      <div className="pt-16 lg:pl-64 min-h-screen flex flex-col lg:flex-row">
+        {/* 2. Left Column: Gallery (Sticky on Desktop) */}
+        <div className="lg:w-5/12 xl:w-1/2 lg:h-[calc(100vh-4rem)] lg:sticky lg:top-16  no-scrollbar bg-base-100 overflow-clip">
+          {/* Mobile Carousel / Desktop Grid */}
+          {(shop?.imageLinks.length ?? 0) > 0 ? (
+            <div className="relative w-full h-[40vh] lg:h-full group">
+              <img
+                src={shop?.imageLinks[activeImgIndex]}
+                alt="Shop Cover"
+                className="w-full h-full object-cover lg:object-center transition-transform duration-700 hover:scale-105"
+                onClick={() => setIsModalOpen(true)}
+                itemProp="image"
+              />
+
+              {/* Image Controls (Mobile Overlay) */}
+              <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2 lg:hidden">
+                {shop?.imageLinks.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      i === activeImgIndex
+                        ? "w-6 bg-white"
+                        : "w-1.5 bg-white/50"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Navigation Buttons */}
+              {(shop?.imageLinks.length ?? 0) > 1 && (
+                <>
+                  <button
+                    className="absolute left-4 top-1/2 -translate-y-1/2 btn btn-circle btn-sm bg-black/20 border-none text-white hover:bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveImgIndex((p) =>
+                        p === 0 ? shop!.imageLinks.length - 1 : p - 1
+                      );
+                    }}
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    className="absolute right-4 top-1/2 -translate-y-1/2 btn btn-circle btn-sm bg-black/20 border-none text-white hover:bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveImgIndex((p) =>
+                        p === shop!.imageLinks.length - 1 ? 0 : p + 1
+                      );
+                    }}
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </>
+              )}
+
+              {/* View All Button */}
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="absolute bottom-4 right-4 bg-black/50 hover:bg-black/70 backdrop-blur-md text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+              >
+                <ImageOff className="w-3.5 h-3.5" />
+                查看 {shop?.imageLinks.length} 張照片
+              </button>
             </div>
           ) : (
-            <div className="mx-4 mt-4 flex">
-              <div>
-                {(shop?.imageLinks.length ?? 0) > 0 && (
-                  // SEO: Added alt text and itemProp
-                  <img
-                    src={shop?.imageLinks[activeIndex]}
-                    alt={`${shop?.title || "商家"} - 主照片`}
-                    itemProp="image"
-                    onClick={() => openModal(activeIndex)}
-                    className="w-120 rounded-field"
-                  />
-                )}
-                <div className="flex overflow-x-scroll mt-2 space-x-2">
-                  {shop?.imageLinks.map((link, i) => (
-                    <a
-                      key={i}
-                      onClick={() => goToItem(`#${i}`)}
-                      className="relative w-20 h-20"
-                    >
-                      {/* SEO: Added alt text */}
-                      <img
-                        src={link}
-                        alt={`${shop?.title || "商家"} - 縮圖 ${i + 1}`}
-                        className="w-full h-full absolute rounded-field object-cover"
-                      />
-                      <div className="w-full h-full rounded-field transition-colors duration-200 ease-in-out absolute hover:bg-neutral/30" />
-                    </a>
-                  ))}
-                </div>
-              </div>
+            <div className="w-full h-64 lg:h-full flex flex-col items-center justify-center bg-base-200 text-base-content/30">
+              <ImageOff size={48} strokeWidth={1.5} />
+              <p className="mt-2 text-sm">尚無圖片</p>
+            </div>
+          )}
+        </div>
 
-              {!isMobile && (
-                <div className="flex flex-col ms-4">
-                  <SaveButton style="square" enable={!isPreview} />
-                </div>
+        {/* 3. Right Column: Content (Scrollable) */}
+        <div className="flex-1 px-5 py-8 lg:px-10 lg:py-12 max-w-4xl mx-auto w-full">
+          {/* Breadcrumbs / School Tag */}
+          <div className="flex items-center gap-2 mb-4">
+            <span className="badge badge-neutral badge-soft">
+              <School className="w-3.5 h-3.5" />
+              {shop?.schoolAbbr || "Unknown"}
+            </span>
+
+            <span
+              className="badge badge-info badge-soft cursor-pointer"
+              onClick={openContactInfoSheet}
+            >
+              <CircleUserRound className="w-4 h-4" />
+              聯絡資訊
+            </span>
+          </div>
+          {/* Title & Status */}
+          <div className="flex flex-col gap-4 mb-8">
+            <h1
+              className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-base-content leading-tight"
+              itemProp="name"
+            >
+              {shop?.title ||
+                (isPreview ? (
+                  <span className="text-base-content/20">未命名商家</span>
+                ) : (
+                  <div className="skeleton w-full h-10 rounded-field" />
+                ))}
+            </h1>
+            {shop?.subTitle && (
+              <h2 className="opacity-60 -mt-4">{shop.subTitle}</h2>
+            )}
+
+            <div className="flex flex-wrap items-center gap-4">
+              <StatusIndicator status={status} />
+
+              {/* Address Button */}
+              <button
+                onClick={copyAddress}
+                className="group flex items-center gap-1.5 text-sm text-base-content/60 hover:text-primary transition-colors text-left"
+              >
+                <MapPin className="w-4 h-4" />
+                <span
+                  className="group-hover:underline underline-offset-4 decoration-primary/30"
+                  itemProp="address"
+                >
+                  {shop?.address || "無地址資訊"}
+                </span>
+              </button>
+            </div>
+          </div>
+          {/* Feature: Discount Card */}
+          <div className="mb-10 group relative overflow-hidden rounded-box bg-base-200 border border-base-300 p-4">
+            <div className="absolute -top-2 right-0 p-4 group-hover:rotate-12 rotate-12 sm:rotate-0 opacity-10 group-hover:opacity-100 group-hover:text-amber-200 transition-all transform group-hover:scale-110 duration-500">
+              <BadgeDollarSign size={120} />
+            </div>
+            <h3 className="text-indigo-400 font-semibold tracking-wide uppercase text-xs mb-2">
+              專屬優惠
+            </h3>
+
+            <div className="flex items-center gap-3">
+              <TicketPercent className="text-indigo-500 w-6 h-6 flex-shrink-0" />
+              <p className="text-xl sm:text-lg font-bold text-base-content/90">
+                {shop?.discount || "目前沒有特別優惠"}
+              </p>
+            </div>
+          </div>
+          {/* Description */}
+          <section className="mb-12">
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+              關於商家
+            </h2>
+            <div className="prose prose-base text-base-content/80 leading-relaxed max-w-none">
+              <p itemProp="description">{shop?.description || "暫無介紹..."}</p>
+            </div>
+          </section>
+          {/* Divider */}
+          <hr className="border-base-200 mb-12" />
+          {/* Schedule Section */}
+          <section className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <Clock className="w-5 h-5 text-base-content/50" />
+                營業時間
+              </h2>
+              {status === "OPEN" && (
+                <span className="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-1 rounded-md">
+                  現在營業中
+                </span>
               )}
             </div>
-          )}
-          {/* Image Gallery Modal */}
-          {shop?.imageLinks && (
-            <ImageGalleryModal
-              imageLinks={shop.imageLinks}
-              initialIndex={initialImageIndex}
-              isOpen={isModalOpen}
-              onClose={closeModal}
-            />
-          )}
-          <div
-            className={
-              "mx-4 mt-4 space-y-4 flex flex-col " +
-              (isMobile ? "" : "min-w-130 lg:w-100")
-            }
-          >
-            {/* SEO: Added itemProp for name */}
-            <h1 className="font-bold text-3xl" itemProp="name">
-              {shop?.title || "空的 :("}
-            </h1>
-            {isPreview && !shop?.title && (
-              <span className="text-error -mt-4 text-sm">缺少商家名稱</span>
-            )}
-
-            <div className="flex flex-wrap gap-2">
-              <OperatingStatusTag status={calculateOperatingStatus()} />
-              <a href="">
-                <span className="badge badge-soft uppercase">
-                  <School className="w-4 h-4" />
-                  {shop?.schoolAbbr ?? "UNKNOWN-ERR"}
-                </span>
-              </a>
-            </div>
-
-            {/* SEO: Changed div to section to define pricing/discount section contextually */}
-            <section className="relative bg-base-300 border-base-300 rounded-box w-full border p-4 pt-2">
-              <legend className="uppercase absolute -top-2 text-xs font-semibold">
-                折扣
-              </legend>
-
-              <div className="flex items-center space-x-2 pt-2">
-                <BadgeDollarSign className={`text-blue-400`} />
-
-                <p className="text-base">{shop?.discount ?? "沒有折扣"}</p>
-              </div>
-            </section>
-
-            {/* SEO: Changed to address tag, added itemProp. 'not-italic' ensures no visual change. */}
-            <address
-              className={`flex space-x-2 not-italic items-center ${
-                isPreview && !shop?.address ? "text-error" : ""
-              }`}
-              itemProp="address"
+            {renderSchedule()}
+          </section>
+          {/* Mobile Bottom Action Bar (Fixed) */}
+          <div className="lg:hidden h-20" /> {/* Spacer */}
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-base-100/90 backdrop-blur-xl border-t border-base-200 z-30 lg:hidden flex gap-3 safe-area-bottom">
+            <button
+              onClick={() =>
+                showToast({
+                  title: "尚無法使用",
+                  icon: <MapPinX className="text-error" />,
+                })
+              }
+              className="btn btn-primary flex-1 rounded-xl shadow-lg shadow-primary/20"
             >
-              <MapPin />{" "}
-              <span className="">
-                {shop?.address || (isPreview ? "缺少地址" : "")}
-              </span>
-              <button
-                className="btn btn-xs"
-                onClick={() => copyText(shop?.address)}
-                aria-label="複製地址" // Accessibility: Added aria-label
-              >
-                <Copy className="w-4 h-4" strokeWidth={2.2} />
-              </button>
-            </address>
-
-            {/* <a className="btn btn-primary btn-soft rounded-full w-full md:hidden">
-              <Map /> 在地圖中打開
-            </a> */}
-
-            {/* SEO: Changed div to h2 for document outline, kept divider class for visuals */}
-            <h2 className="divider divider-start text-neutral/50 text-xs my-4">
-              商家介紹
-            </h2>
-
-            {/* SEO: Added itemProp for description */}
-            <p itemProp="description">{shop?.description}</p>
-            {isPreview && !shop?.description && (
-              <span className="text-error text-sm">缺少商家介紹</span>
-            )}
-
-            {/* SEO: Changed div to h2 for document outline */}
-            <h2 className="divider divider-start my-4 text-neutral/50 text-xs">
-              工作時段
-            </h2>
-
-            <div>
-              <WorkScheduleDisplayer
-                workSchedulesBackend={shop?.workSchedules}
+              地圖中開啟
+            </button>
+            <button
+              className="btn btn-square btn-ghost rounded-xl bg-base-200/50"
+              onClick={handleSave}
+            >
+              <Bookmark
+                className={isSaved ? "fill-current text-primary" : ""}
               />
-            </div>
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Image Gallery Modal */}
+      {shop?.imageLinks && (
+        <ImageGalleryModal
+          imageLinks={shop.imageLinks}
+          initialIndex={activeImgIndex}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
+
+      <ResponsiveSheet
+        isOn={isContactSheetOpen}
+        title="聯絡資訊"
+        onClose={() => setIsContactSheetOpen(false)}
+      >
+        <ContactInfoSheet contactInfo={shop?.contactInfo ?? []} />
+      </ResponsiveSheet>
     </article>
   );
 };
@@ -525,9 +623,9 @@ const ShopDetail = () => {
   const [shop, setShop] = useState<Shop | null>(null);
 
   useEffect(() => {
-    const shop = testShops.find((s) => s.id === id);
-    if (shop) setShop(shop);
-  }, []);
+    const found = testShops.find((s) => s.id === id);
+    if (found) setShop(found);
+  }, [id]);
 
   return <ShopDetailContent shop={shop} />;
 };

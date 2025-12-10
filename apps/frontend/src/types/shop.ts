@@ -9,6 +9,7 @@ import type {
 export interface Shop {
   id: string;
   title: string;
+  subTitle?: string;
   description: string;
   phoneNumbers: string[];
   contactInfo: ContactInfo[];
@@ -102,6 +103,7 @@ export interface ShopDraft {
   dateISOString: string;
   data: {
     title: string;
+    subTitle?: string;
     description: string;
     images: SelectedImage[];
     discount: string;
@@ -119,6 +121,7 @@ export interface PersistentShopDraft {
   dateISOString: string;
   data: {
     title: string;
+    subTitle?: string;
     description: string;
     images: SelectedImage[];
     discount: string;

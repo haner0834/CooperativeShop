@@ -167,9 +167,7 @@ const CredentialLogin = () => {
         body,
       });
       const { success, data, error } = await res.json();
-      console.log(success, data, error);
       if (!success) {
-        console.error(error);
         showModal({
           title: "登入錯誤",
           description: getErrorMessage(error.code),

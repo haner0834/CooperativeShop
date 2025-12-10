@@ -147,7 +147,7 @@ export const SidebarContent = ({
 }: {
   disabled?: boolean;
 }) => (
-  <div className="pt-18">
+  <div className="pt-16">
     <ul className="menu bg-base-100 min-h-full w-full space-y-2">
       {menu.map((item, i) => (
         <SidebarItem key={i} item={item} disabled={disabled} />

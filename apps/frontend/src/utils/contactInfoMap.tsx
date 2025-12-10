@@ -1,5 +1,5 @@
-import { TintedInstagram, Line, Facebook } from "@icons";
-import { Phone, Globe, Ellipsis } from "lucide-react";
+import { TintedInstagram, Line, Facebook, Instagram } from "@icons";
+import { Phone, Globe, Ellipsis, CircleX } from "lucide-react";
 import type { ContactCategory, ContactInfo } from "../types/shop";
 
 // ========== Phone ==========
@@ -9,9 +9,12 @@ export const formatTaiwanPhone = (num: string) => {
     return digits.replace(/(\d{4})(\d{3})(\d{3})/, "$1-$2-$3");
   } else if (digits.startsWith("0800") && digits.length === 10) {
     return digits.replace(/(\d{4})(\d{3})(\d{3})/, "$1-$2-$3");
-  } else if (/^0\d{1,2}/.test(digits)) {
-    return digits.replace(/(\d{2,3})(\d{3,4})(\d{3,4})/, "$1-$2-$3");
+  } else if (/^0\d{1}/.test(digits)) {
+    return digits.replace(/(\d{2})(\d{4})(\d{3})/, "$1-$2-$3");
   }
+  // } else if (/^0\d{1,2}/.test(digits)) {
+  //   return digits.replace(/(\d{2,3})(\d{3,4})(\d{3,4})/, "$1-$2-$3");
+  // }
   return digits;
 };
 
@@ -172,6 +175,31 @@ export const categoryMap: Record<
   },
 };
 
+export const ContactCategoryIcon = ({
+  category,
+  className = "",
+}: {
+  category: ContactCategory;
+  className?: string;
+}) => {
+  switch (category) {
+    case "phone-number":
+      return <Phone {...{ className }} />;
+    case "facebook":
+      return <Facebook {...{ className }} />;
+    case "instagram":
+      return <Instagram {...{ className }} />;
+    case "line":
+      return <Line {...{ className }} />;
+    case "website":
+      return <Globe {...{ className }} />;
+    case "other":
+      return <Ellipsis {...{ className }} />;
+    default:
+      return <CircleX {...{ className }} />;
+  }
+};
+
 export const hrefBuilders: Record<ContactCategory, (value: string) => string> =
   {
     "phone-number": (v) => `tel:${v}`,
@@ -181,3 +209,7 @@ export const hrefBuilders: Record<ContactCategory, (value: string) => string> =
     website: (v) => `https://${v}`,
     other: (v) => v,
   };
+
+export const buildHref = (category: ContactCategory, content: string) => {
+  return hrefBuilders[category](content);
+};
