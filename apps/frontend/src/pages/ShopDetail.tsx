@@ -19,6 +19,7 @@ import {
   CircleUserRound,
   CircleX,
   MapPinX,
+  UserRoundX,
 } from "lucide-react";
 import ImageGalleryModal from "../widgets/ImageGalleryModal";
 import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
@@ -184,6 +185,12 @@ const ContactInfoSheet = ({ contactInfo }: { contactInfo: ContactInfo[] }) => {
   return (
     <ul className="space-y-4">
       <div className="divider"></div>
+      {contactInfo.length === 0 && (
+        <li className="flex justify-center items-center space-x-2 opacity-50 text-sm">
+          <UserRoundX className="w-5 h-5" />
+          <p>目前沒有聯絡資訊</p>
+        </li>
+      )}
       {contactInfo.map((info, i) => (
         <li className="flex gap-2 items-center" key={`CONTACT_INFO_ITEM_${i}`}>
           <div className="p-2 border border-base-300 rounded-full">
