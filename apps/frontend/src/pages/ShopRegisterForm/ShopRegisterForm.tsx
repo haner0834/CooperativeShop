@@ -164,6 +164,18 @@ const ShopRegisterForm = () => {
     activeUser?.schoolAbbr,
   ]);
 
+  const deleteCurrentDraft = () => {
+    const draftId = searchParams.get("id");
+    if (!draftId) {
+      showToast({ title: "缺少 Draft ID" });
+      throw new Error("Fuck you");
+    }
+
+    const key = `SHOP_DRAFT_${draftId}`;
+
+    localStorage.removeItem(key);
+  };
+
   const submit = async () => {
     if (!selectedPoint) return;
     if (!activeUser) return;
@@ -207,7 +219,27 @@ const ShopRegisterForm = () => {
 
     const { success, data, error } = response;
     console.log(success, data, error);
-    if (!success) return;
+    if (!success) {
+      showModal({
+        title: "上傳失敗",
+        description: error.message,
+        showDismissButton: true,
+      });
+      return;
+    }
+
+    deleteCurrentDraft();
+    showModal({
+      title: "上傳成功",
+      buttons: [
+        {
+          label: "關閉",
+          role: "primary",
+          style: "btn-primary",
+          onClick: () => navigate("/shops/drafts"),
+        },
+      ],
+    });
   };
 
   const handleSubmit = async () => {
