@@ -237,7 +237,10 @@ const ShopWorkSchedulesBlock = ({
             />
             <div className="flex justify-between">
               {[0, 6, 12, 18, 24].map((num, i) => (
-                <p key={`RANGE_SLIDER_LABEL_${i}`} className="text-sm">
+                <p
+                  key={`RANGE_SLIDER_LABEL_${i}`}
+                  className="text-sm opacity-50"
+                >
                   {num}
                 </p>
               ))}
