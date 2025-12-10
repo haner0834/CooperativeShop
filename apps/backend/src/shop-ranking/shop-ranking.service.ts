@@ -4,6 +4,7 @@ import { StorageService } from 'src/storage/storage.service';
 import { CachedRankingData } from './types/cached-ranking-data.types';
 import { ShopEngagementMetrics } from './types/shop-engagement-metrics.types';
 import { ShopWithRanking, RankingType } from './types/shop-with-ranking.types';
+import { env } from 'src/common/utils/env.utils';
 
 @Injectable()
 export class ShopRankingService {
@@ -11,6 +12,8 @@ export class ShopRankingService {
     private readonly prisma: PrismaService,
     private readonly storageService: StorageService,
   ) {}
+
+  private readonly R2_PUBLIC_URL = env('R2_PUBLIC_URL');
 
   /**
    * Main cron jobs
@@ -126,14 +129,14 @@ export class ShopRankingService {
     const nearbyScores = shopsWithDistance.map((shop) => {
       const metric = metrics.find((m) => m.shopId === shop.id);
       const score = this.calculateNearbyScore(shop.distance, metric);
+      const thumbnailLink = this.R2_PUBLIC_URL + shop.thumbnailKey;
 
       return {
         id: shop.id,
         title: shop.title,
         description: shop.description,
         contactInfo: shop.contactInfo,
-        googleMapsLink: shop.googleMapsLink,
-        thumbnailLink: shop.thumbnailLink,
+        thumbnailLink,
         discount: shop.discount,
         address: shop.address,
         longitude: shop.longitude,
@@ -382,8 +385,7 @@ export class ShopRankingService {
       title: shop.title,
       description: shop.description,
       contactInfo: shop.contactInfo,
-      googleMapsLink: shop.googleMapsLink,
-      thumbnailLink: shop.thumbnailLink,
+      thumbnailLink: this.R2_PUBLIC_URL + shop.thumbnailKey,
       discount: shop.discount,
       address: shop.address,
       longitude: shop.longitude,
@@ -452,8 +454,7 @@ export class ShopRankingService {
       title: shop.title,
       description: shop.description,
       contactInfo: shop.contactInfo,
-      googleMapsLink: shop.googleMapsLink,
-      thumbnailLink: shop.thumbnailLink,
+      thumbnailLink: this.R2_PUBLIC_URL + shop.thumbnailKey,
       discount: shop.discount,
       address: shop.address,
       longitude: shop.longitude,

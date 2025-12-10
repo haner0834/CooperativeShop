@@ -1,21 +1,21 @@
 model Shop {
-    id             String          @id @default(cuid())
-    title          String
-    description    String
-    contactInfo    Json // An array
-    googleMapsLink String?
-    thumbnailLink  String
-    discount       String?
-    schedules      WorkSchedule[]
-    address        String
-    longitude      Float
-    latitude       Float
-    images         ShopImage[]
-    school         School          @relation(fields: [schoolId], references: [id])
-    schoolId       String
-    dailyStats     ShopDailyStat[]
-    rankings       ShopRanking[]
-    category       String
+    id           String          @id @default(cuid())
+    title        String
+    subTitle     String?
+    description  String
+    contactInfo  Json // An array
+    thumbnailKey String
+    discount     String?
+    schedules    Json
+    address      String
+    longitude    Float
+    latitude     Float
+    images       ShopImage[]
+    school       School          @relation(fields: [schoolId], references: [id])
+    schoolId     String
+    dailyStats   ShopDailyStat[]
+    rankings     ShopRanking[]
+    category     String
 
     @@index([title])
 }
@@ -27,23 +27,4 @@ model ShopImage {
     shop   Shop       @relation(fields: [shopId], references: [id])
     shopId String
     order  Int
-}
-
-model WorkSchedule {
-    id               String  @id @default(cuid())
-    weekday          Weekday
-    startMinuteOfDay Int
-    endMinuteOfDay   Int
-    shop             Shop    @relation(fields: [shopId], references: [id])
-    shopId           String
-}
-
-enum Weekday {
-    MONDAY
-    TUESDAY
-    WEDNESDAY
-    THURSDAY
-    FRIDAY
-    SATURDAY
-    SUNDAY
 }

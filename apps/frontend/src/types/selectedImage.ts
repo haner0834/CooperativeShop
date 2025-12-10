@@ -12,3 +12,8 @@ export interface SelectedImage {
   status: "idle" | "uploading" | "success" | "error" | "deleting";
   errorMessage?: string;
 }
+
+export interface ImageDto {
+  fileKey: string;
+  thumbnailKey: string;
+}

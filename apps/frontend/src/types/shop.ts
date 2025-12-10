@@ -1,5 +1,5 @@
 import type { Point } from "../pages/ShopRegisterForm/ShopLocationBlock";
-import type { SelectedImage } from "./selectedImage";
+import type { ImageDto, SelectedImage } from "./selectedImage";
 import type {
   WorkScheduleBackend,
   WorkSchedule,
@@ -23,6 +23,22 @@ export interface Shop {
   longitude: number;
   latitude: number;
   workSchedules: WorkScheduleBackend[];
+}
+
+export interface CreateShopDto {
+  title: string;
+  subTitle: string | null;
+  description: string;
+  contactInfo: ContactInfoDto[];
+  category: string;
+  schoolId: string;
+  images: ImageDto[];
+  thumbnailKey: string;
+  discount: string | null;
+  address: string;
+  longitude: number;
+  latitude: number;
+  schedules: WorkScheduleBackend[];
 }
 
 export const DEFAULT_WORKSCHEDULE: WorkSchedule = {
@@ -93,6 +109,12 @@ export interface ContactInfo {
   icon: React.ReactNode;
   formatter: (original: string) => string;
   validator: (newValue: string) => string;
+}
+
+export interface ContactInfoDto {
+  category: ContactCategory;
+  content: string;
+  href: string;
 }
 
 export interface ShopDraft {

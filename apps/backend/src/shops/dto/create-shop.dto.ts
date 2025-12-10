@@ -15,6 +15,7 @@ import {
 import { Type } from 'class-transformer';
 import { IsGoogleMapsUrl } from 'src/common/decorators/is-googlemaps-url.decorator';
 import { ContactCategory, ContactInfo } from '../types/contact-info.type';
+import { Weekday, WorkSchedule } from '../types/work-schedule.type';
 
 class ContactInfoDto implements ContactInfo {
   @IsEnum(ContactCategory)
@@ -29,10 +30,35 @@ class ContactInfoDto implements ContactInfo {
   href: string;
 }
 
+class WorkScheduleDto implements WorkSchedule {
+  @IsEnum(Weekday)
+  weekday: Weekday;
+
+  @IsNumber()
+  startMinuteOfDay: number;
+
+  @IsNumber()
+  endMinuteOfDay: number;
+}
+
+class ImageDto {
+  @IsString()
+  @IsNotEmpty()
+  fileKey: string;
+
+  @IsString()
+  @IsNotEmpty()
+  thumbnailKey: string;
+}
+
 export class CreateShopDto {
   @IsString()
   @IsNotEmpty()
   title: string;
+
+  @IsOptional()
+  @IsString()
+  subTitle?: string;
 
   @IsString()
   description: string;
@@ -52,18 +78,17 @@ export class CreateShopDto {
   @IsNotEmpty()
   schoolId: string;
 
-  @IsOptional()
-  @IsGoogleMapsUrl()
-  googleMapsLink: string | null;
-
   @IsArray()
   @ArrayMinSize(0)
   @ArrayMaxSize(10)
-  @IsUrl(undefined, { each: true })
-  imageLinks: string[];
+  @ValidateNested({ each: true })
+  @Type(() => ImageDto)
+  images: ImageDto[];
 
   @IsUrl()
-  thumbnailLink: string;
+  @IsString()
+  @IsNotEmpty()
+  thumbnailKey: string;
 
   @IsOptional()
   @IsString()
@@ -80,4 +105,11 @@ export class CreateShopDto {
   @IsLatitude()
   @IsNumber()
   latitude: number;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(7)
+  @ValidateNested({ each: true })
+  @Type(() => WorkScheduleDto)
+  schedules: WorkScheduleDto[];
 }

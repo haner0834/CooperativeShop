@@ -9,8 +9,12 @@ import ShopImagesBlock from "./ShopImagesBlock";
 import ShopLocationBlock from "./ShopLocationBlock";
 import ShopWorkSchedulesBlock from "./ShopWorkSchedulesBlock";
 import { DEFAULT_WORKSCHEDULE } from "../../types/shop";
-import type { SelectedImage } from "../../types/selectedImage";
-import type { ContactInfo, PersistentShopDraft } from "../../types/shop";
+import type { ImageDto, SelectedImage } from "../../types/selectedImage";
+import type {
+  ContactInfo,
+  CreateShopDto,
+  PersistentShopDraft,
+} from "../../types/shop";
 import type { Point } from "./ShopLocationBlock";
 import { getDraft } from "../../utils/draft";
 import ShopDiscountBlock from "./ShopDiscountBlock";
@@ -18,9 +22,15 @@ import { useToast } from "../../widgets/Toast/ToastProvider";
 import { useAutoLogin } from "../../utils/useAuthLogin";
 import { useAuth } from "../../auth/AuthContext";
 import { useModal } from "../../widgets/ModalContext";
-import type { WorkSchedule } from "../../types/workSchedule";
+import {
+  toBackendSchedules,
+  type WorkSchedule,
+} from "../../types/workSchedule";
 import ShopSignedSchool from "./ShopSignedSchool";
 import ShopSubtitleBlock from "./ShopSubtitleBlock";
+import { buildHref } from "../../utils/contactInfoMap";
+import { useAuthFetch } from "../../auth/useAuthFetch";
+import { path } from "../../utils/path";
 
 const Navbar = () => {
   return (
@@ -58,6 +68,7 @@ const ShopRegisterForm = () => {
   const { showToast } = useToast();
   const { showModal } = useModal();
   const navigate = useNavigate();
+  const { authedFetch } = useAuthFetch();
 
   const [images, setImages] = useState<SelectedImage[]>([]); // 用 base64 URL 預覽
 
@@ -153,7 +164,53 @@ const ShopRegisterForm = () => {
     activeUser?.schoolAbbr,
   ]);
 
-  const handleSubmit = () => {
+  const submit = async () => {
+    if (!selectedPoint) return;
+    if (!activeUser) return;
+    if (images.length === 0 || images.length > 10) return;
+
+    const contactInfoDto = contactInfo.map((c) => ({
+      category: c.category,
+      content: c.content,
+      href: c.href || buildHref(c.category, c.content),
+    }));
+    const imageDtos: ImageDto[] = images
+      .filter((image) => image.uploadInfo !== undefined)
+      .map((image) => ({
+        fileKey: image.uploadInfo!.fileKey,
+        thumbnailKey: image.uploadInfo!.thumbnailKey,
+      }));
+
+    const thumbnailKey = images[0].uploadInfo?.thumbnailKey;
+    if (!thumbnailKey) return;
+
+    const shopDto: CreateShopDto = {
+      title,
+      subTitle: subTitle || null,
+      description,
+      contactInfo: contactInfoDto,
+      schoolId: activeUser.schoolId,
+      images: imageDtos,
+      thumbnailKey,
+      address: selectedPoint.title,
+      longitude: selectedPoint.lng,
+      latitude: selectedPoint.lat,
+      schedules: toBackendSchedules(workSchedules),
+      category: "",
+      discount: discount || null,
+    };
+
+    const response = await authedFetch(path("/api/shops"), {
+      method: "POST",
+      body: JSON.stringify(shopDto),
+    });
+
+    const { success, data, error } = response;
+    console.log(success, data, error);
+    if (!success) return;
+  };
+
+  const handleSubmit = async () => {
     let isAvailable = true;
     const texts = [title, description, discount, address];
     if (texts.filter((t) => t !== "").length != texts.length) {
@@ -177,6 +234,26 @@ const ShopRegisterForm = () => {
         replace: true,
         icon: <CircleAlert className="text-error" />,
         duration: 5_000, // 5s
+      });
+      return;
+    }
+
+    try {
+      await submit();
+    } catch (error) {
+      showModal({
+        title: "提交失敗",
+        description: "",
+        showDismissButton: true,
+        buttons: [
+          {
+            label: "重試",
+            style: "btn-primary",
+            role: "primary",
+            onClick: submit,
+          },
+          { label: "關閉" },
+        ],
       });
     }
   };
@@ -243,7 +320,7 @@ const ShopRegisterForm = () => {
           <div className="flex space-x-4">
             <a
               href={`/shops/preview?id=${searchParams.get("id")}`}
-              className="btn flex-1"
+              className="btn flex-1 bg-base-100"
             >
               預覽
             </a>
