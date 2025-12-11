@@ -6,7 +6,6 @@ import {
   BadRequestError,
   InternalError,
 } from '../types/error.types';
-import QRCodeStyling from 'qr-code-styling';
 import fs from 'fs';
 import nodeCanvas from 'canvas';
 import { JSDOM } from 'jsdom';
@@ -66,54 +65,6 @@ export class QrService {
       env('FRONTEND_URL_ROOT') + '/qr-verification?code=' + encoded;
 
     return dataForQr;
-  }
-
-  /**
-   * 生成使用者 QR Code 圖片
-   * @param userId 登入的使用者 ID
-   * @returns {Promise<Buffer>} QR Code 圖片的 Buffer
-   */
-  async generateQRCodeImage(userId: string): Promise<Buffer> {
-    const dataForQr = await this.generateQRCodeData(userId);
-
-    const qrCode = new QRCodeStyling({
-      width: 600,
-      height: 600,
-      type: 'canvas',
-      data: dataForQr,
-      margin: 0,
-      dotsOptions: {
-        type: 'rounded',
-        color: '#6a1a4c',
-        gradient: {
-          type: 'linear',
-          rotation: 0.7853981633974483,
-          colorStops: [
-            { offset: 0, color: '#0056d6' },
-            { offset: 1, color: '#00c7fc' },
-          ],
-        },
-      },
-      image: 'https://cooperativeshops.org/logo-small.jpg',
-      imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 15 },
-      backgroundOptions: { color: '#ffffff' },
-      cornersSquareOptions: { type: 'extra-rounded', color: '#0056d6' },
-      cornersDotOptions: { type: 'dot', color: '#0056d6' },
-      nodeCanvas,
-      jsdom: JSDOM,
-    });
-
-    const buffer = await qrCode.getRawData('png');
-    if (!(buffer instanceof Buffer)) {
-      throw new InternalError(
-        'Expected QR code data to be a Buffer in Node.js',
-      );
-    }
-
-    if (env('NODE_ENV') === 'development')
-      await fs.promises.writeFile('qr.png', buffer);
-
-    return buffer;
   }
 
   /**
