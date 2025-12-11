@@ -43,7 +43,7 @@ export const Avator = ({ method }: { method: LoginMethod }) => {
 
 const Home = () => {
   const { setNavbarButtons, setNavbarTitle } = useNavbarButtons();
-  const { switchAccount, activeUser } = useAuth();
+  const { switchAccount, activeUser, isLoadingRef } = useAuth();
   const { authedFetch } = useAuthFetch();
   const [school, setSchool] = useState<School | null>(null);
   const [isSheetOn, setIsSheetOn] = useState(false);
@@ -80,12 +80,13 @@ const Home = () => {
   };
 
   useEffect(() => {
+    if (isLoadingRef.current) return;
     setIsLoading(true);
     getQrCode();
 
     getStudentData();
     setIsLoading(false);
-  }, []);
+  }, [isLoadingRef]);
 
   const toggleNameVisibility = () => {
     const prev = localStorage.getItem("isAnonymous");

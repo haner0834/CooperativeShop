@@ -8,6 +8,7 @@ import { getErrorMessage } from "../utils/errors";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { path } from "../utils/path";
+import { usePathHistory } from "../contexts/PathHistoryContext";
 
 const GooglePlaceholder = () => {
   const [searchParams] = useSearchParams();
@@ -285,8 +286,8 @@ const Login = () => {
   const { method } = useParams();
   const [searchParams] = useSearchParams();
   const { showModal } = useModal();
-  const navigate = useNavigate();
   const { setNavbarTitle, setNavbarButtonsByType } = useNavbarButtons();
+  const { goBack } = usePathHistory();
 
   useEffect(() => {
     const a = async () => {
@@ -300,7 +301,7 @@ const Login = () => {
               label: "Back",
               role: "primary",
               style: "btn-primary",
-              onClick: () => navigate(-1),
+              onClick: goBack,
             },
           ],
         });

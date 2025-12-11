@@ -15,7 +15,11 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 
   if (hasAttemptedRestore && !activeUser) {
     return (
-      <Navigate to="/choose-school" state={{ to: location.pathname }} replace />
+      <Navigate
+        to="/choose-school"
+        state={{ from: location.pathname }}
+        replace
+      />
     );
   }
 

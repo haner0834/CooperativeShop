@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { weekdayOrder, type ContactInfo, type Shop } from "../types/shop";
 import { testShops } from "./Shops";
 import {
@@ -31,6 +31,7 @@ import { fromBackendSchedules } from "../types/workSchedule";
 import { formatWeekdays } from "../utils/formatWeekdays";
 import { buildHref, ContactCategoryIcon } from "../utils/contactInfoMap";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
+import { usePathHistory } from "../contexts/PathHistoryContext";
 
 const getCurrentMinOfDay = () => {
   const now = new Date();
@@ -238,7 +239,7 @@ export const ShopDetailContent = ({
   isPreview?: boolean;
 }) => {
   const { isMobile } = useDevice();
-  const navigate = useNavigate();
+  const { goBack } = usePathHistory();
   const { showToast } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -377,7 +378,7 @@ export const ShopDetailContent = ({
           {isMobile ? (
             <>
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => goBack()}
                 className="btn btn-circle btn-sm btn-ghost hover:bg-base-content/10"
               >
                 <ChevronLeft size={20} />
