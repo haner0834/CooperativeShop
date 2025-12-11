@@ -8,20 +8,23 @@ import { AuthProvider } from "./auth/AuthContext.tsx";
 import { DeviceProvider } from "./widgets/DeviceContext.tsx";
 import { ModalProvider } from "./widgets/ModalContext.tsx";
 import { ToastProvider } from "./widgets/Toast/ToastProvider.tsx";
+import { PathHistoryProvider } from "./contexts/PathHistoryContext.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <DeviceProvider>
-          <ModalProvider>
-            <NavbarButtonsProvider>
-              <ToastProvider defaultOptions={{ maxStack: 5 }}>
-                <App />
-              </ToastProvider>
-            </NavbarButtonsProvider>
-          </ModalProvider>
-        </DeviceProvider>
+        <PathHistoryProvider fallback="/">
+          <DeviceProvider>
+            <ModalProvider>
+              <NavbarButtonsProvider>
+                <ToastProvider defaultOptions={{ maxStack: 5 }}>
+                  <App />
+                </ToastProvider>
+              </NavbarButtonsProvider>
+            </ModalProvider>
+          </DeviceProvider>
+        </PathHistoryProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>

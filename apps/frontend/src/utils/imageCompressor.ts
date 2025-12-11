@@ -5,12 +5,14 @@ export async function compressImage(file: File) {
     maxWidthOrHeight: 1280, // 主圖最大邊
     useWebWorker: true,
     maxSizeMB: 1,
+    fileType: "image/webp",
   });
 
   const thumbnail = await imageCompression(file, {
     maxWidthOrHeight: 700,
     useWebWorker: true,
-    maxSizeMB: 0.015,
+    maxSizeMB: 0.15,
+    fileType: "image/webp",
   });
 
   return { mainImage, thumbnail };

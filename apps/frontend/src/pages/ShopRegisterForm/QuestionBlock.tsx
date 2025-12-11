@@ -21,8 +21,9 @@ const QuestionBlock = ({
       : status === "optional"
       ? "info"
       : "success";
-  const statusStyle = "status-" + style;
-  const hintStyle = "text-" + style;
+  // DO NOT DELETE THE COMMENT BELOW, it's for tailwind css to recognize used utilities
+  const statusStyle = "status-" + style; // status-error, status-success, status-info
+  const hintStyle = "text-" + style; // text-error, text-success, text-info
 
   return (
     <div className="w-full bg-base-100 rounded-box p-4 space-y-2">

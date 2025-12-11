@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronRight, Menu, Phone, Search, Tag, X } from "lucide-react";
+import { ChevronRight, Menu, Search, Tag, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../widgets/Sidebar";
 import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
@@ -15,7 +15,6 @@ export const testShops: Shop[] = [
     title: "Brew & Bloom Café",
     description:
       "A warm café known for its floral-themed interior and artisan coffee.",
-    phoneNumbers: ["0912345678"],
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
@@ -29,13 +28,16 @@ export const testShops: Shop[] = [
     longitude: 121.5291,
     latitude: 25.0335,
     isOpen: true,
+    schoolId: "",
+    schoolAbbr: "",
+    workSchedules: [],
+    subTitle: "",
   },
   {
     id: "2",
     title: "Midnight Noodles",
     description:
       "Popular late-night eatery serving traditional Taiwanese noodles and snacks.",
-    phoneNumbers: ["0988776655", "0222334455"],
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
@@ -50,13 +52,16 @@ export const testShops: Shop[] = [
     longitude: 121.5357,
     latitude: 25.0205,
     isOpen: false,
+    schoolId: "",
+    schoolAbbr: "",
+    workSchedules: [],
+    subTitle: "",
   },
   {
     id: "3",
     title: "Leafy Market",
     description:
       "Fresh produce and organic groceries with a focus on local farmers.",
-    phoneNumbers: ["0977001122"],
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
@@ -67,13 +72,16 @@ export const testShops: Shop[] = [
     longitude: 121.5402,
     latitude: 25.0633,
     isOpen: true,
+    schoolId: "",
+    schoolAbbr: "",
+    workSchedules: [],
+    subTitle: "",
   },
   {
     id: "4",
     title: "Pixel Studio",
     description:
       "Creative space offering photography, design, and branding services.",
-    phoneNumbers: ["0901112233"],
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
@@ -87,13 +95,16 @@ export const testShops: Shop[] = [
     longitude: 121.5651,
     latitude: 25.0329,
     isOpen: true,
+    schoolId: "",
+    schoolAbbr: "",
+    workSchedules: [],
+    subTitle: "",
   },
   {
     id: "5",
     title: "Sunrise Books",
     description:
       "Independent bookstore featuring local authors and cozy reading spaces.",
-    phoneNumbers: ["0934556677"],
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
@@ -107,6 +118,10 @@ export const testShops: Shop[] = [
     longitude: 121.5456,
     latitude: 25.0365,
     isOpen: true,
+    schoolId: "",
+    schoolAbbr: "",
+    workSchedules: [],
+    subTitle: "",
   },
 ];
 
@@ -145,9 +160,9 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
             <span className={`badge ${badgeStyle} badge-soft uppercase mt-2`}>
               <Tag className="w-4 h-4" /> {shop.isOpen ? "open" : "closed"}
             </span>
-            <span className={`badge badge-info badge-soft uppercase mt-2`}>
-              <Phone className="w-4 h-4" /> {shop?.phoneNumbers[0] ?? "UNKNOWN"}
-            </span>
+            {/* <span className={`badge badge-info badge-soft uppercase mt-2`}>
+              <Phone className="w-4 h-4" /> {shop?.contactInfo[0].content ?? "UNKNOWN"}
+            </span> */}
           </div>
         </div>
       </article>

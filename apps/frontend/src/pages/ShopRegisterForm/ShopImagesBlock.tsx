@@ -67,7 +67,6 @@ const ShopImagesBlock = ({
       const { mainImage, thumbnail: thumbnailImage } = await compressImage(
         file
       );
-      console.log(mainImage.size);
       const reader = new FileReader();
       const previewUrl = await new Promise<string>((resolve, reject) => {
         reader.onload = () => resolve(reader.result as string);
@@ -92,8 +91,8 @@ const ShopImagesBlock = ({
         {
           method: "POST",
           body: JSON.stringify({
-            fileName: file.name,
-            contentType: file.type,
+            fileName: mainImage.name,
+            contentType: "image/webp",
             category: "shop-image",
             fileSize: mainImage.size,
           }),
@@ -125,7 +124,7 @@ const ShopImagesBlock = ({
           fileKey,
           thumbnailKey,
           category: "shop-image",
-          contentType: file.type,
+          contentType: "image/webp",
         }),
       });
 

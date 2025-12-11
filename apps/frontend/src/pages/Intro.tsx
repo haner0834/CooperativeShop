@@ -25,11 +25,12 @@ import {
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { useMemo } from "react";
 import { useDevice } from "../widgets/DeviceContext";
+import { Link } from "react-router-dom";
 
 const ScanButton = () => (
-  <a href="/qr-scanner" className="btn btn-circle btn-ghost">
+  <Link to="/qr-scanner" className="btn btn-circle btn-ghost">
     <ScanLine />
-  </a>
+  </Link>
 );
 
 const Hero = () => {
@@ -63,19 +64,19 @@ const Hero = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start pt-4">
-            <a
-              href="/choose-school"
+            <Link
+              to="/choose-school"
               className="btn btn-primary rounded-full px-8 text-lg font-medium shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/25 transition-all"
             >
               立即開始
               <ArrowRight className="w-5 h-5" />
-            </a>
-            <a
-              href="/schools"
+            </Link>
+            <Link
+              to="/schools"
               className="btn btn-ghost rounded-full px-8 text-lg font-normal hover:bg-base-content/5 text-neutral/50"
             >
               查看合作店家
-            </a>
+            </Link>
           </div>
         </motion.div>
 
@@ -620,13 +621,13 @@ const CTA = () => {
           加入數萬名台南高中生的行列，探索城市中的專屬優惠。
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href="/choose-school"
+          <Link
+            to="/choose-school"
             className="btn btn-primary btn-lg rounded-full px-12 text-lg"
           >
             立即綁定帳號
             <ArrowRight className="w-5 h-5 ml-1" />
-          </a>
+          </Link>
         </div>
 
         <div className="mt-12 flex items-center justify-center gap-6 text-sm text-base-content/40 font-mono">
@@ -665,21 +666,24 @@ const Footer = () => {
 
           {/* Links - Mobile: Vertical Left, Desktop: Horizontal */}
           <div className="flex flex-col flex-2 justify-center md:flex-row gap-6 md:gap-8 text-sm text-base-content/60 font-medium">
-            <a href="/home" className="hover:text-primary transition-colors">
+            <Link to="/home" className="hover:text-primary transition-colors">
               QR Code
-            </a>
-            <a href="/schools" className="hover:text-primary transition-colors">
+            </Link>
+            <Link
+              to="/schools"
+              className="hover:text-primary transition-colors"
+            >
               合作校
-            </a>
-            {/* <a href="/schools" className="hover:text-primary transition-colors">
+            </Link>
+            {/* <Link to="/schools" className="hover:text-primary transition-colors">
               合作商家
-            </a> */}
-            <a
-              href="/qr-scanner"
+            </Link> */}
+            <Link
+              to="/qr-scanner"
               className="hover:text-primary transition-colors"
             >
               店家掃描
-            </a>
+            </Link>
             <a
               href="/privacy-policy.html"
               className="hover:text-primary transition-colors"

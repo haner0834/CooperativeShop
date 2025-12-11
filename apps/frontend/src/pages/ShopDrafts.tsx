@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import type { ShopDraft } from "../types/shop";
 import { Ellipsis, Pencil, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useAuth } from "../auth/AuthContext";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   return (
@@ -12,12 +14,12 @@ const Navbar = () => {
         </button> */}
       </div>
       <div className="flex-1 text-center">
-        <a className="text-base font-semibold">註冊 - 草稿</a>
+        <h1 className="text-base font-semibold">註冊 - 草稿</h1>
       </div>
       <div className="flex-none">
-        {/* <a className="btn btn-circle btn-ghost" href="/shops/drafts">
+        {/* <Link className="btn btn-circle btn-ghost" to="/shops/drafts">
           <CircleDotDashed />
-        </a> */}
+        </Link> */}
       </div>
     </div>
   );
@@ -40,6 +42,7 @@ const AnimatedListItem = ({ children }: { children?: React.ReactNode }) => {
 
 const ShopDrafts = () => {
   const [drafts, setDrafts] = useState<ShopDraft[]>([]);
+  const { activeUser } = useAuth();
 
   useEffect(() => {
     let drafts: ShopDraft[] = [];
@@ -125,9 +128,12 @@ const ShopDrafts = () => {
       dateISOString: new Date().toISOString(),
       data: {
         title: "",
+        subTitle: "",
         description: "",
         discount: "",
         selectedPoint: null,
+        schoolId: activeUser?.schoolId ?? "UNKNOWN",
+        schoolAbbr: activeUser?.schoolAbbr ?? "UNKNOWN",
         address: "",
         images: [],
         contactInfo: [],
@@ -159,8 +165,8 @@ const ShopDrafts = () => {
           <AnimatePresence initial={false}>
             {[...drafts].reverse().map((draft) => (
               <AnimatedListItem key={draft.key}>
-                <a
-                  href={`/shops/register?id=${getDraftId(draft.key)}`}
+                <Link
+                  to={`/shops/register?id=${getDraftId(draft.key)}`}
                   className="w-full h-29 bg-base-300 rounded-box flex overflow-clip"
                 >
                   <div className="h-full w-12 bg-neutral flex flex-col flex-none items-center justify-center text-base-100">
@@ -193,7 +199,7 @@ const ShopDrafts = () => {
                       {getTime(draft.dateISOString)}
                     </span>
                   </div>
-                </a>
+                </Link>
 
                 <div className="absolute top-2 right-2 z-10">
                   <div className="dropdown dropdown-end">
@@ -214,10 +220,12 @@ const ShopDrafts = () => {
                       className="dropdown-content menu bg-base-100 rounded-box z-10 w-52 p-2 shadow-sm"
                     >
                       <li>
-                        <a href={`/shops/register?id=${getDraftId(draft.key)}`}>
+                        <Link
+                          to={`/shops/register?id=${getDraftId(draft.key)}`}
+                        >
                           <Pencil className="w-5 h-5" />
                           編輯
-                        </a>
+                        </Link>
                       </li>
 
                       <li>

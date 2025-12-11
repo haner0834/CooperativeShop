@@ -1,6 +1,6 @@
 import { CircleAlert, CircleDotDashed, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import FormHeader from "./FormHeader";
 import ShopTitleBlock from "./ShopTitleBlock";
 import ShopDescriptionBlock from "./ShopDescriptionBlock";
@@ -8,32 +8,44 @@ import ShopContactInfoBlock from "./ShopContactInfoBlock";
 import ShopImagesBlock from "./ShopImagesBlock";
 import ShopLocationBlock from "./ShopLocationBlock";
 import ShopWorkSchedulesBlock from "./ShopWorkSchedulesBlock";
-import { type WorkSchedule, DEFAULT_WORKSCHEDULE } from "../../types/shop";
-import type { SelectedImage } from "../../types/selectedImage";
-import type { ContactInfo, PersistentShopDraft } from "../../types/shop";
+import { DEFAULT_WORKSCHEDULE } from "../../types/shop";
+import type { ImageDto, SelectedImage } from "../../types/selectedImage";
+import type {
+  ContactInfo,
+  CreateShopDto,
+  PersistentShopDraft,
+} from "../../types/shop";
 import type { Point } from "./ShopLocationBlock";
 import { getDraft } from "../../utils/draft";
 import ShopDiscountBlock from "./ShopDiscountBlock";
 import { useToast } from "../../widgets/Toast/ToastProvider";
-import { useAutoLogin } from "../../utils/useAuthLogin";
 import { useAuth } from "../../auth/AuthContext";
 import { useModal } from "../../widgets/ModalContext";
+import {
+  toBackendSchedules,
+  type WorkSchedule,
+} from "../../types/workSchedule";
+import ShopSignedSchool from "./ShopSignedSchool";
+import ShopSubtitleBlock from "./ShopSubtitleBlock";
+import { buildHref } from "../../utils/contactInfoMap";
+import { useAuthFetch } from "../../auth/useAuthFetch";
+import { path } from "../../utils/path";
 
 const Navbar = () => {
   return (
     <div className="navbar bg-base-100 shadow-sm z-50 fixed">
       <div className="flex-none">
-        <a href="/shops/register" className="btn btn-circle btn-ghost">
+        <Link to="/shops/register" className="btn btn-circle btn-ghost">
           <Plus />
-        </a>
+        </Link>
       </div>
       <div className="flex-1 text-center">
-        <a className="text-base font-semibold">特約商家註冊</a>
+        <h1 className="text-base font-semibold">特約商家註冊</h1>
       </div>
       <div className="flex-none">
-        <a className="btn btn-circle btn-ghost" href="/shops/drafts">
+        <Link className="btn btn-circle btn-ghost" to="/shops/drafts">
           <CircleDotDashed />
-        </a>
+        </Link>
       </div>
     </div>
   );
@@ -41,6 +53,7 @@ const Navbar = () => {
 
 const ShopRegisterForm = () => {
   const [title, setTitle] = useState("");
+  const [subTitle, setSubTitle] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   const [description, setDescription] = useState("");
   const [discount, setDiscount] = useState("");
@@ -54,6 +67,7 @@ const ShopRegisterForm = () => {
   const { showToast } = useToast();
   const { showModal } = useModal();
   const navigate = useNavigate();
+  const { authedFetch } = useAuthFetch();
 
   const [images, setImages] = useState<SelectedImage[]>([]); // 用 base64 URL 預覽
 
@@ -68,9 +82,18 @@ const ShopRegisterForm = () => {
     const draft = getDraft(id);
     if (draft) {
       setTitle(draft.data.title);
+      setSubTitle(draft.data.subTitle ?? "");
       setDescription(draft.data.description);
       setDiscount(draft.data.discount);
-      setImages(draft.data.images);
+      setImages(
+        draft.data.images.map((image) => {
+          const { status, ...rest } = image;
+          return {
+            ...rest,
+            status: "success",
+          };
+        })
+      );
       setWorkSchedules(draft.data.workSchedules);
       setAddress(draft.data.address);
       setSelectedPoint(draft.data.selectedPoint);
@@ -79,8 +102,7 @@ const ShopRegisterForm = () => {
   }, []);
 
   // Force login
-  const hasAttemptedRestore = useAutoLogin();
-  const { activeUser } = useAuth();
+  const { activeUser, hasAttemptedRestore } = useAuth();
   useEffect(() => {
     const toLogin = () => {
       const target = `/shops/register?id=${searchParams.get("id")}`;
@@ -118,6 +140,7 @@ const ShopRegisterForm = () => {
         dateISOString: new Date().toISOString(),
         data: {
           title,
+          subTitle,
           description,
           discount,
           contactInfo: contactInfoToStore,
@@ -125,6 +148,8 @@ const ShopRegisterForm = () => {
           images,
           selectedPoint,
           address,
+          schoolId: activeUser?.schoolId ?? "UNKNOWN",
+          schoolAbbr: activeUser?.schoolAbbr ?? "UNKNOWN",
         },
       };
       localStorage.setItem(key, JSON.stringify(shop));
@@ -133,6 +158,7 @@ const ShopRegisterForm = () => {
     return () => clearTimeout(handler); // ← Cancel the previous timer (to prevent duplicate storage).
   }, [
     title,
+    subTitle,
     description,
     discount,
     contactInfo,
@@ -140,9 +166,88 @@ const ShopRegisterForm = () => {
     images,
     address,
     selectedPoint,
+    activeUser?.schoolId,
+    activeUser?.schoolAbbr,
   ]);
 
-  const handleSubmit = () => {
+  const deleteCurrentDraft = () => {
+    const draftId = searchParams.get("id");
+    if (!draftId) {
+      showToast({ title: "缺少 Draft ID" });
+      throw new Error("Fuck you");
+    }
+
+    const key = `SHOP_DRAFT_${draftId}`;
+
+    localStorage.removeItem(key);
+  };
+
+  const submit = async () => {
+    if (!selectedPoint) return;
+    if (!activeUser) return;
+    if (images.length === 0 || images.length > 10) return;
+
+    const contactInfoDto = contactInfo.map((c) => ({
+      category: c.category,
+      content: c.content,
+      href: c.href || buildHref(c.category, c.content),
+    }));
+    const imageDtos: ImageDto[] = images
+      .filter((image) => image.uploadInfo !== undefined)
+      .map((image) => ({
+        fileKey: image.uploadInfo!.fileKey,
+        thumbnailKey: image.uploadInfo!.thumbnailKey,
+      }));
+
+    const thumbnailKey = images[0].uploadInfo?.thumbnailKey;
+    if (!thumbnailKey) return;
+
+    const shopDto: CreateShopDto = {
+      title,
+      subTitle: subTitle || null,
+      description,
+      contactInfo: contactInfoDto,
+      schoolId: activeUser.schoolId,
+      images: imageDtos,
+      thumbnailKey,
+      address: selectedPoint.title,
+      longitude: selectedPoint.lng,
+      latitude: selectedPoint.lat,
+      schedules: toBackendSchedules(workSchedules),
+      discount: discount || null,
+    };
+
+    const response = await authedFetch(path("/api/shops"), {
+      method: "POST",
+      body: JSON.stringify(shopDto),
+    });
+
+    const { success, data, error } = response;
+    console.log(success, data, error);
+    if (!success) {
+      showModal({
+        title: "上傳失敗",
+        description: error.message,
+        showDismissButton: true,
+      });
+      return;
+    }
+
+    deleteCurrentDraft();
+    showModal({
+      title: "上傳成功",
+      buttons: [
+        {
+          label: "關閉",
+          role: "primary",
+          style: "btn-primary",
+          onClick: () => navigate("/shops/drafts"),
+        },
+      ],
+    });
+  };
+
+  const handleSubmit = async () => {
     let isAvailable = true;
     const texts = [title, description, discount, address];
     if (texts.filter((t) => t !== "").length != texts.length) {
@@ -167,6 +272,26 @@ const ShopRegisterForm = () => {
         icon: <CircleAlert className="text-error" />,
         duration: 5_000, // 5s
       });
+      return;
+    }
+
+    try {
+      await submit();
+    } catch (error) {
+      showModal({
+        title: "提交失敗",
+        description: "",
+        showDismissButton: true,
+        buttons: [
+          {
+            label: "重試",
+            style: "btn-primary",
+            role: "primary",
+            onClick: submit,
+          },
+          { label: "關閉" },
+        ],
+      });
     }
   };
 
@@ -184,6 +309,8 @@ const ShopRegisterForm = () => {
             setTitle={setTitle}
           />
 
+          <ShopSubtitleBlock subTitle={subTitle} setSubtitle={setSubTitle} />
+
           <ShopDescriptionBlock
             description={description}
             showHint={showHint}
@@ -194,6 +321,11 @@ const ShopRegisterForm = () => {
             discount={discount}
             showHint={showHint}
             setDiscount={setDiscount}
+          />
+
+          <ShopSignedSchool
+            schoolAbbreviation={activeUser?.schoolAbbr ?? "UNKNOWN"}
+            showHint={showHint}
           />
 
           <ShopContactInfoBlock
@@ -223,12 +355,12 @@ const ShopRegisterForm = () => {
           />
 
           <div className="flex space-x-4">
-            <a
-              href={`/shops/preview?id=${searchParams.get("id")}`}
-              className="btn flex-1"
+            <Link
+              to={`/shops/preview?id=${searchParams.get("id")}`}
+              className="btn flex-1 bg-base-100"
             >
               預覽
-            </a>
+            </Link>
             <button onClick={handleSubmit} className="btn btn-primary flex-1">
               提交
             </button>

@@ -17,6 +17,7 @@ import {
 import type { ComponentType, SVGProps } from "react";
 import ThemeToggle from "./ThemeToggle";
 import { useToast } from "./Toast/ToastProvider";
+import { Link } from "react-router-dom";
 
 // ✅ 受控 icon map，只包含實際會用到的 icons
 export const ICONS = {
@@ -121,10 +122,12 @@ const SidebarItem = ({
             {item.label}
           </button>
         ) : (
-          <a href={item.href}>
-            <Icon name={item.icon} color={item.color} />
-            {item.label}
-          </a>
+          item.href && (
+            <Link to={item.href}>
+              <Icon name={item.icon} color={item.color} />
+              {item.label}
+            </Link>
+          )
         )}
       </li>
 
@@ -147,7 +150,7 @@ export const SidebarContent = ({
 }: {
   disabled?: boolean;
 }) => (
-  <div className="pt-18">
+  <div className="pt-16">
     <ul className="menu bg-base-100 min-h-full w-full space-y-2">
       {menu.map((item, i) => (
         <SidebarItem key={i} item={item} disabled={disabled} />

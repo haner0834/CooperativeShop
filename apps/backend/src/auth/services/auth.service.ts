@@ -45,10 +45,26 @@ export class AuthService {
       throw new InternalError('User account link is missing.');
     }
 
-    const payload = {
+    const school = await this.prisma.school.findUnique({
+      where: {
+        id: user.schoolId,
+      },
+      select: {
+        abbreviation: true,
+      },
+    });
+    if (!school)
+      throw new AppError(
+        'DATA_INTEGRITY_ERROR',
+        'School for this user is missing',
+        500,
+      );
+
+    const payload: UserPayload = {
       id: user.id,
       name: user.name,
       schoolId: user.schoolId,
+      schoolAbbr: school.abbreviation,
     };
 
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =
@@ -274,6 +290,9 @@ export class AuthService {
 
     const user = await this.prisma.user.findUnique({
       where: { id: decoded.sub },
+      include: {
+        school: { select: { abbreviation: true } },
+      },
     });
     if (!user) throw new UnauthorizedError('User not found.');
 
@@ -282,6 +301,7 @@ export class AuthService {
       id: user.id,
       name: user.name,
       schoolId: user.schoolId,
+      schoolAbbr: user.school.abbreviation,
     };
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =
       await this.tokenService.generateTokens(payload);
@@ -307,7 +327,25 @@ export class AuthService {
     // 尋找目標帳號在此設備上的 session
     const targetSession = await this.prisma.authSession.findFirst({
       where: { deviceId, account: { userId: targetUserId } },
-      include: { account: { include: { user: true } } },
+      select: {
+        id: true,
+        account: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                schoolId: true,
+                school: {
+                  select: {
+                    abbreviation: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!targetSession)
@@ -321,6 +359,7 @@ export class AuthService {
       id: user.id,
       name: user.name,
       schoolId: user.schoolId,
+      schoolAbbr: user.school.abbreviation,
     };
     // 這裡我們進行一次完整的輪換
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =

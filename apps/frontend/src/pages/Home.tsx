@@ -7,14 +7,13 @@ import { useAuth } from "../auth/AuthContext";
 import type { LoginMethod, School } from "../types/school";
 import { useAuthFetch } from "../auth/useAuthFetch";
 import { Google } from "@icons";
-import { IdCard, School as SchoolIcon, Menu, Check } from "lucide-react";
+import { IdCard, School as SchoolIcon, Menu } from "lucide-react";
 import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
-import { useModal } from "../widgets/ModalContext";
-import { useNavigate } from "react-router-dom";
 import { path } from "../utils/path";
 import QRDisplay from "../widgets/QRDisplay";
 import PageMeta from "../widgets/PageMeta";
+import { SwictableAccountsSheet } from "../widgets/SwitchableAccountSheet";
 
 const MenuToggle = ({ onClick }: { onClick: () => void }) => {
   return (
@@ -42,92 +41,9 @@ export const Avator = ({ method }: { method: LoginMethod }) => {
   }
 };
 
-const SheetContent = ({
-  handleSwitch,
-}: {
-  handleSwitch: (id: string) => void;
-}) => {
-  const { switchableAccounts, activeUser, logout } = useAuth();
-  const navigate = useNavigate();
-  const { showModal } = useModal();
-
-  const askLogout = () => {
-    showModal({
-      title: "確認登出目前帳號？",
-      description: `您將登出目前帳號（${activeUser?.name || "Unknown"}）`,
-      buttons: [
-        {
-          label: "取消",
-        },
-        {
-          label: "登出",
-          style: "btn-error",
-          role: "error",
-          onClick: handleLogout,
-        },
-      ],
-    });
-  };
-
-  const handleLogout = async () => {
-    logout();
-  };
-
-  return (
-    <div className="relative md:h-screen">
-      <ul className="space-y-4">
-        {switchableAccounts.map((account) => {
-          const loginMethod: LoginMethod = account.email
-            ? "google"
-            : "credential";
-
-          return (
-            <li
-              key={account.name}
-              onClick={() => handleSwitch(account.id)}
-              className="flex items-center"
-            >
-              <div className="flex items-center space-x-2 w-full">
-                <Avator method={loginMethod} />
-                <div className="">
-                  <p className="w-full font-medium">{account.name}</p>
-                  <p className="text-xs opacity-50">
-                    {account.email || account.providerAccountId || "Unknown"}
-                  </p>
-                </div>
-              </div>
-
-              {activeUser?.id === account.id && (
-                <div className="rounded-full p-1 bg-accent">
-                  <Check className="w-4 h-4 text-base-100" strokeWidth={3} />
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-
-      <div className="w-full md:absolute md:bottom-18">
-        <button
-          onClick={() => navigate("/choose-school")}
-          className="btn w-full btn-primary mt-4"
-        >
-          登入新帳號
-        </button>
-        <button
-          onClick={askLogout}
-          className="btn w-full btn-error btn-soft mt-4"
-        >
-          登出目前帳號
-        </button>
-      </div>
-    </div>
-  );
-};
-
 const Home = () => {
   const { setNavbarButtons, setNavbarTitle } = useNavbarButtons();
-  const { switchAccount, activeUser } = useAuth();
+  const { switchAccount, activeUser, isLoadingRef } = useAuth();
   const { authedFetch } = useAuthFetch();
   const [school, setSchool] = useState<School | null>(null);
   const [isSheetOn, setIsSheetOn] = useState(false);
@@ -164,12 +80,13 @@ const Home = () => {
   };
 
   useEffect(() => {
+    if (isLoadingRef.current) return;
     setIsLoading(true);
     getQrCode();
 
     getStudentData();
     setIsLoading(false);
-  }, []);
+  }, [isLoadingRef]);
 
   const toggleNameVisibility = () => {
     const prev = localStorage.getItem("isAnonymous");
@@ -268,7 +185,7 @@ const Home = () => {
           setIsSheetOn(false);
         }}
       >
-        <SheetContent handleSwitch={handleSwitch} />
+        <SwictableAccountsSheet handleSwitch={handleSwitch} />
       </ResponsiveSheet>
     </div>
   );

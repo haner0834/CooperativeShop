@@ -80,7 +80,7 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
         <div
           className={`bg-base-100 m-8 p-6 ${
             isMobile ? "text-center min-w-xs" : "min-w-lg"
-          } rounded-2xl max-w-120 shadow-lg transition-all duration-300 origin-center ${
+          } rounded-2xl space-y-4 max-w-120 shadow-lg transition-all duration-300 origin-center ${
             isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95"
           }`}
         >
@@ -100,9 +100,9 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
             modalOptions.content
           ) : (
             <>
-              <div className="mb-4 flex justify-center">
-                {modalOptions.icon}
-              </div>
+              {modalOptions.icon && (
+                <div className="flex justify-center">{modalOptions.icon}</div>
+              )}
 
               {modalOptions.title && (
                 <h3 className={`font-bold ${!isMobile ? "text-lg" : ""}`}>
@@ -111,7 +111,7 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
               )}
 
               {modalOptions.description && (
-                <p className={`py-4 w-full ${isMobile ? "opacity-50" : ""}`}>
+                <p className={`w-full ${isMobile ? "opacity-50" : ""}`}>
                   {modalOptions.description}
                 </p>
               )}
@@ -126,7 +126,7 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
                             btn.role != "default"
                               ? getStyle(btn.role ?? "default")
                               : "bg-base-300"
-                          } rounded-4xl w-full`
+                          } w-full`
                         : `btn ${btn.style ?? ""}`
                     }
                     onClick={() => {

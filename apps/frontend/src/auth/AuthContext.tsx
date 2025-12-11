@@ -17,6 +17,7 @@ type UserPayload = {
   id: string;
   name: string;
   schoolId: string;
+  schoolAbbr: string;
 };
 
 // 後端回傳的可切換帳號資料
@@ -35,6 +36,7 @@ type AuthContextType = {
   activeUser: UserPayload | null;
   switchableAccounts: SwitchableAccount[];
   isLoading: boolean; // 這個 loading 現在代表「正在進行某項認證操作」
+  isLoadingRef: React.RefObject<boolean>;
   hasAttemptedRestore: boolean; // ✨ 新增：標記是否已嘗試過恢復
   login: (loginFunction: Promise<any>) => Promise<void>;
   logout: () => Promise<void>;
@@ -64,6 +66,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     tokenRef.current = accessToken;
   }, [accessToken]);
+
+  const isLoadingRef = useRef<boolean>(isLoading);
+  useEffect(() => {
+    isLoadingRef.current = isLoading;
+  }, [isLoading]);
 
   useEffect(() => {
     if (!activeUser) {
@@ -191,6 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     activeUser,
     accessToken,
     tokenRef,
+    isLoadingRef,
     switchableAccounts,
     isLoading,
     login,

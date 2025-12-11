@@ -59,7 +59,7 @@ export class StorageService {
   private readonly MAX_FILE_SIZES = {
     'shop-image': 1 * 1024 * 1024, // 1 MB
     'shop-thumbnail': 700 * 1024, // 100 KB
-    'image-thumbnail': 15 * 1024, // 15 KB
+    'image-thumbnail': 150 * 1024, // 150 KB
   } as const;
 
   constructor(private readonly prisma: PrismaService) {

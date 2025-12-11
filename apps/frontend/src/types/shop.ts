@@ -1,13 +1,20 @@
 import type { Point } from "../pages/ShopRegisterForm/ShopLocationBlock";
-import type { SelectedImage } from "./selectedImage";
+import type { ImageDto, SelectedImage } from "./selectedImage";
+import type {
+  WorkScheduleBackend,
+  WorkSchedule,
+  Weekday,
+} from "./workSchedule";
 
 export interface Shop {
   id: string;
   title: string;
+  subTitle?: string;
   description: string;
-  phoneNumbers: string[];
   contactInfo: ContactInfo[];
   googleMapsLink?: string | null;
+  schoolId: string;
+  schoolAbbr: string;
   imageLinks: string[];
   thumbnailLink: string;
   isOpen: boolean;
@@ -15,28 +22,49 @@ export interface Shop {
   address: string;
   longitude: number;
   latitude: number;
+  workSchedules: WorkScheduleBackend[];
 }
 
-export type Weekday = "SUN" | "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT";
-
-export interface WorkScheduleBackend {
-  id: string;
-  weekday: Weekday;
-  startMinuteOfDay: number;
-  endMinuteOfDay: number;
-}
-
-// Seperate them because this interface match more to the
-// interaction in shop register form.
-export interface WorkSchedule {
-  weekdays: Weekday[];
-  range: [number, number]; // 0 ~ 23.5
+export interface CreateShopDto {
+  title: string;
+  subTitle: string | null;
+  description: string;
+  contactInfo: ContactInfoDto[];
+  schoolId: string;
+  images: ImageDto[];
+  thumbnailKey: string;
+  discount: string | null;
+  address: string;
+  longitude: number;
+  latitude: number;
+  schedules: WorkScheduleBackend[];
 }
 
 export const DEFAULT_WORKSCHEDULE: WorkSchedule = {
   weekdays: [],
-  range: [8, 17],
+  range: [480, 1020],
 };
+
+export function transformSchedules(
+  schedules: WorkSchedule[]
+): WorkScheduleBackend[] {
+  const result: WorkScheduleBackend[] = [];
+
+  schedules.forEach((schedule) => {
+    const [startMinuteOfDay, endMinuteOfDay] = schedule.range;
+
+    schedule.weekdays.forEach((weekday) => {
+      result.push({
+        id: crypto.randomUUID(),
+        weekday,
+        startMinuteOfDay,
+        endMinuteOfDay,
+      });
+    });
+  });
+
+  return result;
+}
 
 export const weekdayOrder: Weekday[] = [
   "MON",
@@ -82,14 +110,23 @@ export interface ContactInfo {
   validator: (newValue: string) => string;
 }
 
+export interface ContactInfoDto {
+  category: ContactCategory;
+  content: string;
+  href: string;
+}
+
 export interface ShopDraft {
   key: string;
   dateISOString: string;
   data: {
     title: string;
+    subTitle?: string;
     description: string;
     images: SelectedImage[];
     discount: string;
+    schoolId: string;
+    schoolAbbr: string;
     selectedPoint: Point | null;
     address: string;
     contactInfo: ContactInfo[];
@@ -102,9 +139,12 @@ export interface PersistentShopDraft {
   dateISOString: string;
   data: {
     title: string;
+    subTitle?: string;
     description: string;
     images: SelectedImage[];
     discount: string;
+    schoolId: string;
+    schoolAbbr: string;
     selectedPoint: Point | null;
     address: string;
     contactInfo: Omit<ContactInfo, "icon" | "formatter" | "validator">[];
