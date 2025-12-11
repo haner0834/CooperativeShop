@@ -1,15 +1,7 @@
-import { Injectable, Logger, LoggerService } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { createHmac } from 'crypto';
 import { env } from '../common/utils/env.utils';
-import {
-  NotFoundError,
-  BadRequestError,
-  InternalError,
-} from '../types/error.types';
-import fs from 'fs';
-import nodeCanvas from 'canvas';
-import { JSDOM } from 'jsdom';
-import { Log } from 'src/common/decorators/logger.decorator';
+import { NotFoundError, BadRequestError } from '../types/error.types';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 export interface QrCodePayload {
