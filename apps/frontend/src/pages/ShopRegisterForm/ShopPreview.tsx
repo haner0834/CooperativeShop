@@ -37,7 +37,6 @@ const ShopPreview = () => {
       return;
     }
     const { workSchedules: storedWorkSchedules, ...data } = draft.data;
-    console.log(draft);
     const shop: Shop = {
       ...data,
       id: crypto.randomUUID(),

@@ -19,7 +19,6 @@ import type { Point } from "./ShopLocationBlock";
 import { getDraft } from "../../utils/draft";
 import ShopDiscountBlock from "./ShopDiscountBlock";
 import { useToast } from "../../widgets/Toast/ToastProvider";
-import { useAutoLogin } from "../../utils/useAuthLogin";
 import { useAuth } from "../../auth/AuthContext";
 import { useModal } from "../../widgets/ModalContext";
 import {
@@ -103,8 +102,7 @@ const ShopRegisterForm = () => {
   }, []);
 
   // Force login
-  const hasAttemptedRestore = useAutoLogin();
-  const { activeUser } = useAuth();
+  const { activeUser, hasAttemptedRestore } = useAuth();
   useEffect(() => {
     const toLogin = () => {
       const target = `/shops/register?id=${searchParams.get("id")}`;
