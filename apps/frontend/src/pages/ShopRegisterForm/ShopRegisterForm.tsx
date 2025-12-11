@@ -86,7 +86,15 @@ const ShopRegisterForm = () => {
       setSubTitle(draft.data.subTitle ?? "");
       setDescription(draft.data.description);
       setDiscount(draft.data.discount);
-      setImages(draft.data.images);
+      setImages(
+        draft.data.images.map((image) => {
+          const { status, ...rest } = image;
+          return {
+            ...rest,
+            status: "success",
+          };
+        })
+      );
       setWorkSchedules(draft.data.workSchedules);
       setAddress(draft.data.address);
       setSelectedPoint(draft.data.selectedPoint);
