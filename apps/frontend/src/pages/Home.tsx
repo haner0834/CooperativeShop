@@ -86,7 +86,7 @@ const Home = () => {
 
     getStudentData();
     setIsLoading(false);
-  }, [isLoadingRef]);
+  }, [isLoadingRef.current]);
 
   const toggleNameVisibility = () => {
     const prev = localStorage.getItem("isAnonymous");
