@@ -87,10 +87,11 @@ const ShopRegisterForm = () => {
       setDiscount(draft.data.discount);
       setImages(
         draft.data.images.map((image) => {
-          const { status, ...rest } = image;
+          const { status, isUploading, ...rest } = image;
           return {
             ...rest,
             status: "success",
+            isUploading: false,
           };
         })
       );
