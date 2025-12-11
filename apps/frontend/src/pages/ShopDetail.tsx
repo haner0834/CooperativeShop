@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { weekdayOrder, type ContactInfo, type Shop } from "../types/shop";
 import { testShops } from "./Shops";
 import {
@@ -200,20 +200,20 @@ const ContactInfoSheet = ({ contactInfo }: { contactInfo: ContactInfo[] }) => {
           <p className="truncate flex-1">{info.formatter(info.content)}</p>
 
           {info.category === "phone-number" ? (
-            <a
-              href={info.href || buildHref(info.category, info.content)}
+            <Link
+              to={info.href || buildHref(info.category, info.content)}
               className="btn btn-circle"
             >
               <Phone className="w-5 h-5 text-primary fill-primary" />
-            </a>
+            </Link>
           ) : (
-            <a
-              href={info.href || buildHref(info.category, info.content)}
+            <Link
+              to={info.href || buildHref(info.category, info.content)}
               target="_blank"
               className="btn btn-circle"
             >
               <ExternalLink className="w-5 h-5" />
-            </a>
+            </Link>
           )}
 
           <button
@@ -377,7 +377,7 @@ export const ShopDetailContent = ({
           {isMobile ? (
             <>
               <button
-                onClick={() => (isPreview ? null : navigate(-1))}
+                onClick={() => navigate(-1)}
                 className="btn btn-circle btn-sm btn-ghost hover:bg-base-content/10"
               >
                 <ChevronLeft size={20} />

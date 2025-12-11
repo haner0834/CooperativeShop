@@ -17,6 +17,7 @@ import {
 import type { ComponentType, SVGProps } from "react";
 import ThemeToggle from "./ThemeToggle";
 import { useToast } from "./Toast/ToastProvider";
+import { Link } from "react-router-dom";
 
 // ✅ 受控 icon map，只包含實際會用到的 icons
 export const ICONS = {
@@ -121,10 +122,12 @@ const SidebarItem = ({
             {item.label}
           </button>
         ) : (
-          <a href={item.href}>
-            <Icon name={item.icon} color={item.color} />
-            {item.label}
-          </a>
+          item.href && (
+            <Link to={item.href}>
+              <Icon name={item.icon} color={item.color} />
+              {item.label}
+            </Link>
+          )
         )}
       </li>
 

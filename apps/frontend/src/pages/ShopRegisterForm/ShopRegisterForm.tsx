@@ -1,6 +1,6 @@
 import { CircleAlert, CircleDotDashed, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import FormHeader from "./FormHeader";
 import ShopTitleBlock from "./ShopTitleBlock";
 import ShopDescriptionBlock from "./ShopDescriptionBlock";
@@ -35,17 +35,17 @@ const Navbar = () => {
   return (
     <div className="navbar bg-base-100 shadow-sm z-50 fixed">
       <div className="flex-none">
-        <a href="/shops/register" className="btn btn-circle btn-ghost">
+        <Link to="/shops/register" className="btn btn-circle btn-ghost">
           <Plus />
-        </a>
+        </Link>
       </div>
       <div className="flex-1 text-center">
-        <a className="text-base font-semibold">特約商家註冊</a>
+        <h1 className="text-base font-semibold">特約商家註冊</h1>
       </div>
       <div className="flex-none">
-        <a className="btn btn-circle btn-ghost" href="/shops/drafts">
+        <Link className="btn btn-circle btn-ghost" to="/shops/drafts">
           <CircleDotDashed />
-        </a>
+        </Link>
       </div>
     </div>
   );
@@ -355,12 +355,12 @@ const ShopRegisterForm = () => {
           />
 
           <div className="flex space-x-4">
-            <a
-              href={`/shops/preview?id=${searchParams.get("id")}`}
+            <Link
+              to={`/shops/preview?id=${searchParams.get("id")}`}
               className="btn flex-1 bg-base-100"
             >
               預覽
-            </a>
+            </Link>
             <button onClick={handleSubmit} className="btn btn-primary flex-1">
               提交
             </button>
