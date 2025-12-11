@@ -5,7 +5,7 @@ import { useAuth } from "./AuthContext";
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { activeUser, hasAttemptedRestore, isLoading } = useAuth();
 
-  if (!isLoading) {
+  if (!isLoading && !activeUser) {
     return (
       <div className="pt-16 w-screen h-screen justify-center flex items-center bg-base-300">
         <span className="loading loading-spinner loading-lg text-primary"></span>
