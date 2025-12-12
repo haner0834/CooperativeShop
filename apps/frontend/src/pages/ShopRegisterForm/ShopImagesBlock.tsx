@@ -10,6 +10,8 @@ import { AnimatedCloudUploadIcon } from "../../widgets/icon-animation/CloudUploa
 import { AnimatedChevrons } from "../../widgets/icon-animation/AnimatedChevrons";
 import { ImageWithFallback } from "../../widgets/ImageWithFallback";
 
+const R2_PUBLIC_URL = "https://image.cooperativeshops.org";
+
 const ShopImagesBlock = ({
   images,
   showHint,
@@ -137,6 +139,7 @@ const ShopImagesBlock = ({
                 isUploading: false,
                 uploadProgress: 100,
                 status: "success",
+                previewUrl: `${R2_PUBLIC_URL}/${fileKey}`,
                 uploadInfo: {
                   fileKey,
                   uploadUrl,
