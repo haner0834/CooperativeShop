@@ -445,7 +445,9 @@ export const ShopDetailContent = ({
               {(shop?.imageLinks.length ?? 0) > 1 && (
                 <>
                   <button
-                    className="absolute left-4 top-1/2 -translate-y-1/2 btn btn-circle btn-sm bg-black/20 border-none text-white hover:bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className={`absolute left-4 top-1/2 -translate-y-1/2 btn btn-circle btn-sm bg-black/20 border-none text-white hover:bg-black/40 ${
+                      isMobile ? "" : "opacity-0 group-hover:opacity-100"
+                    } transition-opacity`}
                     onClick={(e) => {
                       e.stopPropagation();
                       setActiveImgIndex((p) =>
@@ -456,7 +458,9 @@ export const ShopDetailContent = ({
                     <ChevronLeft size={16} />
                   </button>
                   <button
-                    className="absolute right-4 top-1/2 -translate-y-1/2 btn btn-circle btn-sm bg-black/20 border-none text-white hover:bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 btn btn-circle btn-sm bg-black/20 border-none text-white hover:bg-black/40 ${
+                      isMobile ? "" : "opacity-0 group-hover:opacity-100"
+                    } transition-opacity`}
                     onClick={(e) => {
                       e.stopPropagation();
                       setActiveImgIndex((p) =>
