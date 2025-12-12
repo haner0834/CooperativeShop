@@ -53,8 +53,9 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="faq" element={<FAQPage />} />
       </Route>
+
+      <Route path="faq" element={<FAQPage />} />
 
       <Route path="shops/preview" element={<ShopPreview />} />
 

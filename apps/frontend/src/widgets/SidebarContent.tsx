@@ -68,7 +68,7 @@ export const menu: MenuItem[] = [
     icon: "User",
     color: "text-blue-500",
     children: [
-      { label: "個人 QR", icon: "QrCode" },
+      { label: "個人 QR", icon: "QrCode", href: "/home" },
       { label: "帳號中心", icon: "UserRoundCog" },
       { label: "QR 掃描", icon: "ScanLine" },
       { label: "學校", icon: "School" },
@@ -121,13 +121,16 @@ const SidebarItem = ({
             <Icon name={item.icon} color={item.color} />
             {item.label}
           </button>
+        ) : item.href ? (
+          <Link to={item.href}>
+            <Icon name={item.icon} color={item.color} />
+            {item.label}
+          </Link>
         ) : (
-          item.href && (
-            <Link to={item.href}>
-              <Icon name={item.icon} color={item.color} />
-              {item.label}
-            </Link>
-          )
+          <div>
+            <Icon name={item.icon} color={item.color} />
+            {item.label}
+          </div>
         )}
       </li>
 

@@ -234,7 +234,7 @@ const Shops = () => {
                 }}
                 transition={transitionProps}
               >
-                <Logo className="h-10 w-auto lg:hidden" />
+                <Logo className="h-10 w-auto" />
 
                 <div className="hidden lg:block">
                   <label className="input w-[400px] flex items-center gap-2">
