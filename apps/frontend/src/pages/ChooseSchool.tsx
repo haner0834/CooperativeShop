@@ -25,7 +25,9 @@ const SchoolCard = ({
   const [searchParams] = useSearchParams();
   const toPath = () => {
     const to = searchParams.get("to");
-    navigate(`/login/${school.loginMethod}?school=${school.id}&to=${to}`);
+    navigate(
+      `/login-hint?method=${school.loginMethod}&school=${school.id}&schoolAbbr=${school.abbreviation}&to=${to}`
+    );
   };
   return (
     <li className="w-full indicator">
