@@ -73,24 +73,26 @@ const FAQPage: React.FC = () => {
 
         <div className="flex flex-col space-y-6">
           {/* Sidebar Tabs */}
-          <div className="w-full flex justify-center items-center">
-            <div className="flex bg-base-100 rounded-box shadow-sm overflow-x-auto px-2 py-2 gap-2">
-              {faqData.map((cat) => (
-                <button
-                  key={cat.category}
-                  onClick={() => setActiveTab(cat.category)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
-                    activeTab === cat.category
-                      ? "bg-primary text-primary-content"
-                      : "hover:bg-base-200"
-                  }`}
-                >
-                  {getIcon(cat.category)}
-                  <span className="font-medium text-sm">{cat.category}</span>
-                </button>
-              ))}
+          {!searchTerm && (
+            <div className="w-full flex justify-center items-center">
+              <div className="flex bg-base-100 rounded-box shadow-sm overflow-x-auto px-2 py-2 gap-2">
+                {faqData.map((cat) => (
+                  <button
+                    key={cat.category}
+                    onClick={() => setActiveTab(cat.category)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
+                      activeTab === cat.category
+                        ? "bg-primary text-primary-content"
+                        : "hover:bg-base-200"
+                    }`}
+                  >
+                    {getIcon(cat.category)}
+                    <span className="font-medium text-sm">{cat.category}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* FAQ Content */}
           <div className="md:col-span-3 space-y-4">
