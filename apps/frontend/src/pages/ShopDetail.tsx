@@ -575,7 +575,7 @@ export const ShopDetailContent = ({
                 營業時間
               </h2>
               {status === "OPEN" && (
-                <span className="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-1 rounded-md">
+                <span className="badge badge-success badge-soft rounded-field">
                   現在營業中
                 </span>
               )}
