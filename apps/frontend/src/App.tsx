@@ -3,6 +3,7 @@ import { lazy, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import Root from "./pages/Root";
 import Navbar from "./widgets/Navbar";
+import FAQPage from "./pages/FAQ";
 const QrVerification = lazy(() => import("./pages/QRVerification"));
 const ShopPreview = lazy(() => import("./pages/ShopRegisterForm/ShopPreview"));
 const Intro = lazy(() => import("./pages/Intro"));
@@ -52,6 +53,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="faq" element={<FAQPage />} />
       </Route>
 
       <Route path="shops/preview" element={<ShopPreview />} />
