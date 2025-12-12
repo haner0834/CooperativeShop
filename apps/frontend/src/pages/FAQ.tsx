@@ -157,7 +157,7 @@ const FAQPage: React.FC = () => {
         <div className="mt-12 p-6 bg-base-300 rounded-2xl border border-base-300 flex items-start gap-4">
           <AlertCircle className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
           <div>
-            <h4 className="font-bold text-primary">關於每日配額</h4>
+            <h4 className="font-bold">關於每日配額</h4>
             <p className="text-sm text-base-content/70 mt-1">
               為了維持系統穩定性，未繳納預備金之學校將共用免費 API
               額度。若您頻繁遇到限制，建議聯繫所屬學生會了解預備金繳納狀況。
