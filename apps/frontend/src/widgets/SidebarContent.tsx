@@ -79,7 +79,7 @@ export const menu: MenuItem[] = [
     icon: "Ellipsis",
     color: "text-gray-400",
     children: [
-      { label: "FAQ", icon: "BadgeQuestionMark" },
+      { label: "FAQ", icon: "BadgeQuestionMark", href: "/faq" },
       { label: "問題回報", icon: "MessageCircleWarning" },
     ],
   },
