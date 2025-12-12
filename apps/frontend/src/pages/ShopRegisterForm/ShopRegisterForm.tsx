@@ -90,7 +90,7 @@ const ShopRegisterForm = () => {
           const { status, isUploading, ...rest } = image;
           return {
             ...rest,
-            status: "success",
+            status: status === "success" ? "success" : "error",
             isUploading: false,
           };
         })
