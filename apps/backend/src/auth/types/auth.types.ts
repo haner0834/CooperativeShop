@@ -2,6 +2,7 @@ import { Request } from 'express';
 
 export interface UserPayload {
   id: string;
+  accountId: string;
   name: string;
   schoolId: string;
   schoolAbbr: string;

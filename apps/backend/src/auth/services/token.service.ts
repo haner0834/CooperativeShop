@@ -11,6 +11,11 @@ import {
 } from '../types/auth.types';
 import { env } from 'src/common/utils/env.utils';
 
+export interface RefreshTokenPayload {
+  jti: string;
+  accountId: string;
+}
+
 @Injectable()
 export class TokenService {
   private readonly SALT_ROUNDS = 10;
@@ -37,14 +42,18 @@ export class TokenService {
   }
 
   async generateRefreshToken(
-    studentId: string,
+    userId: string,
+    accountId: string,
   ): Promise<GeneratedRefreshToken> {
-    const payload = { jti: crypto.randomBytes(16).toString('hex') };
+    const payload: RefreshTokenPayload = {
+      jti: crypto.randomBytes(16).toString('hex'),
+      accountId,
+    };
 
     // Refresh Token 的過期時間改為固定，例如 30 天
     const token = this.jwtService.sign(payload, {
       secret: this.JWT_REFRESH_SECRET,
-      subject: studentId,
+      subject: userId,
       expiresIn: this.JWT_REFRESH_EXPIRES_IN,
     });
 
@@ -60,7 +69,7 @@ export class TokenService {
     });
 
     const { token: refreshToken, hash: hashedRefreshToken } =
-      await this.generateRefreshToken(payload.id);
+      await this.generateRefreshToken(payload.id, payload.accountId);
 
     return {
       accessToken,
