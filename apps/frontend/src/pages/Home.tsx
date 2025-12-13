@@ -4,7 +4,7 @@ import {
   useNavbarButtons,
 } from "../widgets/NavbarButtonsContext";
 import { useAuth } from "../auth/AuthContext";
-import type { LoginMethod, School } from "../types/school";
+import type { LoginMethod } from "../types/school";
 import { useAuthFetch } from "../auth/useAuthFetch";
 import { Google } from "@icons";
 import { IdCard, School as SchoolIcon, Menu } from "lucide-react";
@@ -14,6 +14,9 @@ import { path } from "../utils/path";
 import QRDisplay from "../widgets/QRDisplay";
 import PageMeta from "../widgets/PageMeta";
 import { SwictableAccountsSheet } from "../widgets/SwitchableAccountSheet";
+import { useModal } from "../widgets/ModalContext";
+import { getErrorMessage } from "../utils/errors";
+import { useNavigate } from "react-router-dom";
 
 const MenuToggle = ({ onClick }: { onClick: () => void }) => {
   return (
@@ -43,50 +46,47 @@ export const Avator = ({ method }: { method: LoginMethod }) => {
 
 const Home = () => {
   const { setNavbarButtons, setNavbarTitle } = useNavbarButtons();
-  const { switchAccount, activeUser, isLoadingRef } = useAuth();
+  const { switchAccount, activeUser, isLoading: isAuthLoading } = useAuth();
   const { authedFetch } = useAuthFetch();
-  const [school, setSchool] = useState<School | null>(null);
+  const { showModal } = useModal();
+  const navigate = useNavigate();
   const [isSheetOn, setIsSheetOn] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isNormal, setIsNormal] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [qrData, setQrData] = useState<string | null>(null);
 
-  const getStudentData = async () => {
-    const schoolId = activeUser?.schoolId;
-    if (!schoolId) {
-      throw new Error("Fuck, no student ID");
-    }
-
-    const json = await authedFetch(path(`/api/schools/${schoolId}`));
-
-    if (!json.success) {
-      setIsLoading(false);
-      throw new Error("?");
-    }
-
-    setSchool(json.data);
-    localStorage.setItem("isLoggedIn", "true");
-  };
-
   const getQrCode = async () => {
-    const { success, data } = await authedFetch(path("/api/qr/generate-data"));
+    const { success, data, error } = await authedFetch(
+      path("/api/qr/generate-data")
+    );
     if (!success) {
       setIsLoading(false);
-      throw new Error("??");
+      showModal({
+        title: "無法取得 QR code",
+        description: getErrorMessage(error.code),
+        buttons: [
+          {
+            label: "返回登入",
+            onClick: () => navigate("/choose-school"),
+          },
+        ],
+      });
     }
 
     setQrData(data);
   };
 
   useEffect(() => {
-    if (isLoadingRef.current) return;
-    setIsLoading(true);
-    getQrCode();
+    if (isAuthLoading) return;
+    setTimeout(() => {
+      setIsLoading(true);
+      getQrCode();
 
-    getStudentData();
-    setIsLoading(false);
-  }, [isLoadingRef.current]);
+      localStorage.setItem("isLoggedIn", "true");
+      setIsLoading(false);
+    }, 0);
+  }, [isAuthLoading]);
 
   const toggleNameVisibility = () => {
     const prev = localStorage.getItem("isAnonymous");
@@ -172,7 +172,7 @@ const Home = () => {
               <p>學校</p>
             </div>
             <p className="" translate="no">
-              {school?.abbreviation}
+              {activeUser?.schoolAbbr}
             </p>
           </div>
         </div>

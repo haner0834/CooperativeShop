@@ -40,31 +40,25 @@ export class AuthService {
 
     const account = await this.prisma.account.findFirst({
       where: { userId: user.id },
-    });
-    if (!account) {
-      throw new InternalError('User account link is missing.');
-    }
-
-    const school = await this.prisma.school.findUnique({
-      where: {
-        id: user.schoolId,
-      },
       select: {
-        abbreviation: true,
+        id: true,
+        user: {
+          include: { school: { select: { abbreviation: true } } },
+        },
       },
     });
-    if (!school)
-      throw new AppError(
-        'DATA_INTEGRITY_ERROR',
-        'School for this user is missing',
-        500,
+    if (!account || !account.user.school) {
+      throw new InternalError(
+        'Data integrity error: Account or School missing.',
       );
+    }
 
     const payload: UserPayload = {
       id: user.id,
+      accountId: account.id,
       name: user.name,
       schoolId: user.schoolId,
-      schoolAbbr: school.abbreviation,
+      schoolAbbr: account.user.school.abbreviation,
     };
 
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =
@@ -263,14 +257,37 @@ export class AuthService {
       throw new BadRequestError('MISSING_DEVICE_ID', 'Device ID is missing.');
 
     const decoded = this.tokenService.verifyRefreshToken(tokenFromCookie);
-    if (!decoded || !decoded.sub)
+    if (!decoded || !decoded.sub || !decoded.accountId)
       throw new UnauthorizedError('Invalid refresh token.');
 
     // 1. 找 session
-    const session = await this.prisma.authSession.findFirst({
+    const session = await this.prisma.authSession.findUnique({
       where: {
-        deviceId,
-        account: { userId: decoded.sub },
+        deviceId_accountId: {
+          deviceId,
+          accountId: decoded.accountId,
+        },
+      },
+      select: {
+        id: true,
+        hashedRefreshToken: true,
+        account: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                school: {
+                  select: {
+                    id: true,
+                    abbreviation: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
     if (!session)
@@ -288,20 +305,13 @@ export class AuthService {
       );
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: decoded.sub },
-      include: {
-        school: { select: { abbreviation: true } },
-      },
-    });
-    if (!user) throw new UnauthorizedError('User not found.');
-
     // 3. 產生新 token
     const payload: UserPayload = {
-      id: user.id,
-      name: user.name,
-      schoolId: user.schoolId,
-      schoolAbbr: user.school.abbreviation,
+      id: session.account.user.id,
+      accountId: session.account.id,
+      name: session.account.user.name,
+      schoolId: session.account.user.school.id,
+      schoolAbbr: session.account.user.school.abbreviation,
     };
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =
       await this.tokenService.generateTokens(payload);
@@ -331,6 +341,7 @@ export class AuthService {
         id: true,
         account: {
           select: {
+            id: true,
             user: {
               select: {
                 id: true,
@@ -357,6 +368,7 @@ export class AuthService {
     const { user } = targetSession.account;
     const payload: UserPayload = {
       id: user.id,
+      accountId: targetSession.account.id,
       name: user.name,
       schoolId: user.schoolId,
       schoolAbbr: user.school.abbreviation,
@@ -381,13 +393,26 @@ export class AuthService {
     }
 
     const decoded = this.tokenService.verifyRefreshToken(currentRefreshToken);
-    if (!decoded || !decoded.sub) {
+    if (!decoded || !decoded.sub || !decoded.accountId) {
       throw new AppError('INVALID_TOKEN', 'Invalid refresh token.', 401);
     }
 
     // 這裡的邏輯和 refreshToken 的驗證部分完全相同
-    const session = await this.prisma.authSession.findFirst({
-      where: { deviceId, account: { userId: decoded.sub } },
+    const session = await this.prisma.authSession.findUnique({
+      where: {
+        deviceId_accountId: {
+          deviceId,
+          accountId: decoded.accountId,
+        },
+      },
+      select: {
+        hashedRefreshToken: true,
+        account: {
+          select: {
+            user: true,
+          },
+        },
+      },
     });
 
     if (!session) {
@@ -404,13 +429,10 @@ export class AuthService {
       throw new AppError('TOKEN_REUSE_DETECTED', 'Token reuse detected.', 401);
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: decoded.sub },
-    });
-    if (!user) {
+    if (!session.account.user) {
       throw new AppError('USER_NOT_FOUND', 'User not found.', 401);
     }
 
-    return user;
+    return session.account.user;
   }
 }
