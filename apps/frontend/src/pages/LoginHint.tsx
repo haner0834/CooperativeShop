@@ -61,8 +61,11 @@ const LoginHint = () => {
         <button className="btn flex-1" onClick={() => goBack()}>
           返回
         </button>
+
         <Link
-          to={`/login/${method}?school=${schoolAbbr}`}
+          to={`/login/${method}?school=${searchParams.get(
+            "school"
+          )}&to=${searchParams.get("to")}`}
           className="btn btn-primary flex-1"
         >
           繼續 <ArrowRight className="w-5 h-5" />
