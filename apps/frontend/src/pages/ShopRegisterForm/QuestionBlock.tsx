@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Markdown from "react-markdown";
 
 const QuestionBlock = ({
   title = "",
@@ -41,7 +42,11 @@ const QuestionBlock = ({
           )}
         </div>
 
-        {description && <p className="opacity-50 text-sm">{description}</p>}
+        {description && (
+          <div className="opacity-50 text-sm">
+            <Markdown>{description}</Markdown>
+          </div>
+        )}
       </div>
       {children}
     </div>

@@ -13,6 +13,7 @@ const ShopTitleBlock = ({
   return (
     <QuestionBlock
       title="店家名稱"
+      description="請填寫該店家的 **店名** ，如：丹丹漢堡"
       status={title ? "ok" : "required"}
       hint="尚未填寫店家名稱"
       showHint={showHint}
@@ -21,7 +22,7 @@ const ShopTitleBlock = ({
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="塔↘吉 摩ˇ洛哥料理"
+        placeholder="丹丹漢堡"
         className="input w-full"
       />
     </QuestionBlock>

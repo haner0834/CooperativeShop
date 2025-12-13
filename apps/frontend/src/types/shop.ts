@@ -102,6 +102,7 @@ export interface ContactInfo {
   category: ContactCategory;
   name: string;
   content: string;
+  inputType: React.HTMLInputTypeAttribute | undefined;
   placeholder: string;
   href: string;
   prefix: string;
