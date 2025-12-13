@@ -16,6 +16,7 @@ import PageMeta from "../widgets/PageMeta";
 import { SwictableAccountsSheet } from "../widgets/SwitchableAccountSheet";
 import { useModal } from "../widgets/ModalContext";
 import { getErrorMessage } from "../utils/errors";
+import { useNavigate } from "react-router-dom";
 
 const MenuToggle = ({ onClick }: { onClick: () => void }) => {
   return (
@@ -48,6 +49,7 @@ const Home = () => {
   const { switchAccount, activeUser, isLoading: isAuthLoading } = useAuth();
   const { authedFetch } = useAuthFetch();
   const { showModal } = useModal();
+  const navigate = useNavigate();
   const [isSheetOn, setIsSheetOn] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isNormal, setIsNormal] = useState(true);
@@ -63,6 +65,12 @@ const Home = () => {
       showModal({
         title: "無法取得 QR code",
         description: getErrorMessage(error.code),
+        buttons: [
+          {
+            label: "返回登入",
+            onClick: () => navigate("/choose-school"),
+          },
+        ],
       });
     }
 
