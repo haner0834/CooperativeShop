@@ -126,7 +126,7 @@ const ShopContactInfoBlock = ({
                 {contact.icon}
                 <p>{contact.prefix}</p>
                 <input
-                  type="tel"
+                  type={contact.inputType}
                   value={contact.formatter(contact.content)}
                   onChange={(e) => updateContactContent(i, e.target.value)}
                   placeholder={contact.placeholder}

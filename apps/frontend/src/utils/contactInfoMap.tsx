@@ -116,6 +116,7 @@ export const categoryMap: Record<
   "phone-number": {
     name: "電話",
     content: "",
+    inputType: "tel",
     placeholder: "0987654321",
     href: "",
     prefix: "",
@@ -126,6 +127,7 @@ export const categoryMap: Record<
   instagram: {
     name: "Instagram 帳號",
     content: "",
+    inputType: "text",
     placeholder: "cooperativeshops_2026",
     href: "",
     prefix: "@",
@@ -136,6 +138,7 @@ export const categoryMap: Record<
   facebook: {
     name: "Facebook 帳號",
     content: "",
+    inputType: "url",
     placeholder: "your.page.name",
     href: "",
     prefix: "",
@@ -146,6 +149,7 @@ export const categoryMap: Record<
   line: {
     name: "LINE",
     content: "",
+    inputType: "text",
     placeholder: "cooperativeshops",
     href: "",
     prefix: "@",
@@ -156,6 +160,7 @@ export const categoryMap: Record<
   website: {
     name: "網站",
     content: "",
+    inputType: "url",
     placeholder: "cooperativeshops.org",
     href: "",
     prefix: "https://",
@@ -166,6 +171,7 @@ export const categoryMap: Record<
   other: {
     name: "其他",
     content: "",
+    inputType: "text",
     placeholder: ":D",
     href: "",
     prefix: "",
