@@ -2,16 +2,15 @@ import imageCompression from "browser-image-compression";
 
 export async function compressImage(file: File) {
   const mainImage = await imageCompression(file, {
-    maxWidthOrHeight: 1280, // 主圖最大邊
+    maxWidthOrHeight: 2000, // 主圖最大邊
     useWebWorker: true,
-    maxSizeMB: 1,
+    maxSizeMB: 3,
     fileType: "image/webp",
   });
 
   const thumbnail = await imageCompression(file, {
-    maxWidthOrHeight: 700,
     useWebWorker: true,
-    maxSizeMB: 0.15,
+    maxSizeMB: 0.5,
     fileType: "image/webp",
   });
 

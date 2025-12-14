@@ -1,4 +1,4 @@
-import { CircleAlert, CircleDotDashed, Plus } from "lucide-react";
+import { CircleAlert, CircleDotDashed, CloudUpload, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import FormHeader from "./FormHeader";
@@ -64,6 +64,7 @@ const ShopRegisterForm = () => {
     DEFAULT_WORKSCHEDULE,
   ]);
   const [showHint, setShowHint] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const { showToast } = useToast();
   const { showModal } = useModal();
   const navigate = useNavigate();
@@ -277,7 +278,16 @@ const ShopRegisterForm = () => {
     }
 
     try {
+      if (isUploading) {
+        showToast({
+          title: "上傳中請稍後",
+          icon: <CloudUpload className="text-error" />,
+        });
+        return;
+      }
+      setIsUploading(true);
       await submit();
+      setIsUploading(false);
     } catch (error) {
       showModal({
         title: "提交失敗",

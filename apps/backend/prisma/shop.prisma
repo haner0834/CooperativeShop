@@ -1,20 +1,21 @@
 model Shop {
-    id           String          @id @default(cuid())
-    title        String
-    subTitle     String?
-    description  String
-    contactInfo  Json // An array
-    thumbnailKey String
-    discount     String?
-    schedules    Json
-    address      String
-    longitude    Float
-    latitude     Float
-    images       ShopImage[]
-    school       School          @relation(fields: [schoolId], references: [id])
-    schoolId     String
-    dailyStats   ShopDailyStat[]
-    rankings     ShopRanking[]
+    id            String          @id @default(cuid())
+    title         String
+    subTitle      String?
+    description   String
+    contactInfo   Json // An array
+    thumbnailKey  String
+    discount      String?
+    schedules     Json
+    address       String
+    longitude     Float
+    latitude      Float
+    images        ShopImage[]
+    school        School          @relation(fields: [schoolId], references: [id])
+    schoolId      String
+    dailyStats    ShopDailyStat[]
+    rankings      ShopRanking[]
+    requestHashId String          @unique @default("hash_id")
 
     @@index([title])
 }

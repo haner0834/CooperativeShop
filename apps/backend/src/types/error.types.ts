@@ -34,6 +34,12 @@ export class BadRequestError extends AppError {
   }
 }
 
+export class ConflictError extends AppError {
+  constructor(code: string, message: string) {
+    super(code, message, 409);
+  }
+}
+
 export class InternalError extends AppError {
   constructor(message = 'Internal server error.') {
     super('INTERNAL_SERVER_ERROR', message, 500);
