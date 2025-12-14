@@ -15,7 +15,7 @@ model Shop {
     schoolId      String
     dailyStats    ShopDailyStat[]
     rankings      ShopRanking[]
-    requestHashId String          @unique @default("hash_id")
+    requestHashId String          @unique @default(uuid())
 
     @@index([title])
 }
