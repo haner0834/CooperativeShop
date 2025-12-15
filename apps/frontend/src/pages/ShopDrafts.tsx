@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { ShopDraft } from "../types/shop";
-import { Ellipsis, Pencil, Plus, Trash2 } from "lucide-react";
+import { Ellipsis, Pencil, PencilLine, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "../auth/AuthContext";
 import { Link } from "react-router-dom";
@@ -151,12 +151,15 @@ const ShopDrafts = () => {
           {drafts.length === 0 && (
             <AnimatedListItem>
               <div className="flex flex-col h-screen -mt-30 justify-center items-center">
-                <h2 className="p-4 text-center">沒有草稿</h2>
+                <div className="flex items-center">
+                  <PencilLine />
+                  <h2 className="p-4 text-center">沒有草稿</h2>
+                </div>
                 <button
                   onClick={addDraft}
                   className="btn btn-primary btn-wide rounded-full"
                 >
-                  前往註冊
+                  新建草稿
                 </button>
               </div>
             </AnimatedListItem>
