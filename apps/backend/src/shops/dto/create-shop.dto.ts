@@ -17,7 +17,7 @@ import { IsGoogleMapsUrl } from 'src/common/decorators/is-googlemaps-url.decorat
 import { ContactCategory, ContactInfo } from '../types/contact-info.type';
 import { Weekday, WorkSchedule } from '../types/work-schedule.type';
 
-class ContactInfoDto implements ContactInfo {
+export class ContactInfoDto implements ContactInfo {
   @IsEnum(ContactCategory)
   category: ContactCategory;
 
@@ -30,7 +30,7 @@ class ContactInfoDto implements ContactInfo {
   href: string;
 }
 
-class WorkScheduleDto implements WorkSchedule {
+export class WorkScheduleDto implements WorkSchedule {
   @IsEnum(Weekday)
   weekday: Weekday;
 
@@ -41,7 +41,7 @@ class WorkScheduleDto implements WorkSchedule {
   endMinuteOfDay: number;
 }
 
-class ImageDto {
+export class ImageDto {
   @IsString()
   @IsNotEmpty()
   fileKey: string;

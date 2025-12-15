@@ -17,10 +17,7 @@ export const testShops: Shop[] = [
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
-    imageLinks: [
-      "https://picsum.photos/800/600?random=1",
-      "https://picsum.photos/800/600?random=2",
-    ],
+    images: [],
     thumbnailLink: "https://picsum.photos/400/300?random=3",
     discount: "10% off for students",
     address: "No. 25, Lane 12, Yongkang St., Taipei City",
@@ -40,11 +37,7 @@ export const testShops: Shop[] = [
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
-    imageLinks: [
-      "https://picsum.photos/800/600?random=4",
-      "https://picsum.photos/800/600?random=5",
-      "https://picsum.photos/800/600?random=6",
-    ],
+    images: [],
     thumbnailLink: "https://picsum.photos/400/300?random=7",
     discount: null,
     address: "No. 128, Roosevelt Rd., Taipei City",
@@ -64,7 +57,7 @@ export const testShops: Shop[] = [
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
-    imageLinks: ["https://picsum.photos/800/600?random=8"],
+    images: [],
     thumbnailLink: "https://picsum.photos/400/300?random=9",
     discount: "Spend NT$500, get NT$50 off",
     address: "No. 88, Section 2, Minquan E. Rd., Taipei City",
@@ -84,10 +77,7 @@ export const testShops: Shop[] = [
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
-    imageLinks: [
-      "https://picsum.photos/800/600?random=10",
-      "https://picsum.photos/800/600?random=11",
-    ],
+    images: [],
     thumbnailLink: "https://picsum.photos/400/300?random=12",
     discount: "Free consultation for first-time clients",
     address: "No. 9, Alley 5, Xinyi Rd., Taipei City",
@@ -107,10 +97,7 @@ export const testShops: Shop[] = [
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
-    imageLinks: [
-      "https://picsum.photos/800/600?random=13",
-      "https://picsum.photos/800/600?random=14",
-    ],
+    images: [],
     thumbnailLink: "https://picsum.photos/400/300?random=15",
     discount: "Buy 2 get 1 free on weekends",
     address: "No. 33, Ren'ai Rd., Taipei City",
@@ -124,7 +111,7 @@ export const testShops: Shop[] = [
   },
 ];
 
-const SectionTitle = ({ title }: { title: string }) => {
+export const ShopSectionTitle = ({ title }: { title: string }) => {
   return (
     <div className="flex justify-between sm:justify-start items-center mb-4 mx-4">
       <h2 className="font-bold text-2xl">{title}</h2>
@@ -292,7 +279,7 @@ const Shops = () => {
 
       <main className="bg-base-100 min-h-screen pt-18 space-y-8 lg:ps-64">
         <section className="">
-          <SectionTitle title="Recent Visited" />
+          <ShopSectionTitle title="Recent Visited" />
           <div
             className="overflow-x-scroll px-4"
             style={{
@@ -313,7 +300,7 @@ const Shops = () => {
           </div>
         </section>
         <section className="">
-          <SectionTitle title="All Shops" />
+          <ShopSectionTitle title="All Shops" />
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 space-y-2">
             {testShops.map((shop) => (
               <ShopCard key={shop.id} shop={shop} className="w-full" />
