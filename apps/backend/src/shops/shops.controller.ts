@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ShopsService } from './shops.service';
 import { CreateShopDto } from './dto/create-shop.dto';
@@ -24,8 +25,8 @@ export class ShopsController {
   }
 
   @Get()
-  findAll() {
-    return this.shopsService.findAll();
+  findAll(@Query('school') schoolAbbr: string) {
+    return this.shopsService.findAll(schoolAbbr);
   }
 
   @Get(':id')

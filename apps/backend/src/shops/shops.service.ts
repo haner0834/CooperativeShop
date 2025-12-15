@@ -120,8 +120,10 @@ export class ShopsService {
     });
   }
 
-  async findAll() {
-    return await this.prisma.shop.findMany();
+  async findAll(schoolAbbr: string) {
+    return await this.prisma.shop.findMany({
+      where: { school: { abbreviation: schoolAbbr } },
+    });
   }
 
   async findOne(id: string) {
