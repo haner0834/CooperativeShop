@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ShopsService } from './shops.service';
 import { CreateShopDto } from './dto/create-shop.dto';
@@ -23,15 +24,15 @@ export class ShopsController {
     return this.shopsService.create(createShopDto);
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.shopsService.findAll();
-  // }
+  @Get()
+  findAll(@Query('school') schoolAbbr: string) {
+    return this.shopsService.findAll(schoolAbbr);
+  }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.shopsService.findOne(id);
-  // }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.shopsService.findOne(id);
+  }
 
   @Patch(':id')
   @UseGuards(JwtAccessGuard)
@@ -39,8 +40,8 @@ export class ShopsController {
     return this.shopsService.update(id, updateShopDto);
   }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.shopsService.remove(id);
-  // }
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.shopsService.remove(id);
+  }
 }
