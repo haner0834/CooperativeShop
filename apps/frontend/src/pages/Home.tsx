@@ -46,7 +46,7 @@ export const Avator = ({ method }: { method: LoginMethod }) => {
 
 const Home = () => {
   const { setNavbarButtons, setNavbarTitle } = useNavbarButtons();
-  const { switchAccount, activeUser, isLoading: isAuthLoading } = useAuth();
+  const { switchAccount, activeUser } = useAuth();
   const { authedFetch } = useAuthFetch();
   const { showModal } = useModal();
   const navigate = useNavigate();
@@ -78,7 +78,6 @@ const Home = () => {
   };
 
   useEffect(() => {
-    if (isAuthLoading) return;
     setTimeout(() => {
       setIsLoading(true);
       getQrCode();
@@ -86,7 +85,7 @@ const Home = () => {
       localStorage.setItem("isLoggedIn", "true");
       setIsLoading(false);
     }, 0);
-  }, [isAuthLoading]);
+  }, []);
 
   const toggleNameVisibility = () => {
     const prev = localStorage.getItem("isAnonymous");
@@ -99,7 +98,6 @@ const Home = () => {
       await switchAccount(id);
       await getQrCode();
     } else {
-      console.log("Fuck");
     }
   };
 
@@ -117,7 +115,6 @@ const Home = () => {
       content: (
         <MenuToggle
           onClick={() => {
-            console.log("hello");
             setIsSheetOn(true);
           }}
         />

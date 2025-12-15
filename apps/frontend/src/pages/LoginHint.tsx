@@ -1,4 +1,4 @@
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
 import { useEffect, useState, type ChangeEvent } from "react";
 import SchoolIcon from "../widgets/SchoolIcon";
@@ -11,14 +11,27 @@ const LoginHint = () => {
   const { setNavbarButtonsByType, setNavbarTitle } = useNavbarButtons();
   const [schoolAbbr, setSchoolAbbr] = useState<string | null>(null);
   const [method, setMethod] = useState<"credential" | "google" | null>(null);
-  const [dontShowAgain, setDontShowAgain] = useState(false);
-  const navigate = useNavigate();
   const { goBack } = usePathHistory();
 
   const getLoginPath = (method: string) =>
     `/login/${method}?school=${searchParams.get(
       "school"
     )}&to=${searchParams.get("to")}`;
+
+  const [dontShowAgain, setDontShowAgain] = useState(() => {
+    return (
+      localStorage.getItem(
+        `login-hint_dont-show-again_${searchParams.get("schoolAbbr")}`
+      ) === "true"
+    );
+  });
+  if (dontShowAgain) {
+    return (
+      <Navigate
+        to={getLoginPath(searchParams.get("method") ?? "credential")}
+      ></Navigate>
+    );
+  }
 
   useEffect(() => {
     setNavbarButtonsByType(["back"]);
@@ -29,14 +42,6 @@ const LoginHint = () => {
 
     const method = searchParams.get("method");
     setMethod(method as any);
-
-    const dontShowAgain =
-      localStorage.getItem(`login-hint_dont-show-again_${schoolAbbr}`) ===
-      "true";
-    setDontShowAgain(dontShowAgain);
-    if (dontShowAgain) {
-      navigate(getLoginPath(method ?? ""));
-    }
   }, []);
 
   const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {

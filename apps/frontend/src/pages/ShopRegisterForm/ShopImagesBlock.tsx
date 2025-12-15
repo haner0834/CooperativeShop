@@ -151,7 +151,6 @@ const ShopImagesBlock = ({
         )
       );
     } catch (err: any) {
-      console.error("Upload failed", err);
       setImages((prev) =>
         prev.map((img) =>
           img.localId === localId
@@ -214,12 +213,9 @@ const ShopImagesBlock = ({
         }),
       });
       if (!apiResponse.success) {
-        console.log(apiResponse);
       }
       setImages((prev) => prev.filter((_, i) => i !== index));
-    } catch (error) {
-      console.log("Failed to delete image:", error);
-    }
+    } catch (error) {}
   };
 
   return (

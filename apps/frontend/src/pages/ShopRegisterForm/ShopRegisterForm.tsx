@@ -224,8 +224,7 @@ const ShopRegisterForm = () => {
       body: JSON.stringify(shopDto),
     });
 
-    const { success, data, error } = response;
-    console.log(success, data, error);
+    const { success, error } = response;
     if (!success) {
       showModal({
         title: "上傳失敗",
