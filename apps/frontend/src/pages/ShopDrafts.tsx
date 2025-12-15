@@ -150,7 +150,7 @@ const ShopDrafts = () => {
         <ul className="space-y-4 m-4">
           {drafts.length === 0 && (
             <AnimatedListItem>
-              <div className="flex flex-col space-y-4 items-center">
+              <div className="flex flex-col h-screen -mt-30 justify-center items-center">
                 <h2 className="p-4 text-center">沒有草稿</h2>
                 <button
                   onClick={addDraft}
