@@ -6,4 +6,6 @@ model School {
     studentIdFormat Json?
     users           User[]
     shops           Shop[]
+
+    @@index([abbreviation])
 }
