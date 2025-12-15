@@ -2,7 +2,8 @@ import "./App.css";
 import { lazy, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import Root from "./pages/Root";
-import Navbar from "./widgets/Navbar";
+import ProtectedGate from "./auth/ProtectedGate";
+const Navbar = lazy(() => import("./widgets/Navbar"));
 const LoginHint = lazy(() => import("./pages/LoginHint"));
 const FAQPage = lazy(() => import("./pages/FAQ"));
 const QrVerification = lazy(() => import("./pages/QRVerification"));
@@ -11,7 +12,6 @@ const Intro = lazy(() => import("./pages/Intro"));
 const ChooseSchool = lazy(() => import("./pages/ChooseSchool"));
 const Login = lazy(() => import("./pages/Login"));
 const Home = lazy(() => import("./pages/Home"));
-const ProtectedRoute = lazy(() => import("./auth/ProtectedRoute"));
 const LoginFailed = lazy(() => import("./pages/LoginFailed"));
 const QrScannerRef = lazy(() => import("./pages/QRCodeScanner"));
 const Schools = lazy(() => import("./pages/Schools"));
@@ -47,14 +47,9 @@ function App() {
         <Route path="qr-scanner" element={<QrScannerRef />} />
         <Route path="qr-verification" element={<QrVerification />} />
         <Route path="schools" element={<Schools />} />
-        <Route
-          path="home"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
-        />
+        <Route element={<ProtectedGate />}>
+          <Route path="home" element={<Home />} />
+        </Route>
       </Route>
 
       <Route path="faq" element={<FAQPage />} />

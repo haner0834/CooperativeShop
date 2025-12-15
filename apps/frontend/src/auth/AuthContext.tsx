@@ -9,6 +9,7 @@ import {
 } from "react";
 import { getDeviceId } from "../utils/device";
 import { path } from "../utils/path";
+import { ensureAuth } from "./authCoordinator";
 
 // --- 1. 定義新的型別 ---
 
@@ -29,15 +30,35 @@ export type SwitchableAccount = {
   schoolId: string;
 };
 
+type RestorePromiseControls = {
+  /**
+   * 這是外部組件 (如 useAuthFetch) await 的 Promise。
+   * 它會在會話恢復成功或失敗 (已嘗試) 後被 resolve(true) 或 resolve(false)。
+   */
+  promise: Promise<boolean>;
+
+  /**
+   * 用於手動完成 Promise 的 resolve 函式。
+   */
+  resolve: (value: boolean) => void;
+
+  /**
+   * 用於手動拒絕 Promise 的 reject 函式 (備用)。
+   */
+  reject: (reason?: any) => void;
+};
+
 // AuthContext 的完整型別
 type AuthContextType = {
   accessToken: string | null;
   tokenRef: React.RefObject<string | null>;
   activeUser: UserPayload | null;
+  activeUserRef: React.RefObject<UserPayload | null>;
   switchableAccounts: SwitchableAccount[];
   isLoading: boolean; // 這個 loading 現在代表「正在進行某項認證操作」
   isLoadingRef: React.RefObject<boolean>;
   hasAttemptedRestore: boolean; // ✨ 新增：標記是否已嘗試過恢復
+  restorePromise: Promise<boolean>;
   login: (loginFunction: Promise<any>) => Promise<void>;
   logout: () => Promise<void>;
   switchAccount: (targetUserId: string) => Promise<void>;
@@ -56,6 +77,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasAttemptedRestore, setHasAttemptedRestore] = useState(false);
+  const [restorePromiseControls] = useState<RestorePromiseControls>(() => {
+    let res: (value: boolean) => void;
+    let rej: (reason?: any) => void;
+
+    // 建立一個會被 boolean resolve 的 Promise
+    const promise = new Promise<boolean>((resolve, reject) => {
+      res = resolve;
+      rej = reject;
+    });
+
+    // 將 Promise 及其控制器返回
+    return {
+      promise,
+      resolve: res!,
+      reject: rej!,
+    };
+  });
 
   // Use ref to update access token immediately instead of
   // wait until `accessToken` re-generate. This would be helpful
@@ -63,18 +101,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // get up-to-date access token.
   const tokenRef = useRef<string | null>(accessToken);
 
-  useEffect(() => {
-    tokenRef.current = accessToken;
-  }, [accessToken]);
+  // NOTE: Not to use `useEffect` for updating `tokenRef.current`
+  // because `useEffect` runs at the next round, which is
+  // slow enough to make a race condition.
+  //
+  // EXAMPLE:
+  // 1. `restoreSession` runs globally
+  // 2. user enter `Home`, triggered `getQrData` by calling `authedFetch`
+  // 3. `authedFetch` wait until `ensureAuth` complete promise(held by `restoreSession`)
+  // 4. `authedFetch` start fetching data by using old `tokenRef.current`, which is `null`
+  // 5. `authedFetch` failed -> auto retry -> `refreshAccessToken` called
+  // 6. `refreshAccessToken` succeed -> `authedFetch` use new token (from its return value)
+  // 7. `authedFetch` fetch data again -> succeed -> return
+  // 8. React render
+  // 9. `useEffect` update `tokenRef.current`
+
+  // useEffect(() => {
+  //   tokenRef.current = accessToken;
+  // }, [accessToken]);
+
+  const setAccessTokenAndTokenRef = (newToken: string | null) => {
+    setAccessToken(newToken);
+    tokenRef.current = newToken;
+  };
 
   const isLoadingRef = useRef<boolean>(isLoading);
   useEffect(() => {
     isLoadingRef.current = isLoading;
   }, [isLoading]);
 
+  const activeUserRef = useRef<UserPayload | null>(null);
+  useEffect(() => {
+    console.log("Fuck You ALLLLL", activeUser);
+    activeUserRef.current = activeUser;
+  }, [activeUser]);
+
   useEffect(() => {
     if (!activeUser) {
-      restoreSession();
+      console.log("restoreSession called");
+      ensureAuth(restoreSession);
     }
   }, []);
 
@@ -84,14 +149,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!accessToken || !user) {
       throw new Error("Invalid response from server after auth.");
     }
-    setAccessToken(accessToken);
+    setAccessTokenAndTokenRef(accessToken);
     setActiveUser(user);
     setSwitchableAccounts(switchableAccounts || []);
   };
 
   // --- 3. 核心認證函式 ---
 
-  const refreshAccessToken = useCallback(async (): Promise<string> => {
+  const rawRefreshFunc = useCallback(async (): Promise<string> => {
+    if (activeUser && tokenRef.current) {
+      return tokenRef.current;
+    }
     // 刷新 Token 時也需要 deviceId
     const res = await fetch(path("/api/auth/refresh"), {
       // 請確認您的後端 Port
@@ -108,19 +176,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!res.ok || !json.success || !json.data.accessToken) {
       // 刷新失敗，清空所有狀態
       setActiveUser(null);
-      setAccessToken(null);
+      setAccessTokenAndTokenRef(null);
       setSwitchableAccounts([]);
       throw new Error("Unable to refresh access token.");
     }
 
-    setAccessToken(json.data.accessToken);
+    setAccessTokenAndTokenRef(json.data.accessToken);
     return json.data.accessToken;
   }, []);
 
-  const restoreSession = useCallback(async () => {
-    // 如果已經嘗試過，或正在載入，則直接返回，防止重複呼叫
-    if (hasAttemptedRestore || isLoading) return;
+  const refreshAccessToken = useCallback(async (): Promise<string> => {
+    return ensureAuth(rawRefreshFunc);
+  }, [rawRefreshFunc]);
 
+  const restoreSession = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await fetch(path("/api/auth/restore"), {
@@ -131,15 +200,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const json = await res.json();
       if (json.success) {
         handleAuthSuccess(json.data);
+        restorePromiseControls.resolve(true);
+        // return json.data.accessToken;
+      } else {
+        restorePromiseControls.resolve(false);
       }
     } catch (error) {
       console.log("No active session to restore.");
+      restorePromiseControls.resolve(false);
       // 即使失敗，也算是一次成功的「嘗試」
     } finally {
       setIsLoading(false);
       setHasAttemptedRestore(true);
     }
-  }, [isLoading, hasAttemptedRestore]);
+  }, []);
 
   // 提供一個通用的登入函式，可以接收任何登入 API 的 promise
   const login = async (loginPromise: Promise<any>) => {
@@ -167,7 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // 切換成功後，後端只回傳新的 accessToken 和 user
     const { accessToken: newAccessToken, user: newUser } = json.data;
-    setAccessToken(newAccessToken);
+    setAccessTokenAndTokenRef(newAccessToken);
     setActiveUser(newUser);
   };
 
@@ -185,7 +259,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const json = await res.json();
 
     setActiveUser(null);
-    setAccessToken(null);
+    setAccessTokenAndTokenRef(null);
     setSwitchableAccounts([]);
 
     if (!json.success) {
@@ -196,11 +270,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // 傳遞給 Provider 的值
   const value: AuthContextType = {
     activeUser,
+    activeUserRef,
     accessToken,
     tokenRef,
     isLoadingRef,
     switchableAccounts,
     isLoading,
+    restorePromise: restorePromiseControls.promise,
     login,
     logout,
     switchAccount,

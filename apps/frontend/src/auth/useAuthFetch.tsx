@@ -33,13 +33,29 @@ type AuthFetchOptions = RequestInit & {
  * @returns { authedFetch: (url: string, options?: AuthFetchOptions) => Promise<any> }
  */
 export const useAuthFetch = () => {
-  const { tokenRef, refreshAccessToken } = useAuth();
+  const { tokenRef, refreshAccessToken, activeUserRef, restorePromise } =
+    useAuth();
 
   const authedFetch = useCallback(
     async (url: string, options: AuthFetchOptions = {}) => {
       const { retries = 1, ...fetchOptions } = options;
       const maxAttempts = retries + 1;
       let lastError: Error | null = null;
+      console.log("AuthedFetch called.");
+
+      if (!activeUserRef.current && restorePromise) {
+        // If `activeUser` has not been set (App just launch)，
+        // and `AuthContext` has waiting `restorePromise，`
+        // then wait for the session to resume and the Promise to complete.
+        console.log("[AuthFetch] Waiting for session restore to complete...");
+        await restorePromise;
+
+        // After waiting, if `activeUser` is still `null`
+        // it failed.
+        if (!activeUserRef) {
+          throw new Error("Session restore failed, please log in again.");
+        }
+      }
 
       // Use a variable to store the currently valid token,
       // as it may be updated during the retry process.
