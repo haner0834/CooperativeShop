@@ -267,14 +267,10 @@ export default function App() {
   };
 
   const handleScanResult = (decodedText: string) => {
-    console.log("Called");
     // If a scan is already complete, ignore subsequent scans
     if (isScanComplete) {
-      console.warn("isScanComplete is true");
       return;
     }
-
-    console.log(`Scan result: ${decodedText}`);
 
     // Set the state to indicate a successful scan
     setIsScanComplete(true);

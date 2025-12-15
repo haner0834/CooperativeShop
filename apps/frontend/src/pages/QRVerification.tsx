@@ -211,7 +211,6 @@ const QrVerification = () => {
       setStatus("success");
       saveToHistory(data);
     } catch (err) {
-      console.error(err);
       setErrorData({ code: "NETWORK_ERROR" });
       setStatus("error");
     }

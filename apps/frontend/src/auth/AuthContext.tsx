@@ -132,13 +132,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const activeUserRef = useRef<UserPayload | null>(null);
   useEffect(() => {
-    console.log("Fuck You ALLLLL", activeUser);
     activeUserRef.current = activeUser;
   }, [activeUser]);
 
   useEffect(() => {
     if (!activeUser) {
-      console.log("restoreSession called");
       ensureAuth(restoreSession);
     }
   }, []);

@@ -98,7 +98,6 @@ const Home = () => {
       await switchAccount(id);
       await getQrCode();
     } else {
-      console.log("Fuck");
     }
   };
 
@@ -116,7 +115,6 @@ const Home = () => {
       content: (
         <MenuToggle
           onClick={() => {
-            console.log("hello");
             setIsSheetOn(true);
           }}
         />

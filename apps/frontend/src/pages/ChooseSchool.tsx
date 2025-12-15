@@ -111,7 +111,6 @@ const ChooseSchool = () => {
       });
       const json = await res.json();
       if (!json.success) {
-        console.error(json);
         showModal({
           title: "Unexpected error occured.",
           description: getErrorMessage(json.error.code),
