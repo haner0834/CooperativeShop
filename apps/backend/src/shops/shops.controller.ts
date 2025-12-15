@@ -23,15 +23,15 @@ export class ShopsController {
     return this.shopsService.create(createShopDto);
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.shopsService.findAll();
-  // }
+  @Get()
+  findAll() {
+    return this.shopsService.findAll();
+  }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.shopsService.findOne(id);
-  // }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.shopsService.findOne(id);
+  }
 
   @Patch(':id')
   @UseGuards(JwtAccessGuard)
@@ -39,8 +39,8 @@ export class ShopsController {
     return this.shopsService.update(id, updateShopDto);
   }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.shopsService.remove(id);
-  // }
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.shopsService.remove(id);
+  }
 }
