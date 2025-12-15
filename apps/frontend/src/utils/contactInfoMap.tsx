@@ -106,8 +106,86 @@ export const validateWebsite = (input: string): string => {
 };
 
 // ========== Other ==========
-export const formatOther = (value: string): string => value.trim();
-export const validateOther = (value: string): string => value.trim();
+// Helper function: check and santinize URL
+const sanitizeUrl = (url: string): string => {
+  // 1. URL Protocol Whitelisting: check if start with safe protocols
+  const safeProtocols = ["http://", "https://", "mailto:", "tel:"];
+
+  const lowerUrl = url.toLowerCase();
+
+  // 如果不以安全協議開頭，或者是以 'javascript:' 或 'data:' 開頭，則移除協議
+  if (
+    !safeProtocols.some((p) => lowerUrl.startsWith(p)) ||
+    lowerUrl.startsWith("javascript:") ||
+    lowerUrl.startsWith("data:")
+  ) {
+    // 移除開頭的協議，只保留內容。
+    // 這確保了即使輸入了 javascript:alert(1)，我們也只留下 alert(1) 作為純文字。
+    return url.replace(/^[a-zA-Z]+:\/\//, "");
+  }
+
+  // 如果是安全的協議，只清理不安全的 URL 字符 (這在前端通常由瀏覽器處理，但做一次過濾更安全)
+  // 此處使用一個更寬鬆的過濾，只刪除控制字元和非法的 URI 字元。
+  return url.replace(/[\x00-\x1F\x7F<>]/g, "");
+};
+
+// ========== Other ==========
+
+/**
+ * 格式化 Other 內容：清理輸入並進行 URL 安全檢查。
+ * 這是用於 UI 顯示的內容。
+ */
+export const formatOther = (value: string): string => {
+  if (!value) return "";
+  let trimmedValue = value.trim();
+
+  // 嘗試進行 URL 安全清理
+  return sanitizeUrl(trimmedValue);
+};
+
+/**
+ * 驗證 Other 內容：僅進行 trim 和長度限制。
+ */
+export const validateOther = (value: string): string => {
+  return formatOther(value).slice(0, 150);
+};
+
+// 輔助函數：檢查一個字符串是否看起來像一個完整的 URL (用於 hrefBuilder)
+const isLikelyUrl = (content: string): boolean => {
+  // 檢查是否包含有效的 URL 結構 (例如：至少包含一個點和斜線)
+  // 或者是以安全協議開頭
+  return (
+    content.includes(".") ||
+    content.toLowerCase().startsWith("http") ||
+    content.toLowerCase().startsWith("mailto") ||
+    content.toLowerCase().startsWith("tel")
+  );
+};
+
+export const otherHrefBuilder = (v: string) => {
+  // 1. 再次清理輸入 (以防萬一)
+  const sanitizedContent = sanitizeUrl(v);
+
+  // 2. 判斷是否構成連結
+  if (isLikelyUrl(sanitizedContent)) {
+    // 如果看起來是 URL，檢查協議並補上 https://
+    if (
+      sanitizedContent.toLowerCase().startsWith("http://") ||
+      sanitizedContent.toLowerCase().startsWith("https://") ||
+      sanitizedContent.toLowerCase().startsWith("mailto:") ||
+      sanitizedContent.toLowerCase().startsWith("tel:")
+    ) {
+      return sanitizedContent; // 已有協議，直接使用
+    } else {
+      // 沒有協議 (例如：www.example.com)，預設補上 https://
+      return `https://${sanitizedContent}`;
+    }
+  }
+
+  // 如果不是 URL，或者被清理到只剩下純文字，則返回空字串或 `#`
+  // 如果返回空字串，前端渲染時應判斷並禁用 <a> 標籤。
+  return "";
+};
 
 export const categoryMap: Record<
   ContactCategory,
@@ -213,7 +291,7 @@ export const hrefBuilders: Record<ContactCategory, (value: string) => string> =
     facebook: (v) => `https://www.facebook.com/${v}`,
     line: (v) => `https://line.me/R/ti/p/@${v}`,
     website: (v) => `https://${v}`,
-    other: (v) => v,
+    other: otherHrefBuilder,
   };
 
 export const buildHref = (category: ContactCategory, content: string) => {
