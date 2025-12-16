@@ -299,8 +299,12 @@ export const ShopDetailContent = ({
   };
 
   const handleSave = () => {
-    if (isPreview) {
-      showToast({ title: "預覽模式無法收藏", placement: "top" });
+    if (true) {
+      showToast({
+        title: "預覽模式無法收藏",
+        placement: "top",
+        replace: true,
+      });
       return;
     }
     //TODO: Add actual api
