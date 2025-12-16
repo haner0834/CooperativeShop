@@ -101,6 +101,7 @@ const FilteredShops = () => {
         buttons: [{ label: "關閉" }],
       });
     }
+    setIsDeletingId(null);
   };
 
   useEffect(() => {
