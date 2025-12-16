@@ -1,9 +1,17 @@
 import { useEffect, useState } from "react";
 import type { ShopDraft } from "../types/shop";
-import { Ellipsis, Pencil, PencilLine, Plus, Trash2 } from "lucide-react";
+import {
+  ArrowRight,
+  Ellipsis,
+  Pencil,
+  PencilLine,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "../auth/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useModal } from "../widgets/ModalContext";
 
 const Navbar = () => {
   return (
@@ -42,7 +50,10 @@ const AnimatedListItem = ({ children }: { children?: React.ReactNode }) => {
 
 const ShopDrafts = () => {
   const [drafts, setDrafts] = useState<ShopDraft[]>([]);
-  const { activeUser } = useAuth();
+  const { activeUser, hasAttemptedRestore } = useAuth();
+  const navigate = useNavigate();
+  const { showModal } = useModal();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     let drafts: ShopDraft[] = [];
@@ -57,6 +68,30 @@ const ShopDrafts = () => {
 
     setDrafts(sortDraftByDate(drafts));
   }, []);
+
+  // Force login
+  useEffect(() => {
+    const toLogin = () => {
+      const target = `/shops/register?id=${searchParams.get("id")}`;
+      const url = `/choose-school?to=${encodeURIComponent(target)}`;
+      navigate(url);
+    };
+    if (hasAttemptedRestore && !activeUser) {
+      // Failed to restore session
+      showModal({
+        title: "請先登入帳號",
+        description: "必須登入帳號才可進行下一步操作。",
+        buttons: [
+          {
+            label: "繼續",
+            style: "btn-primary",
+            role: "primary",
+            onClick: toLogin,
+          },
+        ],
+      });
+    }
+  }, [hasAttemptedRestore, activeUser]);
 
   const getMonth = (dateISOString: string): string => {
     const date = new Date(dateISOString);
@@ -148,9 +183,21 @@ const ShopDrafts = () => {
       <Navbar />
       <main className="pt-18 min-h-screen max-w-xl w-full">
         <ul className="space-y-4 m-4">
+          {activeUser && (
+            <div className="flex flex-col items-center">
+              <Link
+                className="btn btn-primary btn-soft"
+                to={`/shops/filtered/school?schoolAbbr=${activeUser.schoolAbbr}`}
+              >
+                查看已簽約店家（本校）
+                <ArrowRight className="ms-2" />
+              </Link>
+            </div>
+          )}
+
           {drafts.length === 0 && (
             <AnimatedListItem>
-              <div className="flex flex-col h-screen -mt-30 justify-center items-center">
+              <div className="flex flex-col  justify-center items-center">
                 <div className="flex items-center">
                   <PencilLine />
                   <h2 className="p-4 text-center">沒有草稿</h2>
