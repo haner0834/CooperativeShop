@@ -428,7 +428,7 @@ export const ShopDetailContent = ({
           {(shop?.images.length ?? 0) > 0 ? (
             <div className="relative w-full h-[40vh] lg:h-full group">
               <img
-                src={shop?.images[activeImgIndex].fileUrl}
+                src={shop?.images[activeImgIndex].thumbnailUrl}
                 alt="Shop Cover"
                 className="w-full h-full object-cover lg:object-center transition-transform duration-700 hover:scale-105"
                 onClick={() => setIsModalOpen(true)}
