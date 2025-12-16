@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "../auth/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useModal } from "../widgets/ModalContext";
+import { useDevice } from "../widgets/DeviceContext";
 
 const Navbar = () => {
   return (
@@ -53,6 +54,7 @@ const ShopDrafts = () => {
   const { activeUser, hasAttemptedRestore } = useAuth();
   const navigate = useNavigate();
   const { showModal } = useModal();
+  const { isMobile } = useDevice();
 
   useEffect(() => {
     let drafts: ShopDraft[] = [];
@@ -182,18 +184,6 @@ const ShopDrafts = () => {
       <Navbar />
       <main className="pt-18 min-h-screen max-w-xl w-full">
         <ul className="space-y-4 m-4">
-          {activeUser && (
-            <div className="flex flex-col items-center">
-              <Link
-                className="btn btn-primary btn-soft"
-                to={`/shops/filtered/school?schoolAbbr=${activeUser.schoolAbbr}`}
-              >
-                查看已簽約店家（本校）
-                <ArrowRight className="ms-2" />
-              </Link>
-            </div>
-          )}
-
           {drafts.length === 0 && (
             <AnimatedListItem>
               <div className="flex flex-col  justify-center items-center">
@@ -203,12 +193,28 @@ const ShopDrafts = () => {
                 </div>
                 <button
                   onClick={addDraft}
-                  className="btn btn-primary btn-wide rounded-full"
+                  className={`btn btn-primary ${
+                    isMobile ? "w-full" : "btn-wide"
+                  } rounded-full`}
                 >
                   新建草稿
                 </button>
               </div>
             </AnimatedListItem>
+          )}
+
+          {activeUser && (
+            <div className="flex flex-col items-center">
+              <Link
+                className={`btn btn-neutral btn-soft ${
+                  isMobile ? "w-full" : "btn-wide"
+                } rounded-full`}
+                to={`/shops/filtered/school?schoolAbbr=${activeUser.schoolAbbr}`}
+              >
+                查看已簽約店家（本校）
+                <ArrowRight className="ms-2" />
+              </Link>
+            </div>
           )}
 
           <AnimatePresence initial={false}>
