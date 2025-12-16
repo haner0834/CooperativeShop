@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { School, User } from '@prisma/client';
+import { School, type User } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { validateStudentId } from '../../validators/studentId.validator';
 import { validateEmailAndStudentId } from '../../validators/email.validator';
@@ -14,6 +14,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { env } from 'src/common/utils/env.utils';
 import { TokenService } from './token.service';
 import { UserPayload } from '../types/auth.types';
+import { Log } from 'src/common/decorators/logger.decorator';
 
 export interface GoogleProfile {
   id: string;
@@ -30,6 +31,7 @@ export class AuthService {
 
   private readonly SALT_ROUNDS = 10;
 
+  @Log({ logReturn: false })
   async authSuccess(user: User, deviceId: string) {
     if (!deviceId) {
       throw new BadRequestError(
@@ -385,6 +387,7 @@ export class AuthService {
     return { accessToken, refreshToken, cookieMaxAge, user: payload };
   }
 
+  @Log({ logArgs: false })
   async restoreSession(currentRefreshToken: string, deviceId: string) {
     if (!currentRefreshToken || !deviceId) {
       // 在這個情境下，沒有 token 或 deviceId 是正常情況，不應視為錯誤

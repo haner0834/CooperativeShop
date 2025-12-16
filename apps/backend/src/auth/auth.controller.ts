@@ -46,6 +46,11 @@ const httpOnlyCookieOptions = {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Log({
+    prefix: 'AuthController.handleAuthSuccess',
+    logArgs: false,
+    logReturn: false,
+  })
   async handleAuthSuccess(res: express.Response, user: User, deviceId: string) {
     const { cookieMaxAge, ...data } = await this.authService.authSuccess(
       user,
@@ -129,6 +134,7 @@ export class AuthController {
     return { accessToken: result.accessToken };
   }
 
+  @Log({ prefix: 'AuthController.restoreSession', logReturn: false })
   @Post('restore')
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { ttl: 1 * 60 * 1000, limit: 100 } })
