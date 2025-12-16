@@ -20,6 +20,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
+    if (response.headersSent) return;
 
     let statusCode: number;
     let errorCode: string;
