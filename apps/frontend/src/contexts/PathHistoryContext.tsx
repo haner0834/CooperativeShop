@@ -1,10 +1,9 @@
 import { createContext, useContext, useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useNavigationType } from "react-router-dom";
 
 type PathHistoryContextType = {
   history: string[];
   previous: string | null;
-  pushPath: (path: string) => void;
   goBack: (fallback?: string) => void;
 };
 
@@ -19,44 +18,39 @@ export function PathHistoryProvider({
 }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const action = useNavigationType(); // 取得導航行為：PUSH, POP, 或 REPLACE
 
   const historyRef = useRef<string[]>([]);
-  const lastPathRef = useRef<string | null>(null);
-  const isFirstLoadRef = useRef(true);
+  const currentPathRef = useRef<string>(location.pathname + location.search);
 
   useEffect(() => {
-    const current = location.pathname + location.search;
+    const nextPath = location.pathname + location.search;
 
-    if (isFirstLoadRef.current) {
-      lastPathRef.current = current;
-      isFirstLoadRef.current = false;
-      return;
+    // 1. 如果是使用者點擊連結進入新頁面 (PUSH)
+    if (action === "PUSH") {
+      // 把「跳轉前」的路徑存入歷史
+      historyRef.current.push(currentPathRef.current);
     }
 
-    if (current !== lastPathRef.current) {
-      historyRef.current.push(lastPathRef.current!);
-      lastPathRef.current = current;
+    // 2. 如果是瀏覽器後退或執行了 navigate(-1) (POP)
+    if (action === "POP") {
+      // 移除最後一筆，因為我們已經回到那一頁了
+      historyRef.current.pop();
     }
-  }, [location.pathname, location.search]);
 
-  const pushPath = (path: string) => {
-    const current = lastPathRef.current;
-    if (current && current !== path) {
-      historyRef.current.push(current);
-      lastPathRef.current = path;
-    }
-  };
+    // 更新當前指針，供下次跳轉時紀錄
+    currentPathRef.current = nextPath;
+  }, [location.pathname, location.search, action]);
 
   const goBack = (localFallback?: string) => {
     if (historyRef.current.length > 0) {
-      const prev = historyRef.current.pop()!;
-      navigate(prev, { replace: true });
-      return;
+      // 這裡直接使用 navigate(-1)，讓瀏覽器處理 POP 行為
+      // 這會觸發上面的 action === "POP" 邏輯，正確清理堆疊
+      navigate(-1);
+    } else {
+      // 若無紀錄則跳轉至回退路徑，並使用 replace 避免產生多餘歷史
+      navigate(localFallback ?? fallback, { replace: true });
     }
-
-    // 沒有 history，使用 fallback
-    const target = localFallback ?? fallback;
-    navigate(target, { replace: true });
   };
 
   return (
@@ -64,7 +58,6 @@ export function PathHistoryProvider({
       value={{
         history: historyRef.current,
         previous: historyRef.current[historyRef.current.length - 1] ?? null,
-        pushPath,
         goBack,
       }}
     >
