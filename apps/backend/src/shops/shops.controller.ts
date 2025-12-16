@@ -20,8 +20,8 @@ export class ShopsController {
   constructor(private readonly shopsService: ShopsService) {}
 
   @Post()
-  @Log()
   @UseGuards(JwtAccessGuard)
+  @Log()
   create(@Body() createShopDto: CreateShopDto) {
     return this.shopsService.create(createShopDto);
   }
@@ -43,8 +43,8 @@ export class ShopsController {
   }
 
   @Delete(':id')
-  @Log()
   @UseGuards(JwtAccessGuard)
+  @Log()
   remove(@Param('id') id: string) {
     return this.shopsService.remove(id);
   }

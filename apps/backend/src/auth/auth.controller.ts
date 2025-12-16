@@ -136,8 +136,8 @@ export class AuthController {
 
   @Post('restore')
   @HttpCode(HttpStatus.OK)
-  @Log({ prefix: 'AuthController.restoreSession', logReturn: false })
   @Throttle({ default: { ttl: 1 * 60 * 1000, limit: 100 } })
+  @Log({ prefix: 'AuthController.restoreSession', logReturn: false })
   async restoreSession(
     @Req() req: express.Request,
     @Headers('x-device-id') deviceId: string,
