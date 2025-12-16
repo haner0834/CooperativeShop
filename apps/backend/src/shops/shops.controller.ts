@@ -41,6 +41,7 @@ export class ShopsController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAccessGuard)
   remove(@Param('id') id: string) {
     return this.shopsService.remove(id);
   }

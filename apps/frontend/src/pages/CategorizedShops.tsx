@@ -8,6 +8,8 @@ import { getErrorMessage } from "../utils/errors";
 import { transformDtoToShop, type Shop } from "../types/shop";
 import BackButton from "../widgets/BackButton";
 import ThemeToggle from "../widgets/ThemeToggle";
+import { Trash2 } from "lucide-react";
+import { useAuthFetch } from "../auth/useAuthFetch";
 
 type ShopFilter =
   | "all"
@@ -32,6 +34,8 @@ const FilteredShops = () => {
   const { showModal } = useModal();
   const [shops, setShops] = useState<Shop[]>([]);
   const [schoolAbbr] = useState(() => searchParams.get("schoolAbbr"));
+  const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
+  const { authedFetch } = useAuthFetch();
 
   const a = async () => {
     if (!shopFilters.includes((filter ?? "") as any)) {
@@ -78,6 +82,25 @@ const FilteredShops = () => {
     }
   };
 
+  const handleDeleteShop = async (shopId: string) => {
+    setIsDeletingId(shopId);
+    const { success, error } = await authedFetch(path(`/api/shops/${shopId}`));
+    if (success) {
+      setShops([...shops].filter((s) => s.id != shopId));
+      showModal({
+        title: "商家已刪除",
+        showDismissButton: true,
+      });
+    } else {
+      showModal({
+        title: "刪除失敗",
+        description: getErrorMessage(error),
+        showDismissButton: true,
+        buttons: [{ label: "關閉" }],
+      });
+    }
+  };
+
   useEffect(() => {
     a();
   }, []);
@@ -101,7 +124,33 @@ const FilteredShops = () => {
         <section className="pt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 space-y-2">
             {shops.map((shop) => (
-              <ShopCard key={shop.id} shop={shop} className="w-full" />
+              <div className="relative">
+                <ShopCard key={shop.id} shop={shop} className="w-full" />
+
+                <div className="absolute top-2 right-2 z-10">
+                  <button
+                    className="btn btn-circle md:btn-sm bg-base-100"
+                    disabled={isDeletingId === shop.id}
+                    onClick={() => {
+                      showModal({
+                        title: "確認刪除？",
+                        description: "此操作無法復原",
+                        buttons: [
+                          { label: "取消" },
+                          {
+                            label: "刪除",
+                            role: "error",
+                            style: "btn-error",
+                            onClick: () => handleDeleteShop(shop.id),
+                          },
+                        ],
+                      });
+                    }}
+                  >
+                    <Trash2 className="w-5 h-5 text-error" />
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         </section>
