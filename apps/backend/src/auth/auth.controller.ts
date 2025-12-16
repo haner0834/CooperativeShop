@@ -134,9 +134,9 @@ export class AuthController {
     return { accessToken: result.accessToken };
   }
 
-  @Log({ prefix: 'AuthController.restoreSession', logReturn: false })
   @Post('restore')
   @HttpCode(HttpStatus.OK)
+  @Log({ prefix: 'AuthController.restoreSession', logReturn: false })
   @Throttle({ default: { ttl: 1 * 60 * 1000, limit: 100 } })
   async restoreSession(
     @Req() req: express.Request,

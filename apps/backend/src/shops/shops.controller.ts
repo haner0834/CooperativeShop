@@ -19,8 +19,8 @@ import { Log } from 'src/common/decorators/logger.decorator';
 export class ShopsController {
   constructor(private readonly shopsService: ShopsService) {}
 
-  @Log()
   @Post()
+  @Log()
   @UseGuards(JwtAccessGuard)
   create(@Body() createShopDto: CreateShopDto) {
     return this.shopsService.create(createShopDto);
@@ -42,8 +42,8 @@ export class ShopsController {
     return this.shopsService.update(id, updateShopDto);
   }
 
-  @Log()
   @Delete(':id')
+  @Log()
   @UseGuards(JwtAccessGuard)
   remove(@Param('id') id: string) {
     return this.shopsService.remove(id);
