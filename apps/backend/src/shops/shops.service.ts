@@ -197,6 +197,8 @@ export class ShopsService {
   }
 
   async remove(id: string) {
-    throw new AppError('FUNCTION_UNFINISHED', 'Go fuck yourself', 500);
+    await this.prisma.shop.delete({
+      where: { id },
+    });
   }
 }
