@@ -1,12 +1,14 @@
-import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
+import { usePathHistory } from "../contexts/PathHistoryContext";
 
 const BackButton = ({ label = "返回" }: { label?: string }) => {
-  const navigate = useNavigate();
-  const goBack = () => navigate(-1);
+  const { goBack } = usePathHistory();
 
   return (
-    <button className="flex items-center focus:opacity-40" onClick={goBack}>
+    <button
+      className="flex items-center focus:opacity-40"
+      onClick={() => goBack()}
+    >
       <ChevronLeft className="w-7 h-7" />
       {label}
     </button>
