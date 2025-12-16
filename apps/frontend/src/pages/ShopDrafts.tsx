@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "../auth/AuthContext";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useModal } from "../widgets/ModalContext";
 
 const Navbar = () => {
@@ -53,7 +53,6 @@ const ShopDrafts = () => {
   const { activeUser, hasAttemptedRestore } = useAuth();
   const navigate = useNavigate();
   const { showModal } = useModal();
-  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     let drafts: ShopDraft[] = [];
@@ -72,7 +71,7 @@ const ShopDrafts = () => {
   // Force login
   useEffect(() => {
     const toLogin = () => {
-      const target = `/shops/register?id=${searchParams.get("id")}`;
+      const target = `/shops/drafts`;
       const url = `/choose-school?to=${encodeURIComponent(target)}`;
       navigate(url);
     };
