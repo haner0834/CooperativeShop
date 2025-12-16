@@ -1,10 +1,16 @@
 import type { Point } from "../pages/ShopRegisterForm/ShopLocationBlock";
+import { categoryMap } from "../utils/contactInfoMap";
 import type { ImageDto, SelectedImage } from "./selectedImage";
 import type {
   WorkScheduleBackend,
   WorkSchedule,
   Weekday,
 } from "./workSchedule";
+
+export interface ResponseImageDto {
+  fileUrl: string;
+  thumbnailUrl: string;
+}
 
 export interface Shop {
   id: string;
@@ -15,10 +21,10 @@ export interface Shop {
   googleMapsLink?: string | null;
   schoolId: string;
   schoolAbbr: string;
-  imageLinks: string[];
+  images: ResponseImageDto[];
   thumbnailLink: string;
   isOpen: boolean;
-  discount?: string | null;
+  discount: string | null;
   address: string;
   longitude: number;
   latitude: number;
@@ -38,6 +44,58 @@ export interface CreateShopDto {
   longitude: number;
   latitude: number;
   schedules: WorkScheduleBackend[];
+}
+
+export interface ResponseShopDto {
+  id: string;
+  title: string;
+  subTitle: string | null;
+  description: string;
+  contactInfo: ContactInfoDto[];
+  schoolId: string;
+  schoolAbbr: string;
+  images: ResponseImageDto[];
+  thumbnailLink: string;
+  isOpen: boolean;
+  discount: string | null;
+  address: string;
+  longitude: number;
+  latitude: number;
+  workSchedules: WorkScheduleBackend[];
+  googleMapsLink: string | null;
+}
+
+// 轉換函數：將後端 DTO 轉換為前端 Shop 介面
+export function transformDtoToShop(dto: ResponseShopDto): Shop {
+  // 由於後端 DTO 被設計為盡可能與前端 Shop 介面保持一致，轉換操作極為簡單。
+  // 只需要確保所有欄位都存在即可。
+
+  return {
+    id: dto.id,
+    title: dto.title,
+    subTitle: dto.subTitle ?? undefined,
+    description: dto.description,
+    contactInfo: dto.contactInfo.map((c) => {
+      const { content, href, ...rest } = categoryMap[c.category];
+      return {
+        category: c.category,
+        content: c.content,
+        href: c.href,
+        ...rest,
+      };
+    }),
+    googleMapsLink: dto.googleMapsLink,
+    schoolId: dto.schoolId,
+    schoolAbbr: dto.schoolAbbr,
+    images: dto.images,
+    thumbnailLink: dto.thumbnailLink,
+    isOpen: dto.isOpen,
+    discount: dto.discount,
+    address: dto.address,
+    longitude: dto.longitude,
+    latitude: dto.latitude,
+    workSchedules: dto.workSchedules,
+  };
 }
 
 export const DEFAULT_WORKSCHEDULE: WorkSchedule = {

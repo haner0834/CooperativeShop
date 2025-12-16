@@ -3,6 +3,7 @@ import { lazy, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import Root from "./pages/Root";
 import ProtectedGate from "./auth/ProtectedGate";
+import FilteredShops from "./pages/CategorizedShops";
 const Navbar = lazy(() => import("./widgets/Navbar"));
 const LoginHint = lazy(() => import("./pages/LoginHint"));
 const FAQPage = lazy(() => import("./pages/FAQ"));
@@ -60,6 +61,7 @@ function App() {
 
       <Route path="shops/drafts" element={<ShopDrafts />} />
       <Route path="shops" element={<Shops />} />
+      <Route path="shops/filtered/:filter" element={<FilteredShops />} />
       <Route path="shops/:id" element={<ShopDetail />} />
     </Routes>
   );

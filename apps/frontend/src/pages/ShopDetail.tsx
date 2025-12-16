@@ -1,7 +1,11 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { weekdayOrder, type ContactInfo, type Shop } from "../types/shop";
-import { testShops } from "./Shops";
+import {
+  transformDtoToShop,
+  weekdayOrder,
+  type ContactInfo,
+  type Shop,
+} from "../types/shop";
 import {
   Bookmark,
   ChevronLeft,
@@ -32,6 +36,10 @@ import { formatWeekdays } from "../utils/formatWeekdays";
 import { buildHref, ContactCategoryIcon } from "../utils/contactInfoMap";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
 import { usePathHistory } from "../contexts/PathHistoryContext";
+import axios from "axios";
+import { path } from "../utils/path";
+import { useModal } from "../widgets/ModalContext";
+import { getErrorMessage } from "../utils/errors";
 
 const getCurrentMinOfDay = () => {
   const now = new Date();
@@ -202,7 +210,7 @@ const ContactInfoSheet = ({ contactInfo }: { contactInfo: ContactInfo[] }) => {
 
           {info.category === "phone-number" ? (
             <Link
-              to={info.href || buildHref(info.category, info.content)}
+              to={info.href || buildHref("phone-number", info.content)}
               className="btn btn-circle"
             >
               <Phone className="w-5 h-5 text-primary fill-primary" />
@@ -417,10 +425,10 @@ export const ShopDetailContent = ({
         {/* 2. Left Column: Gallery (Sticky on Desktop) */}
         <div className="lg:w-5/12 xl:w-1/2 lg:h-[calc(100vh-4rem)] lg:sticky lg:top-16  no-scrollbar bg-base-100 overflow-clip">
           {/* Mobile Carousel / Desktop Grid */}
-          {(shop?.imageLinks.length ?? 0) > 0 ? (
+          {(shop?.images.length ?? 0) > 0 ? (
             <div className="relative w-full h-[40vh] lg:h-full group">
               <img
-                src={shop?.imageLinks[activeImgIndex]}
+                src={shop?.images[activeImgIndex].thumbnailUrl}
                 alt="Shop Cover"
                 className="w-full h-full object-cover lg:object-center transition-transform duration-700 hover:scale-105"
                 onClick={() => setIsModalOpen(true)}
@@ -429,7 +437,7 @@ export const ShopDetailContent = ({
 
               {/* Image Controls (Mobile Overlay) */}
               <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2 lg:hidden">
-                {shop?.imageLinks.map((_, i) => (
+                {shop?.images.map((_, i) => (
                   <div
                     key={i}
                     className={`h-1.5 rounded-full transition-all duration-300 ${
@@ -442,7 +450,7 @@ export const ShopDetailContent = ({
               </div>
 
               {/* Navigation Buttons */}
-              {(shop?.imageLinks.length ?? 0) > 1 && (
+              {(shop?.images.length ?? 0) > 1 && (
                 <>
                   <button
                     className={`absolute left-4 top-1/2 -translate-y-1/2 btn btn-circle btn-sm bg-black/20 border-none text-white hover:bg-black/40 ${
@@ -451,7 +459,7 @@ export const ShopDetailContent = ({
                     onClick={(e) => {
                       e.stopPropagation();
                       setActiveImgIndex((p) =>
-                        p === 0 ? shop!.imageLinks.length - 1 : p - 1
+                        p === 0 ? shop!.images.length - 1 : p - 1
                       );
                     }}
                   >
@@ -464,7 +472,7 @@ export const ShopDetailContent = ({
                     onClick={(e) => {
                       e.stopPropagation();
                       setActiveImgIndex((p) =>
-                        p === shop!.imageLinks.length - 1 ? 0 : p + 1
+                        p === shop!.images.length - 1 ? 0 : p + 1
                       );
                     }}
                   >
@@ -479,7 +487,7 @@ export const ShopDetailContent = ({
                 className="absolute bottom-4 right-4 bg-black/50 hover:bg-black/70 backdrop-blur-md text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
               >
                 <ImageOff className="w-3.5 h-3.5" />
-                查看 {shop?.imageLinks.length} 張照片
+                查看 {shop?.images.length} 張照片
               </button>
             </div>
           ) : (
@@ -613,9 +621,9 @@ export const ShopDetailContent = ({
       </div>
 
       {/* Image Gallery Modal */}
-      {shop?.imageLinks && (
+      {shop?.images && (
         <ImageGalleryModal
-          imageLinks={shop.imageLinks}
+          imageLinks={shop.images.map((i) => i.fileUrl)}
           initialIndex={activeImgIndex}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
@@ -636,10 +644,23 @@ export const ShopDetailContent = ({
 const ShopDetail = () => {
   const { id } = useParams();
   const [shop, setShop] = useState<Shop | null>(null);
+  const { showModal } = useModal();
+
+  const a = async () => {
+    const { data: resData } = await axios.get(path(`/api/shops/${id}`));
+    const { success, data, error } = resData;
+    if (!success) {
+      showModal({
+        title: "找不到商店",
+        description: getErrorMessage(error.code),
+      });
+      return;
+    }
+    setShop(transformDtoToShop(data));
+  };
 
   useEffect(() => {
-    const found = testShops.find((s) => s.id === id);
-    if (found) setShop(found);
+    a();
   }, [id]);
 
   return <ShopDetailContent shop={shop} />;

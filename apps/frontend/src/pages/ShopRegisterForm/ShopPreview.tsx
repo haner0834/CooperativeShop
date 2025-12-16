@@ -5,6 +5,8 @@ import { useModal } from "../../widgets/ModalContext";
 import { getDraft } from "../../utils/draft";
 import { ShopDetailContent } from "../ShopDetail";
 
+const R2_PUBLIC_URL = "https://image.cooperativeshops.org";
+
 const ShopPreview = () => {
   const [shop, setShop] = useState<Shop | null>(null);
   const [searchParams] = useSearchParams();
@@ -40,7 +42,10 @@ const ShopPreview = () => {
     const shop: Shop = {
       ...data,
       id: crypto.randomUUID(),
-      imageLinks: data.images.map((l) => l.previewUrl),
+      images: data.images.map((l) => ({
+        fileUrl: R2_PUBLIC_URL + "/" + l.uploadInfo?.fileKey,
+        thumbnailUrl: R2_PUBLIC_URL + "/" + l.uploadInfo?.thumbnailKey,
+      })),
       thumbnailLink:
         data.images.length > 0 ? data.images.map((l) => l.previewUrl)[0] : "",
       isOpen: false,

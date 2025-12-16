@@ -1,40 +1,73 @@
 import { Injectable } from '@nestjs/common';
-import { CreateShopDto } from './dto/create-shop.dto';
+import {
+  ContactInfoDto,
+  CreateShopDto,
+  WorkScheduleDto,
+} from './dto/create-shop.dto';
 import { UpdateShopDto } from './dto/update-shop.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   AppError,
   BadRequestError,
   ConflictError,
+  NotFoundError,
 } from 'src/types/error.types';
 import { instanceToPlain } from 'class-transformer';
 import { calculateRequestHash } from 'src/common/utils/calculate-req-hash.utils';
+import { Shop as PrismaShop } from '@prisma/client'; // 引入 Prisma 產生的類型
+import { FileRecord } from '@prisma/client'; // 引入 FileRecord 類型
+import { ResponseImageDto, ResponseShopDto } from './dto/response-shop.dto';
+import { env } from 'src/common/utils/env.utils';
+
+type ShopWithRelations = PrismaShop & {
+  school: { abbreviation: string };
+  images: { file: FileRecord }[];
+};
 
 @Injectable()
 export class ShopsService {
+  private readonly R2_PUBLIC_URL = env('R2_PUBLIC_URL');
   constructor(private readonly prisma: PrismaService) {}
 
-  /**
-   * 確保浮點數（如經緯度）精度一致的輔助函數
-   */
-  normalizeFloatPrecision(data: any): any {
-    if (typeof data === 'number') {
-      // 固定經緯度精度至 6 位小數
-      return parseFloat(data.toFixed(6));
-    }
-    if (typeof data === 'object' && data !== null) {
-      if (Array.isArray(data)) {
-        return data.map((item) => this.normalizeFloatPrecision(item));
-      }
-      const normalized: any = {};
-      for (const key in data) {
-        if (Object.prototype.hasOwnProperty.call(data, key)) {
-          normalized[key] = this.normalizeFloatPrecision(data[key]);
-        }
-      }
-      return normalized;
-    }
-    return data;
+  private transformShopToDto(shop: ShopWithRelations): ResponseShopDto {
+    const contactInfo: ContactInfoDto[] =
+      shop.contactInfo as unknown as ContactInfoDto[];
+
+    const workSchedules: WorkScheduleDto[] =
+      shop.schedules as unknown as WorkScheduleDto[];
+
+    const thumbnailKey = shop.thumbnailKey;
+
+    const getFileUrlByKey = (key: string): string => {
+      return `${this.R2_PUBLIC_URL}/${key}`;
+    };
+
+    const thumbnailLink = getFileUrlByKey(thumbnailKey);
+
+    const images: ResponseImageDto[] = shop.images.map((shopImage) => ({
+      fileUrl: shopImage.file.url,
+      thumbnailUrl: shopImage.file.thumbnailUrl,
+    }));
+
+    const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${shop.latitude},${shop.longitude}`;
+
+    return {
+      id: shop.id,
+      title: shop.title,
+      subTitle: shop.subTitle,
+      description: shop.description,
+      contactInfo,
+      schoolId: shop.schoolId,
+      schoolAbbr: shop.school.abbreviation,
+      images,
+      thumbnailLink,
+      discount: shop.discount,
+      address: shop.address,
+      longitude: shop.longitude,
+      latitude: shop.latitude,
+      workSchedules,
+      googleMapsLink,
+    };
   }
 
   async create(createShopDto: CreateShopDto) {
@@ -120,14 +153,31 @@ export class ShopsService {
     });
   }
 
-  async findAll(schoolAbbr: string) {
-    return await this.prisma.shop.findMany({
+  async findAll(schoolAbbr: string): Promise<ResponseShopDto[]> {
+    const shops = await this.prisma.shop.findMany({
       where: { school: { abbreviation: schoolAbbr } },
+      include: {
+        school: { select: { abbreviation: true } },
+        images: { include: { file: true } },
+      },
     });
+
+    const shopsDto = shops.map((item) => this.transformShopToDto(item));
+    return shopsDto;
   }
 
-  async findOne(id: string) {
-    return await this.prisma.shop.findUnique({ where: { id } });
+  async findOne(id: string): Promise<ResponseShopDto> {
+    const shop = await this.prisma.shop.findUnique({
+      where: { id },
+      include: {
+        school: { select: { abbreviation: true } },
+        images: { include: { file: true } },
+      },
+    });
+    if (!shop) {
+      throw new NotFoundError('SHOP_NOT_FOUND', 'Shop not found.');
+    }
+    return this.transformShopToDto(shop);
   }
 
   async update(id: string, updateShopDto: UpdateShopDto) {

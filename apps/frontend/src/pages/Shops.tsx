@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { ChevronRight, Menu, Search, Tag, X } from "lucide-react";
+import { ChevronRight, Menu, Search, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../widgets/Sidebar";
 import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
 import ThemeToggle from "../widgets/ThemeToggle";
 import type { Shop } from "../types/shop";
 import { SidebarContent } from "../widgets/SidebarContent";
-import { Link } from "react-router-dom";
-import { path } from "../utils/path";
+import ShopCard from "../widgets/Shop/ShopCard";
 
 export const testShops: Shop[] = [
   {
@@ -18,10 +17,7 @@ export const testShops: Shop[] = [
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
-    imageLinks: [
-      "https://picsum.photos/800/600?random=1",
-      "https://picsum.photos/800/600?random=2",
-    ],
+    images: [],
     thumbnailLink: "https://picsum.photos/400/300?random=3",
     discount: "10% off for students",
     address: "No. 25, Lane 12, Yongkang St., Taipei City",
@@ -41,11 +37,7 @@ export const testShops: Shop[] = [
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
-    imageLinks: [
-      "https://picsum.photos/800/600?random=4",
-      "https://picsum.photos/800/600?random=5",
-      "https://picsum.photos/800/600?random=6",
-    ],
+    images: [],
     thumbnailLink: "https://picsum.photos/400/300?random=7",
     discount: null,
     address: "No. 128, Roosevelt Rd., Taipei City",
@@ -65,7 +57,7 @@ export const testShops: Shop[] = [
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
-    imageLinks: ["https://picsum.photos/800/600?random=8"],
+    images: [],
     thumbnailLink: "https://picsum.photos/400/300?random=9",
     discount: "Spend NT$500, get NT$50 off",
     address: "No. 88, Section 2, Minquan E. Rd., Taipei City",
@@ -85,10 +77,7 @@ export const testShops: Shop[] = [
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
-    imageLinks: [
-      "https://picsum.photos/800/600?random=10",
-      "https://picsum.photos/800/600?random=11",
-    ],
+    images: [],
     thumbnailLink: "https://picsum.photos/400/300?random=12",
     discount: "Free consultation for first-time clients",
     address: "No. 9, Alley 5, Xinyi Rd., Taipei City",
@@ -108,10 +97,7 @@ export const testShops: Shop[] = [
     contactInfo: [],
     googleMapsLink:
       "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
-    imageLinks: [
-      "https://picsum.photos/800/600?random=13",
-      "https://picsum.photos/800/600?random=14",
-    ],
+    images: [],
     thumbnailLink: "https://picsum.photos/400/300?random=15",
     discount: "Buy 2 get 1 free on weekends",
     address: "No. 33, Ren'ai Rd., Taipei City",
@@ -125,48 +111,13 @@ export const testShops: Shop[] = [
   },
 ];
 
-const SectionTitle = ({ title }: { title: string }) => {
+export const ShopSectionTitle = ({ title }: { title: string }) => {
   return (
     <div className="flex justify-between sm:justify-start items-center mb-4 mx-4">
       <h2 className="font-bold text-2xl">{title}</h2>
 
       <ChevronRight />
     </div>
-  );
-};
-
-const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
-  const badgeStyle = shop.isOpen ? "badge-success" : "badge-error";
-  return (
-    <Link
-      to={`/shops/${shop.id}`}
-      className="flex-none"
-      onClick={() =>
-        fetch(path(`/api/shops/${shop.id}/view`), { method: "POST" })
-      }
-    >
-      <article className="space-y-2 transition-transform ease-in-out duration-300 hover:scale-98">
-        <img
-          src={shop.thumbnailLink}
-          className={`${className} aspect-[5/3] object-cover rounded-box`}
-        />
-
-        <div className="">
-          <h3 className="text-lg font-bold">{shop.title}</h3>
-
-          <p className="opacity-60 text-sm">{shop.address}</p>
-
-          <div className="space-x-2">
-            <span className={`badge ${badgeStyle} badge-soft uppercase mt-2`}>
-              <Tag className="w-4 h-4" /> {shop.isOpen ? "open" : "closed"}
-            </span>
-            {/* <span className={`badge badge-info badge-soft uppercase mt-2`}>
-              <Phone className="w-4 h-4" /> {shop?.contactInfo[0].content ?? "UNKNOWN"}
-            </span> */}
-          </div>
-        </div>
-      </article>
-    </Link>
   );
 };
 
@@ -234,7 +185,7 @@ const Shops = () => {
                 }}
                 transition={transitionProps}
               >
-                <Logo className="h-10 w-auto" />
+                <Logo className="h-10 w-auto lg:hidden" />
 
                 <div className="hidden lg:block">
                   <label className="input w-[400px] flex items-center gap-2">
@@ -328,7 +279,7 @@ const Shops = () => {
 
       <main className="bg-base-100 min-h-screen pt-18 space-y-8 lg:ps-64">
         <section className="">
-          <SectionTitle title="Recent Visited" />
+          <ShopSectionTitle title="Recent Visited" />
           <div
             className="overflow-x-scroll px-4"
             style={{
@@ -349,7 +300,7 @@ const Shops = () => {
           </div>
         </section>
         <section className="">
-          <SectionTitle title="All Shops" />
+          <ShopSectionTitle title="All Shops" />
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 space-y-2">
             {testShops.map((shop) => (
               <ShopCard key={shop.id} shop={shop} className="w-full" />
