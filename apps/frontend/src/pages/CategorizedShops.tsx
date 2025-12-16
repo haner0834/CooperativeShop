@@ -84,7 +84,9 @@ const FilteredShops = () => {
 
   const handleDeleteShop = async (shopId: string) => {
     setIsDeletingId(shopId);
-    const { success, error } = await authedFetch(path(`/api/shops/${shopId}`));
+    const { success, error } = await authedFetch(path(`/api/shops/${shopId}`), {
+      method: "DELETE",
+    });
     if (success) {
       setShops([...shops].filter((s) => s.id != shopId));
       showModal({
