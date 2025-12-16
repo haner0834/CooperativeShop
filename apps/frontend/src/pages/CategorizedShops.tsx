@@ -7,7 +7,6 @@ import { path } from "../utils/path";
 import { getErrorMessage } from "../utils/errors";
 import { transformDtoToShop, type Shop } from "../types/shop";
 import BackButton from "../widgets/BackButton";
-import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
 import ThemeToggle from "../widgets/ThemeToggle";
 
 type ShopFilter =
@@ -32,6 +31,7 @@ const FilteredShops = () => {
   const [searchParams] = useSearchParams();
   const { showModal } = useModal();
   const [shops, setShops] = useState<Shop[]>([]);
+  const [schoolAbbr] = useState(() => searchParams.get("schoolAbbr"));
 
   const a = async () => {
     if (!shopFilters.includes((filter ?? "") as any)) {
@@ -45,7 +45,6 @@ const FilteredShops = () => {
       case "all":
         break;
       case "school":
-        const schoolAbbr = searchParams.get("schoolAbbr");
         if (!schoolAbbr) {
           showModal({ title: "Missing school abbr" });
           return;
@@ -85,21 +84,21 @@ const FilteredShops = () => {
 
   return (
     <div>
-      <div className="navbar">
+      <div className="navbar fixed bg-base-100 z-50 shadow-xs">
         <div className="navbar-start">
           <BackButton label="" />
         </div>
 
         <div className="navbar-center">
-          <Logo className="h-8 w-auto" />
+          <h1 className="font-semibold">已註冊店家 - {schoolAbbr}</h1>
         </div>
 
         <div className="navbar-end">
           <ThemeToggle />
         </div>
       </div>
-      <main>
-        <section className="">
+      <main className="pt-16">
+        <section className="pt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 space-y-2">
             {shops.map((shop) => (
               <ShopCard key={shop.id} shop={shop} className="w-full" />
