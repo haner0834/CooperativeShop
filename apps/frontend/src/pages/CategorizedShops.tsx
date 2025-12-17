@@ -125,7 +125,7 @@ const FilteredShops = () => {
       </div>
       <main className="pt-16">
         {shops.length === 0 && (
-          <div className="min-h-screen relative flex flex-col justify-center items-center space-y-4">
+          <div className="min-h-screen relative flex flex-col justify-center items-center overflow-hidden space-y-4">
             <div className="flex space-x-2">
               <ShoppingCart />
               <h2>尚無商家</h2>
@@ -136,7 +136,7 @@ const FilteredShops = () => {
             >
               建立商家草稿
             </Link>
-            <ShoppingCart className="w-100 h-100 rotate-36 -z-10 opacity-5 absolute" />
+            <ShoppingCart className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-100 h-100 rotate-36 -z-10 opacity-5" />
           </div>
         )}
         <section className="pt-4">
