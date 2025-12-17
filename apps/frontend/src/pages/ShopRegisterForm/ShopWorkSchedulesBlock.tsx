@@ -203,80 +203,82 @@ const ShopWorkSchedulesBlock = ({
             />
           )}
         </dialog>
-        {workSchedules.map((workSchedule, i) => {
-          const hasOverlap = getOverlapWarning(i);
+        <div className="space-y-4">
+          {workSchedules.map((workSchedule, i) => {
+            const hasOverlap = getOverlapWarning(i);
 
-          return (
-            <div
-              key={`WORK_SCHEDULE_BLOCK_${i}`}
-              className={`rounded-field w-full p-2 border flex flex-col space-y-4 transition-colors ${
-                hasOverlap ? "border-error bg-error/5" : "border-base-300"
-              }`}
-            >
-              <div className="flex justify-between items-center space-x-2">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => openModal(i)}
-                    className="btn btn-sm btn-ghost border border-base-300"
-                  >
-                    {formatWeekdays(workSchedule.weekdays) || "尚未選擇"}
-                  </button>
-
-                  {/* Overlap Warning Badge */}
-                  {hasOverlap && (
-                    <div
-                      className="tooltip tooltip-right"
-                      data-tip="同一天內工作時段不可重疊"
+            return (
+              <div
+                key={`WORK_SCHEDULE_BLOCK_${i}`}
+                className={`rounded-field w-full p-2 border flex flex-col space-y-4 transition-colors ${
+                  hasOverlap ? "border-error bg-error/5" : "border-base-300"
+                }`}
+              >
+                <div className="flex justify-between items-center space-x-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => openModal(i)}
+                      className="btn btn-sm btn-ghost border border-base-300"
                     >
-                      <div className="flex items-center gap-1 text-xs text-error font-medium animate-pulse">
-                        <AlertTriangle className="w-4 h-4" />
-                        <span className="hidden sm:inline">時段重疊</span>
+                      {formatWeekdays(workSchedule.weekdays) || "尚未選擇"}
+                    </button>
+
+                    {/* Overlap Warning Badge */}
+                    {hasOverlap && (
+                      <div
+                        className="tooltip tooltip-right"
+                        data-tip="同一天內工作時段不可重疊"
+                      >
+                        <div className="flex items-center gap-1 text-xs text-error font-medium animate-pulse">
+                          <AlertTriangle className="w-4 h-4" />
+                          <span className="hidden sm:inline">時段重疊</span>
+                        </div>
                       </div>
-                    </div>
+                    )}
+                  </div>
+
+                  {workSchedules.length > 1 && (
+                    <button
+                      onClick={() => removeWorkSchedule(i)}
+                      className="btn btn-xs btn-square"
+                    >
+                      <Trash className="w-4 h-4" />
+                    </button>
                   )}
                 </div>
 
-                {workSchedules.length > 1 && (
-                  <button
-                    onClick={() => removeWorkSchedule(i)}
-                    className="btn btn-xs btn-square"
-                  >
-                    <Trash className="w-4 h-4" />
-                  </button>
-                )}
+                <p className="flex-1 text-sm font-mono">
+                  時段：{formatWorkScheduleRange(workSchedule.range)}
+                </p>
+
+                <DoubleSlider
+                  min={0}
+                  max={1440}
+                  step={30}
+                  defaultValue={workSchedule.range}
+                  onChange={(newValue) => handleSliderRangeChange(newValue, i)}
+                />
+                <div className="flex justify-between">
+                  {[0, 6, 12, 18, 24].map((num, i) => (
+                    <p
+                      key={`RANGE_SLIDER_LABEL_${i}`}
+                      className="text-xs opacity-50"
+                    >
+                      {num}
+                    </p>
+                  ))}
+                </div>
               </div>
+            );
+          })}
 
-              <p className="flex-1 text-sm font-mono">
-                時段：{formatWorkScheduleRange(workSchedule.range)}
-              </p>
-
-              <DoubleSlider
-                min={0}
-                max={1440}
-                step={30}
-                defaultValue={workSchedule.range}
-                onChange={(newValue) => handleSliderRangeChange(newValue, i)}
-              />
-              <div className="flex justify-between">
-                {[0, 6, 12, 18, 24].map((num, i) => (
-                  <p
-                    key={`RANGE_SLIDER_LABEL_${i}`}
-                    className="text-sm opacity-50"
-                  >
-                    {num}
-                  </p>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-
-        <button
-          onClick={addWorkSchedule}
-          className="w-full btn btn-soft btn-primary"
-        >
-          <Plus className="w-4 h-4" /> 新增時段
-        </button>
+          <button
+            onClick={addWorkSchedule}
+            className="w-full btn btn-soft btn-primary"
+          >
+            <Plus className="w-4 h-4" /> 新增時段
+          </button>
+        </div>
       </>
     </QuestionBlock>
   );

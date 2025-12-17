@@ -59,7 +59,7 @@ function DoubleSlider({
         }
       `}</style>
 
-      <div className="relative w-full h-2 bg-gray-300 rounded">
+      <div className="relative w-full h-2 bg-base-300 rounded">
         {/* 選擇範圍的顯示條 */}
         <div
           className="absolute h-2 bg-primary rounded"
