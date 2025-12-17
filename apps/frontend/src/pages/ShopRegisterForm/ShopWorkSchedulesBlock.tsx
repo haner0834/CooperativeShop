@@ -11,7 +11,7 @@ import { formatWeekdays } from "../../utils/formatWeekdays";
 import type { Weekday, WorkSchedule } from "../../types/workSchedule";
 
 // Helper: Check if two time ranges overlap
-const isRangeOverlapping = (
+export const isRangeOverlapping = (
   range1: [number, number],
   range2: [number, number]
 ) => {
@@ -184,11 +184,19 @@ const ShopWorkSchedulesBlock = ({
     return false;
   };
 
+  const hasNoOverlap = workSchedules.every((a, i) =>
+    workSchedules
+      .slice(i + 1)
+      .every((b) => !isRangeOverlapping(a.range, b.range))
+  );
+
   return (
     <QuestionBlock
       title="營業時間"
-      status={selectedWeekdays().length >= 1 ? "ok" : "required"}
-      hint="工作日尚未指定"
+      status={
+        selectedWeekdays().length >= 1 && hasNoOverlap ? "ok" : "required"
+      }
+      hint={hasNoOverlap ? "工作日尚未指定" : "同一天內時段不可重疊"}
       showHint={showHint}
     >
       <>
@@ -218,7 +226,7 @@ const ShopWorkSchedulesBlock = ({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => openModal(i)}
-                      className="btn btn-sm btn-ghost border border-base-300"
+                      className="btn btn-sm btn-soft btn-primary"
                     >
                       {formatWeekdays(workSchedule.weekdays) || "尚未選擇"}
                     </button>
