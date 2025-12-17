@@ -22,6 +22,7 @@ import { useToast } from "../../widgets/Toast/ToastProvider";
 import { useAuth } from "../../auth/AuthContext";
 import { useModal } from "../../widgets/ModalContext";
 import {
+  hasWorkScheduleOverlap,
   toBackendSchedules,
   type WorkSchedule,
 } from "../../types/workSchedule";
@@ -260,7 +261,7 @@ const ShopRegisterForm = () => {
       isAvailable = false;
     }
 
-    if (workSchedules.flatMap((w) => w.weekdays).length === 0) {
+    if (hasWorkScheduleOverlap(workSchedules)) {
       isAvailable = false;
     }
 
