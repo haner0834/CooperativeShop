@@ -217,7 +217,7 @@ const ShopWorkSchedulesBlock = ({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => openModal(i)}
-                    className="btn btn-sm btn-soft btn-primary"
+                    className="btn btn-sm btn-ghost border border-base-300"
                   >
                     {formatWeekdays(workSchedule.weekdays) || "尚未選擇"}
                   </button>
@@ -239,7 +239,7 @@ const ShopWorkSchedulesBlock = ({
                 {workSchedules.length > 1 && (
                   <button
                     onClick={() => removeWorkSchedule(i)}
-                    className="btn btn-xs btn-error btn-soft btn-square"
+                    className="btn btn-xs btn-square"
                   >
                     <Trash className="w-4 h-4" />
                   </button>
