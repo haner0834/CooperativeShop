@@ -7,7 +7,9 @@ import ShopDescriptionBlock from "./ShopDescriptionBlock";
 import ShopContactInfoBlock from "./ShopContactInfoBlock";
 import ShopImagesBlock from "./ShopImagesBlock";
 import ShopLocationBlock from "./ShopLocationBlock";
-import ShopWorkSchedulesBlock from "./ShopWorkSchedulesBlock";
+import ShopWorkSchedulesBlock, {
+  isRangeOverlapping,
+} from "./ShopWorkSchedulesBlock";
 import { DEFAULT_WORKSCHEDULE } from "../../types/shop";
 import type { ImageDto, SelectedImage } from "../../types/selectedImage";
 import type {
@@ -260,7 +262,12 @@ const ShopRegisterForm = () => {
       isAvailable = false;
     }
 
-    if (workSchedules.flatMap((w) => w.weekdays).length === 0) {
+    const hasNoOverlap = workSchedules.every((a, i) =>
+      workSchedules
+        .slice(i + 1)
+        .every((b) => !isRangeOverlapping(a.range, b.range))
+    );
+    if (!hasNoOverlap) {
       isAvailable = false;
     }
 
