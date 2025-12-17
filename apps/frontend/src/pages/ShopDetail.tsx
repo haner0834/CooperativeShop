@@ -31,7 +31,7 @@ import Sidebar from "../widgets/Sidebar";
 import { SidebarContent } from "../widgets/SidebarContent";
 import { useDevice } from "../widgets/DeviceContext";
 import { useToast } from "../widgets/Toast/ToastProvider";
-import { fromBackendSchedules } from "../types/workSchedule";
+import { type Weekday } from "../types/workSchedule";
 import { formatWeekdays } from "../utils/formatWeekdays";
 import { buildHref, ContactCategoryIcon } from "../utils/contactInfoMap";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
@@ -332,14 +332,54 @@ export const ShopDetailContent = ({
     );
 
   const renderSchedule = () => {
-    if (!shop?.workSchedules) return null;
-    const schedules = fromBackendSchedules(shop.workSchedules);
-    const today = getCurrentWeekday();
+    if (!shop?.workSchedules || shop.workSchedules.length === 0) return null;
+
+    // 1. Group intervals by Weekday
+    // Map<Weekday, Array<[start, end]>>
+    const dayMap = new Map<Weekday, Array<[number, number]>>();
+
+    shop.workSchedules.forEach((sch) => {
+      if (!dayMap.has(sch.weekday)) {
+        dayMap.set(sch.weekday, []);
+      }
+      dayMap.get(sch.weekday)!.push([sch.startMinuteOfDay, sch.endMinuteOfDay]);
+    });
+
+    // 2. Sort intervals for each day to ensure consistency
+    dayMap.forEach((ranges) => {
+      ranges.sort((a, b) => a[0] - b[0]);
+    });
+
+    // 3. Group Weekdays by identical schedule signatures
+    // Signature example: "540-720,840-1020"
+    const groupedSchedules = new Map<
+      string,
+      { days: Weekday[]; ranges: Array<[number, number]> }
+    >();
+
+    dayMap.forEach((ranges, day) => {
+      const signature = ranges.map((r) => `${r[0]}-${r[1]}`).join(",");
+
+      if (!groupedSchedules.has(signature)) {
+        groupedSchedules.set(signature, { days: [], ranges });
+      }
+      groupedSchedules.get(signature)!.days.push(day);
+    });
+
+    const currentWeekday = getCurrentWeekday();
+    // Convert Map to Array for rendering and sort by weekday order roughly (optional, but good for UI)
+    const displayGroups = Array.from(groupedSchedules.values()).sort((a, b) => {
+      // Simple sort by first day in the group
+      const idxA = weekdayOrder.indexOf(a.days[0]);
+      const idxB = weekdayOrder.indexOf(b.days[0]);
+      return idxA - idxB;
+    });
 
     return (
       <div className="space-y-4">
-        {schedules.map((schedule, idx) => {
-          const isToday = schedule.weekdays.includes(today);
+        {displayGroups.map((group, idx) => {
+          const isToday = group.days.includes(currentWeekday);
+
           return (
             <div
               key={idx}
@@ -349,13 +389,14 @@ export const ShopDetailContent = ({
                   : "bg-base-100 border border-base-200/50 hover:border-base-300"
               }`}
             >
+              {/* Left Column: Weekdays */}
               <div className="w-full sm:w-24 flex-shrink-0 flex items-center justify-between sm:justify-start">
                 <span
                   className={`font-medium ${
                     isToday ? "text-primary" : "text-base-content/70"
                   }`}
                 >
-                  {formatWeekdays(schedule.weekdays)}
+                  {formatWeekdays(group.days)}
                 </span>
                 {isToday && (
                   <span className="sm:hidden badge badge-xs badge-primary badge-soft">
@@ -364,12 +405,16 @@ export const ShopDetailContent = ({
                 )}
               </div>
 
-              <div className="flex-1 w-full">
-                <MinimalRangeBlock
-                  startMinOfDay={schedule.range[0]}
-                  endMinOfDay={schedule.range[1]}
-                  isToday={isToday}
-                />
+              {/* Right Column: Time Blocks (Stack vertically if multiple slots) */}
+              <div className="flex-1 w-full flex flex-col gap-2 justify-center">
+                {group.ranges.map((range, rangeIdx) => (
+                  <MinimalRangeBlock
+                    key={`range-${idx}-${rangeIdx}`}
+                    startMinOfDay={range[0]}
+                    endMinOfDay={range[1]}
+                    isToday={isToday}
+                  />
+                ))}
               </div>
             </div>
           );
