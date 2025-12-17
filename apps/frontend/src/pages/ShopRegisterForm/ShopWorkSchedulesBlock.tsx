@@ -8,10 +8,14 @@ import {
   DEFAULT_WORKSCHEDULE,
 } from "../../types/shop";
 import { formatWeekdays } from "../../utils/formatWeekdays";
-import type { Weekday, WorkSchedule } from "../../types/workSchedule";
+import {
+  hasWorkScheduleOverlap,
+  type Weekday,
+  type WorkSchedule,
+} from "../../types/workSchedule";
 
 // Helper: Check if two time ranges overlap
-export const isRangeOverlapping = (
+const isRangeOverlapping = (
   range1: [number, number],
   range2: [number, number]
 ) => {
@@ -184,11 +188,7 @@ const ShopWorkSchedulesBlock = ({
     return false;
   };
 
-  const hasNoOverlap = workSchedules.every((a, i) =>
-    workSchedules
-      .slice(i + 1)
-      .every((b) => !isRangeOverlapping(a.range, b.range))
-  );
+  const hasNoOverlap = !hasWorkScheduleOverlap(workSchedules);
 
   return (
     <QuestionBlock

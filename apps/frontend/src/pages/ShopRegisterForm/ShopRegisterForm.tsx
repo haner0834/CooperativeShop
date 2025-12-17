@@ -7,9 +7,7 @@ import ShopDescriptionBlock from "./ShopDescriptionBlock";
 import ShopContactInfoBlock from "./ShopContactInfoBlock";
 import ShopImagesBlock from "./ShopImagesBlock";
 import ShopLocationBlock from "./ShopLocationBlock";
-import ShopWorkSchedulesBlock, {
-  isRangeOverlapping,
-} from "./ShopWorkSchedulesBlock";
+import ShopWorkSchedulesBlock from "./ShopWorkSchedulesBlock";
 import { DEFAULT_WORKSCHEDULE } from "../../types/shop";
 import type { ImageDto, SelectedImage } from "../../types/selectedImage";
 import type {
@@ -24,6 +22,7 @@ import { useToast } from "../../widgets/Toast/ToastProvider";
 import { useAuth } from "../../auth/AuthContext";
 import { useModal } from "../../widgets/ModalContext";
 import {
+  hasWorkScheduleOverlap,
   toBackendSchedules,
   type WorkSchedule,
 } from "../../types/workSchedule";
@@ -262,12 +261,7 @@ const ShopRegisterForm = () => {
       isAvailable = false;
     }
 
-    const hasNoOverlap = workSchedules.every((a, i) =>
-      workSchedules
-        .slice(i + 1)
-        .every((b) => !isRangeOverlapping(a.range, b.range))
-    );
-    if (!hasNoOverlap) {
+    if (hasWorkScheduleOverlap(workSchedules)) {
       isAvailable = false;
     }
 
