@@ -11,7 +11,7 @@ export interface WorkScheduleBackend {
 // interaction in shop register form.
 export interface WorkSchedule {
   weekdays: Weekday[];
-  range: [number, number]; // 0 ~ 23.5
+  range: [number, number]; // 0 ~ 1440 (mins)
 }
 
 /**
@@ -23,9 +23,7 @@ export function toBackendSchedules(
 ): WorkScheduleBackend[] {
   const result: WorkScheduleBackend[] = [];
   schedules.forEach((schedule) => {
-    const [startHour, endHour] = schedule.range;
-    const startMinuteOfDay = Math.round(startHour * 60);
-    const endMinuteOfDay = Math.round(endHour * 60);
+    const [startMinuteOfDay, endMinuteOfDay] = schedule.range;
     schedule.weekdays.forEach((weekday) => {
       result.push({
         id: crypto.randomUUID(),
