@@ -126,7 +126,7 @@ export class ShopRankingService {
     const nearbyScores = shopsWithDistance.map((shop) => {
       const metric = metrics.find((m) => m.shopId === shop.id);
       const score = this.calculateNearbyScore(shop.distance, metric);
-      const thumbnailLink = this.R2_PUBLIC_URL + shop.thumbnailKey;
+      const thumbnailLink = this.R2_PUBLIC_URL + '/' + shop.thumbnailKey;
 
       return {
         id: shop.id,
@@ -378,7 +378,7 @@ export class ShopRankingService {
       title: shop.title,
       description: shop.description,
       contactInfo: shop.contactInfo,
-      thumbnailLink: this.R2_PUBLIC_URL + shop.thumbnailKey,
+      thumbnailLink: this.R2_PUBLIC_URL + '/' + shop.thumbnailKey,
       discount: shop.discount,
       address: shop.address,
       longitude: shop.longitude,
@@ -446,7 +446,7 @@ export class ShopRankingService {
       title: shop.title,
       description: shop.description,
       contactInfo: shop.contactInfo,
-      thumbnailLink: this.R2_PUBLIC_URL + shop.thumbnailKey,
+      thumbnailLink: this.R2_PUBLIC_URL + '/' + shop.thumbnailKey,
       discount: shop.discount,
       address: shop.address,
       longitude: shop.longitude,
