@@ -48,7 +48,9 @@ const Shops = () => {
       if (!success && error) {
         throw new Error(error.code);
       }
-      setShops(Array.isArray(data) ? data.map(transformDtoToShop) : []);
+      setShops(
+        Array.isArray(data.shops) ? data.shops.map(transformDtoToShop) : []
+      );
     } catch (err: any) {
       showModal({
         title: "無法取得商家",
