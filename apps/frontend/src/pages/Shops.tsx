@@ -1,115 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronRight, Menu, Search, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../widgets/Sidebar";
 import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
 import ThemeToggle from "../widgets/ThemeToggle";
-import type { Shop } from "../types/shop";
+import { transformDtoToShop, type Shop } from "../types/shop";
 import { SidebarContent } from "../widgets/SidebarContent";
 import ShopCard from "../widgets/Shop/ShopCard";
-
-export const testShops: Shop[] = [
-  {
-    id: "1",
-    title: "Brew & Bloom Café",
-    description:
-      "A warm café known for its floral-themed interior and artisan coffee.",
-    contactInfo: [],
-    googleMapsLink:
-      "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
-    images: [],
-    thumbnailLink: "https://picsum.photos/400/300?random=3",
-    discount: "10% off for students",
-    address: "No. 25, Lane 12, Yongkang St., Taipei City",
-    longitude: 121.5291,
-    latitude: 25.0335,
-    isOpen: true,
-    schoolId: "",
-    schoolAbbr: "",
-    workSchedules: [],
-    subTitle: "",
-  },
-  {
-    id: "2",
-    title: "Midnight Noodles",
-    description:
-      "Popular late-night eatery serving traditional Taiwanese noodles and snacks.",
-    contactInfo: [],
-    googleMapsLink:
-      "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
-    images: [],
-    thumbnailLink: "https://picsum.photos/400/300?random=7",
-    discount: null,
-    address: "No. 128, Roosevelt Rd., Taipei City",
-    longitude: 121.5357,
-    latitude: 25.0205,
-    isOpen: false,
-    schoolId: "",
-    schoolAbbr: "",
-    workSchedules: [],
-    subTitle: "",
-  },
-  {
-    id: "3",
-    title: "Leafy Market",
-    description:
-      "Fresh produce and organic groceries with a focus on local farmers.",
-    contactInfo: [],
-    googleMapsLink:
-      "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
-    images: [],
-    thumbnailLink: "https://picsum.photos/400/300?random=9",
-    discount: "Spend NT$500, get NT$50 off",
-    address: "No. 88, Section 2, Minquan E. Rd., Taipei City",
-    longitude: 121.5402,
-    latitude: 25.0633,
-    isOpen: true,
-    schoolId: "",
-    schoolAbbr: "",
-    workSchedules: [],
-    subTitle: "",
-  },
-  {
-    id: "4",
-    title: "Pixel Studio",
-    description:
-      "Creative space offering photography, design, and branding services.",
-    contactInfo: [],
-    googleMapsLink:
-      "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
-    images: [],
-    thumbnailLink: "https://picsum.photos/400/300?random=12",
-    discount: "Free consultation for first-time clients",
-    address: "No. 9, Alley 5, Xinyi Rd., Taipei City",
-    longitude: 121.5651,
-    latitude: 25.0329,
-    isOpen: true,
-    schoolId: "",
-    schoolAbbr: "",
-    workSchedules: [],
-    subTitle: "",
-  },
-  {
-    id: "5",
-    title: "Sunrise Books",
-    description:
-      "Independent bookstore featuring local authors and cozy reading spaces.",
-    contactInfo: [],
-    googleMapsLink:
-      "https://www.google.com/maps/place/Apple+Park/@37.3349,-122.0090,17z",
-    images: [],
-    thumbnailLink: "https://picsum.photos/400/300?random=15",
-    discount: "Buy 2 get 1 free on weekends",
-    address: "No. 33, Ren'ai Rd., Taipei City",
-    longitude: 121.5456,
-    latitude: 25.0365,
-    isOpen: true,
-    schoolId: "",
-    schoolAbbr: "",
-    workSchedules: [],
-    subTitle: "",
-  },
-];
+import axios from "axios";
+import { useModal } from "../widgets/ModalContext";
+import { getErrorMessage } from "../utils/errors";
+import { path } from "../utils/path";
 
 export const ShopSectionTitle = ({ title }: { title: string }) => {
   return (
@@ -128,11 +29,39 @@ const transitionProps = {
 
 const Shops = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [shops, setShops] = useState<Shop[]>([]);
   const [search, setSearch] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { showModal } = useModal();
 
   const closeSidebar = () => setIsSidebarOpen(false);
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+
+  const getShops = async () => {
+    setIsLoading(true);
+    try {
+      const { data: resData } = await axios.get(
+        path("/api/shops/rankings?type=home")
+      );
+      const { success, data, error } = resData;
+      if (!success && error) {
+        throw new Error(error.code);
+      }
+      setShops(Array.isArray(data) ? data.map(transformDtoToShop) : []);
+    } catch (err: any) {
+      showModal({
+        title: "無法取得商家",
+        description: getErrorMessage(err.message),
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getShops();
+  }, []);
 
   return (
     <div>
@@ -278,7 +207,7 @@ const Shops = () => {
       </div>
 
       <main className="bg-base-100 min-h-screen pt-18 space-y-8 lg:ps-64">
-        <section className="">
+        {/* <section className="">
           <ShopSectionTitle title="Recent Visited" />
           <div
             className="overflow-x-scroll px-4"
@@ -289,7 +218,7 @@ const Shops = () => {
             }}
           >
             <div className="inline-flex space-x-4">
-              {[...testShops].map((shop) => (
+              {[...shops].map((shop) => (
                 <ShopCard
                   key={"recent-" + shop.id}
                   shop={shop}
@@ -298,11 +227,28 @@ const Shops = () => {
               ))}
             </div>
           </div>
-        </section>
+        </section> */}
         <section className="">
           <ShopSectionTitle title="All Shops" />
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 space-y-2">
-            {testShops.map((shop) => (
+            {isLoading &&
+              [...Array(12)].map((i) => (
+                <div key={`FCUK_${i}`} className="flex flex-col space-y-4">
+                  <div
+                    key={`FUCK_YOU_${i}`}
+                    className="skeleton w-full aspect-[5/3]"
+                  />
+                  <div className="flex flex-col space-y-2">
+                    <div className="skeleton h-10 rounded-field w-4/5"></div>
+
+                    <div className="flex space-x-4">
+                      <div className="skeleton h-5 w-12"></div>
+                      <div className="skeleton h-5 w-12"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            {shops.map((shop) => (
               <ShopCard key={shop.id} shop={shop} className="w-full" />
             ))}
           </div>
