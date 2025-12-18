@@ -139,7 +139,7 @@ const ShopImagesBlock = ({
                 isUploading: false,
                 uploadProgress: 100,
                 status: "success",
-                previewUrl: `${R2_PUBLIC_URL}/${fileKey}`,
+                previewUrl: `${R2_PUBLIC_URL}/${thumbnailKey}`,
                 uploadInfo: {
                   fileKey,
                   uploadUrl,
