@@ -8,6 +8,7 @@ import { UpdateShopDto } from './dto/update-shop.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   AppError,
+  AuthError,
   BadRequestError,
   ConflictError,
   NotFoundError,
@@ -18,6 +19,7 @@ import { Shop as PrismaShop } from '@prisma/client'; // 引入 Prisma 產生的�
 import { FileRecord } from '@prisma/client'; // 引入 FileRecord 類型
 import { ResponseImageDto, ResponseShopDto } from './dto/response-shop.dto';
 import { env } from 'src/common/utils/env.utils';
+import { UserPayload } from 'src/auth/types/auth.types';
 
 type ShopWithRelations = PrismaShop & {
   school: { abbreviation: string };
@@ -180,7 +182,17 @@ export class ShopsService {
     return this.transformShopToDto(shop);
   }
 
-  async update(id: string, updateShopDto: UpdateShopDto) {
+  async update(id: string, user: UserPayload, updateShopDto: UpdateShopDto) {
+    const shop = await this.prisma.shop.findUnique({
+      where: { id },
+      select: { schoolId: true },
+    });
+    if (shop?.schoolId !== user.schoolId) {
+      throw new AuthError(
+        'ACCESS_DENIED',
+        'Modification is forbidden: the shop is not signed by your school.',
+      );
+    }
     // TODO: Update images
     const { contactInfo, schedules, images: _, ...rest } = updateShopDto;
     const plainContactInfo = instanceToPlain(contactInfo);
