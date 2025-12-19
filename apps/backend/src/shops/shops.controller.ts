@@ -14,6 +14,8 @@ import { CreateShopDto } from './dto/create-shop.dto';
 import { UpdateShopDto } from './dto/update-shop.dto';
 import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
 import { Log } from 'src/common/decorators/logger.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { type UserPayload } from 'src/auth/types/auth.types';
 
 @Controller('shops')
 export class ShopsController {
@@ -38,8 +40,12 @@ export class ShopsController {
 
   @Patch(':id')
   @UseGuards(JwtAccessGuard)
-  update(@Param('id') id: string, @Body() updateShopDto: UpdateShopDto) {
-    return this.shopsService.update(id, updateShopDto);
+  update(
+    @Param('id') id: string,
+    @CurrentUser() user: UserPayload,
+    @Body() updateShopDto: UpdateShopDto,
+  ) {
+    return this.shopsService.update(id, user, updateShopDto);
   }
 
   @Delete(':id')

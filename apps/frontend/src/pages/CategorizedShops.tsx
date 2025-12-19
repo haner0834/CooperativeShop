@@ -1,15 +1,27 @@
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import ShopCard from "../widgets/Shop/ShopCard";
 import { useEffect, useState } from "react";
 import { useModal } from "../widgets/ModalContext";
 import axios from "axios";
 import { path } from "../utils/path";
 import { getErrorMessage } from "../utils/errors";
-import { transformDtoToShop, type Shop } from "../types/shop";
+import {
+  transformDtoToShop,
+  type PersistentShopDraft,
+  type ResponseShopDto,
+  type Shop,
+} from "../types/shop";
 import BackButton from "../widgets/BackButton";
 import ThemeToggle from "../widgets/ThemeToggle";
-import { ShoppingCart, Trash2 } from "lucide-react";
+import { Ellipsis, Pencil, ShoppingCart, Trash2 } from "lucide-react";
 import { useAuthFetch } from "../auth/useAuthFetch";
+import type { SelectedImage } from "../types/selectedImage";
+import { fromBackendSchedules } from "../types/workSchedule";
 
 type ShopFilter =
   | "all"
@@ -36,6 +48,7 @@ const FilteredShops = () => {
   const [schoolAbbr] = useState(() => searchParams.get("schoolAbbr"));
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const { authedFetch } = useAuthFetch();
+  const navigate = useNavigate();
 
   const a = async () => {
     if (!shopFilters.includes((filter ?? "") as any)) {
@@ -83,6 +96,7 @@ const FilteredShops = () => {
   };
 
   const handleDeleteShop = async (shopId: string) => {
+    if (isDeletingId === shopId) return;
     setIsDeletingId(shopId);
     const { success, error } = await authedFetch(path(`/api/shops/${shopId}`), {
       method: "DELETE",
@@ -102,6 +116,87 @@ const FilteredShops = () => {
       });
     }
     setIsDeletingId(null);
+  };
+
+  const showDeleteModal = (shopId: string) => {
+    showModal({
+      title: "確認刪除？",
+      description: "此操作無法復原",
+      buttons: [
+        { label: "取消" },
+        {
+          label: "刪除",
+          role: "error",
+          style: "btn-error",
+          onClick: () => handleDeleteShop(shopId),
+        },
+      ],
+    });
+  };
+
+  const getFileKey = (fileUrl: string) => {
+    const R2_PUBLIC_URL = "https://image.cooperativeshops.org";
+    return fileUrl.replace(R2_PUBLIC_URL + "/", "");
+  };
+
+  const handleUpdate = async (shopId: string) => {
+    const { data: resData } = await axios.get(path(`/api/shops/${shopId}`));
+    const { success, data, error } = resData;
+    if (!success) {
+      showModal({
+        title: "無法獲取商家資訊",
+        description: getErrorMessage(error.code),
+      });
+      return;
+    }
+    const shop: ResponseShopDto = data;
+    const key = `SHOP_DRAFT_${shopId}`;
+    const {
+      images: _,
+      workSchedules: wb,
+      ...rest
+    } = transformDtoToShop(shop, "edit");
+    const images: SelectedImage[] = shop.images.map((image) => ({
+      localId: crypto.randomUUID() as string,
+      isUploading: false,
+      uploadProgress: 0,
+      previewUrl: image.thumbnailUrl,
+      status: "success",
+      uploadInfo: {
+        uploadUrl: "",
+        thumbnailUploadUrl: "",
+        fileKey: getFileKey(image.fileUrl),
+        thumbnailKey: getFileKey(image.thumbnailUrl),
+      },
+    }));
+    const selectedPoint = {
+      id: crypto.randomUUID(),
+      title: shop.address,
+      lat: shop.latitude,
+      lng: shop.longitude,
+    };
+    const shopDraft: PersistentShopDraft = {
+      key,
+      dateISOString: new Date().toISOString(),
+      data: {
+        ...rest,
+        images,
+        discount: shop.discount ?? "",
+        selectedPoint,
+        workSchedules: fromBackendSchedules(shop.workSchedules),
+      },
+    };
+
+    localStorage.setItem(key, JSON.stringify(shopDraft));
+
+    navigate(`/shops/register?id=${shopId}`);
+  };
+
+  const closeDropdown = (
+    e: React.MouseEvent<HTMLAnchorElement, MouseEvent>
+  ) => {
+    e.stopPropagation();
+    (document.activeElement as HTMLElement | null)?.blur();
   };
 
   useEffect(() => {
@@ -146,7 +241,45 @@ const FilteredShops = () => {
                 <ShopCard key={shop.id} shop={shop} className="w-full" />
 
                 <div className="absolute top-2 right-2 z-10">
-                  <button
+                  <div className="dropdown dropdown-end">
+                    <div
+                      tabIndex={0}
+                      role="button"
+                      className="btn btn-circle btn-sm"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
+                      <Ellipsis className="w-4 h-4" />
+                    </div>
+
+                    <ul
+                      tabIndex={-1}
+                      className="dropdown-content menu bg-base-100 rounded-box z-10 w-52 p-2 shadow-sm"
+                    >
+                      <li>
+                        <button onClick={() => handleUpdate(shop.id)}>
+                          <Pencil className="w-5 h-5" />
+                          編輯
+                        </button>
+                      </li>
+
+                      <li>
+                        <a
+                          className="text-error"
+                          onClick={(e) => {
+                            closeDropdown(e);
+                            showDeleteModal(shop.id);
+                          }}
+                        >
+                          <Trash2 className="w-5 h-5" />
+                          刪除
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                  {/* <button
                     className="btn btn-circle md:btn-sm bg-base-100"
                     disabled={isDeletingId === shop.id}
                     onClick={() => {
@@ -166,7 +299,7 @@ const FilteredShops = () => {
                     }}
                   >
                     <Trash2 className="w-5 h-5 text-error" />
-                  </button>
+                  </button> */}
                 </div>
               </div>
             ))}

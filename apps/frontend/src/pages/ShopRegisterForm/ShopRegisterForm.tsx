@@ -14,6 +14,7 @@ import type {
   ContactInfo,
   CreateShopDto,
   PersistentShopDraft,
+  ShopMode,
 } from "../../types/shop";
 import type { Point } from "./ShopLocationBlock";
 import { getDraft } from "../../utils/draft";
@@ -64,6 +65,7 @@ const ShopRegisterForm = () => {
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([
     DEFAULT_WORKSCHEDULE,
   ]);
+  const [mode, setMode] = useState<ShopMode>("create");
   const [showHint, setShowHint] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const { showToast } = useToast();
@@ -83,6 +85,38 @@ const ShopRegisterForm = () => {
     const id = searchParams.get("id") ?? "FUCK";
     const draft = getDraft(id);
     if (draft) {
+      if (
+        activeUser &&
+        draft.data.schoolId &&
+        draft.data.schoolId !== activeUser.schoolId
+      ) {
+        showModal({
+          title: "權限錯誤",
+          description:
+            "您目前的帳號所屬校系與此商店草稿不符，請切換帳號或取消編輯。",
+          buttons: [
+            {
+              label: "切換帳號",
+              style: "btn-outline",
+              onClick: () => {
+                const target = `/shops/register?id=${id}`;
+                navigate(`/choose-school?to=${encodeURIComponent(target)}`);
+              },
+            },
+            {
+              label: "關閉並刪除草稿",
+              style: "btn-error",
+              role: "primary",
+              onClick: () => {
+                deleteCurrentDraft();
+                navigate("/shops/drafts", { replace: true });
+              },
+            },
+          ],
+        });
+        return;
+      }
+
       setTitle(draft.data.title);
       setSubTitle(draft.data.subTitle ?? "");
       setDescription(draft.data.description);
@@ -101,6 +135,7 @@ const ShopRegisterForm = () => {
       setAddress(draft.data.address);
       setSelectedPoint(draft.data.selectedPoint);
       setContactInfo(draft.data.contactInfo);
+      setMode(draft.data.mode);
     }
   }, []);
 
@@ -153,6 +188,7 @@ const ShopRegisterForm = () => {
           address,
           schoolId: activeUser?.schoolId ?? "UNKNOWN",
           schoolAbbr: activeUser?.schoolAbbr ?? "UNKNOWN",
+          mode,
         },
       };
       localStorage.setItem(key, JSON.stringify(shop));
@@ -186,8 +222,7 @@ const ShopRegisterForm = () => {
   };
 
   const submit = async () => {
-    if (!selectedPoint) return;
-    if (!activeUser) return;
+    if (!selectedPoint || !activeUser) return;
     if (images.length === 0 || images.length > 10) return;
 
     const contactInfoDto = contactInfo.map((c) => ({
@@ -220,15 +255,21 @@ const ShopRegisterForm = () => {
       discount: discount || null,
     };
 
-    const response = await authedFetch(path("/api/shops"), {
-      method: "POST",
-      body: JSON.stringify(shopDto),
-    });
+    const shopId = searchParams.get("id");
+    const isEdit = mode === "edit";
+
+    const response = await authedFetch(
+      isEdit ? path(`/api/shops/${shopId}`) : path("/api/shops"),
+      {
+        method: isEdit ? "PATCH" : "POST",
+        body: JSON.stringify(shopDto),
+      }
+    );
 
     const { success, error } = response;
     if (!success) {
       showModal({
-        title: "上傳失敗",
+        title: isEdit ? "更新失敗" : "上傳失敗",
         description: error.message,
         showDismissButton: true,
       });
@@ -237,7 +278,7 @@ const ShopRegisterForm = () => {
 
     deleteCurrentDraft();
     showModal({
-      title: "上傳成功",
+      title: isEdit ? "更新成功" : "上傳成功",
       buttons: [
         {
           label: "關閉",

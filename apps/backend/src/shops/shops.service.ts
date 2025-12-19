@@ -8,6 +8,7 @@ import { UpdateShopDto } from './dto/update-shop.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   AppError,
+  AuthError,
   BadRequestError,
   ConflictError,
   NotFoundError,
@@ -18,6 +19,7 @@ import { Shop as PrismaShop } from '@prisma/client'; // 引入 Prisma 產生的�
 import { FileRecord } from '@prisma/client'; // 引入 FileRecord 類型
 import { ResponseImageDto, ResponseShopDto } from './dto/response-shop.dto';
 import { env } from 'src/common/utils/env.utils';
+import { UserPayload } from 'src/auth/types/auth.types';
 
 type ShopWithRelations = PrismaShop & {
   school: { abbreviation: string };
@@ -180,19 +182,91 @@ export class ShopsService {
     return this.transformShopToDto(shop);
   }
 
-  async update(id: string, updateShopDto: UpdateShopDto) {
-    // TODO: Update images
-    const { contactInfo, schedules, images: _, ...rest } = updateShopDto;
+  async update(id: string, user: UserPayload, updateShopDto: UpdateShopDto) {
+    const currentShop = await this.prisma.shop.findUnique({
+      where: { id },
+      include: { images: { include: { file: true } } },
+    });
+
+    if (!currentShop)
+      throw new NotFoundError('SHOP_NOT_FOUND', 'Shop not found.');
+    if (currentShop.schoolId !== user.schoolId) {
+      throw new AuthError('ACCESS_DENIED', 'Modification is forbidden.');
+    }
+
+    const { contactInfo, schedules, images, ...rest } = updateShopDto;
     const plainContactInfo = instanceToPlain(contactInfo);
     const plainSchedules = instanceToPlain(schedules);
 
-    return await this.prisma.shop.update({
-      where: { id },
-      data: {
-        contactInfo: plainContactInfo,
-        schedules: plainSchedules,
-        ...rest,
-      },
+    return await this.prisma.$transaction(async (tx) => {
+      await tx.shop.update({
+        where: { id },
+        data: {
+          contactInfo: plainContactInfo,
+          schedules: plainSchedules,
+          ...rest,
+        },
+      });
+
+      // 2. Diff images and update
+      if (images) {
+        const currentImages = currentShop.images;
+        const newFileKeys = images.map((img) => img.fileKey);
+        const currentFileKeys = currentImages.map((img) => img.file.fileKey);
+
+        // A. Find relationships to remove (current has, new value hasn't)
+        const keysToDelete = currentFileKeys.filter(
+          (key) => !newFileKeys.includes(key),
+        );
+        if (keysToDelete.length > 0) {
+          await tx.shopImage.deleteMany({
+            where: {
+              shopId: id,
+              file: { fileKey: { in: keysToDelete } },
+            },
+          });
+        }
+
+        // B. Find relationships to create (new value has, current hasn't)
+        const keysToAdd = newFileKeys.filter(
+          (key) => !currentFileKeys.includes(key),
+        );
+        if (keysToAdd.length > 0) {
+          const fileRecords = await tx.fileRecord.findMany({
+            where: { fileKey: { in: keysToAdd } },
+          });
+          const fileRecordMap = Object.fromEntries(
+            fileRecords.map((f) => [f.fileKey, f.id]),
+          );
+
+          for (const key of keysToAdd) {
+            const fileId = fileRecordMap[key];
+            if (!fileId)
+              throw new BadRequestError(
+                'FILE_NOT_FOUND',
+                `File ${key} not found.`,
+              );
+            await tx.shopImage.create({
+              data: {
+                shopId: id,
+                fileId: fileId,
+                order: newFileKeys.indexOf(key),
+              },
+            });
+          }
+        }
+
+        // C. update existings (order may change)
+        for (let i = 0; i < newFileKeys.length; i++) {
+          await tx.shopImage.updateMany({
+            where: {
+              shopId: id,
+              file: { fileKey: newFileKeys[i] },
+            },
+            data: { order: i },
+          });
+        }
+      }
     });
   }
 
