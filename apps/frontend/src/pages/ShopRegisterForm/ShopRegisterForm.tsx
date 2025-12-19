@@ -85,6 +85,38 @@ const ShopRegisterForm = () => {
     const id = searchParams.get("id") ?? "FUCK";
     const draft = getDraft(id);
     if (draft) {
+      if (
+        activeUser &&
+        draft.data.schoolId &&
+        draft.data.schoolId !== activeUser.schoolId
+      ) {
+        showModal({
+          title: "權限錯誤",
+          description:
+            "您目前的帳號所屬校系與此商店草稿不符，請切換帳號或取消編輯。",
+          buttons: [
+            {
+              label: "切換帳號",
+              style: "btn-outline",
+              onClick: () => {
+                const target = `/shops/register?id=${id}`;
+                navigate(`/choose-school?to=${encodeURIComponent(target)}`);
+              },
+            },
+            {
+              label: "關閉並刪除草稿",
+              style: "btn-error",
+              role: "primary",
+              onClick: () => {
+                deleteCurrentDraft();
+                navigate("/shops/drafts", { replace: true });
+              },
+            },
+          ],
+        });
+        return;
+      }
+
       setTitle(draft.data.title);
       setSubTitle(draft.data.subTitle ?? "");
       setDescription(draft.data.description);
