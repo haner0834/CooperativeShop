@@ -14,6 +14,7 @@ import type {
   ContactInfo,
   CreateShopDto,
   PersistentShopDraft,
+  ShopMode,
 } from "../../types/shop";
 import type { Point } from "./ShopLocationBlock";
 import { getDraft } from "../../utils/draft";
@@ -64,6 +65,7 @@ const ShopRegisterForm = () => {
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([
     DEFAULT_WORKSCHEDULE,
   ]);
+  const [mode, setMode] = useState<ShopMode>("create");
   const [showHint, setShowHint] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const { showToast } = useToast();
@@ -101,6 +103,7 @@ const ShopRegisterForm = () => {
       setAddress(draft.data.address);
       setSelectedPoint(draft.data.selectedPoint);
       setContactInfo(draft.data.contactInfo);
+      setMode(draft.data.mode);
     }
   }, []);
 
@@ -153,6 +156,7 @@ const ShopRegisterForm = () => {
           address,
           schoolId: activeUser?.schoolId ?? "UNKNOWN",
           schoolAbbr: activeUser?.schoolAbbr ?? "UNKNOWN",
+          mode,
         },
       };
       localStorage.setItem(key, JSON.stringify(shop));

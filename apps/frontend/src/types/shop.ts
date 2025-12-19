@@ -12,6 +12,8 @@ export interface ResponseImageDto {
   thumbnailUrl: string;
 }
 
+export type ShopMode = "edit" | "create";
+
 export interface Shop {
   id: string;
   title: string;
@@ -28,6 +30,7 @@ export interface Shop {
   address: string;
   longitude: number;
   latitude: number;
+  mode: ShopMode;
   workSchedules: WorkScheduleBackend[];
 }
 
@@ -66,7 +69,10 @@ export interface ResponseShopDto {
 }
 
 // 轉換函數：將後端 DTO 轉換為前端 Shop 介面
-export function transformDtoToShop(dto: ResponseShopDto): Shop {
+export function transformDtoToShop(
+  dto: ResponseShopDto,
+  mode: ShopMode = "create"
+): Shop {
   // 由於後端 DTO 被設計為盡可能與前端 Shop 介面保持一致，轉換操作極為簡單。
   // 只需要確保所有欄位都存在即可。
 
@@ -95,6 +101,7 @@ export function transformDtoToShop(dto: ResponseShopDto): Shop {
     longitude: dto.longitude,
     latitude: dto.latitude,
     workSchedules: dto.workSchedules,
+    mode,
   };
 }
 
@@ -190,6 +197,7 @@ export interface ShopDraft {
     address: string;
     contactInfo: ContactInfo[];
     workSchedules: WorkSchedule[];
+    mode: ShopMode;
   };
 }
 
@@ -208,5 +216,6 @@ export interface PersistentShopDraft {
     address: string;
     contactInfo: Omit<ContactInfo, "icon" | "formatter" | "validator">[];
     workSchedules: WorkSchedule[];
+    mode: ShopMode;
   };
 }

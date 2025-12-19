@@ -174,6 +174,7 @@ const ShopDrafts = () => {
         images: [],
         contactInfo: [],
         workSchedules: [],
+        mode: "create",
       },
     };
     setDrafts((prev) => [...prev, newDraft]);
