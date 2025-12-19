@@ -222,8 +222,7 @@ const ShopRegisterForm = () => {
   };
 
   const submit = async () => {
-    if (!selectedPoint) return;
-    if (!activeUser) return;
+    if (!selectedPoint || !activeUser) return;
     if (images.length === 0 || images.length > 10) return;
 
     const contactInfoDto = contactInfo.map((c) => ({
@@ -256,15 +255,21 @@ const ShopRegisterForm = () => {
       discount: discount || null,
     };
 
-    const response = await authedFetch(path("/api/shops"), {
-      method: "POST",
-      body: JSON.stringify(shopDto),
-    });
+    const shopId = searchParams.get("id");
+    const isEdit = mode === "edit";
+
+    const response = await authedFetch(
+      isEdit ? path(`/api/shops/${shopId}`) : path("/api/shops"),
+      {
+        method: isEdit ? "PATCH" : "POST",
+        body: JSON.stringify(shopDto),
+      }
+    );
 
     const { success, error } = response;
     if (!success) {
       showModal({
-        title: "上傳失敗",
+        title: isEdit ? "更新失敗" : "上傳失敗",
         description: error.message,
         showDismissButton: true,
       });
@@ -273,7 +278,7 @@ const ShopRegisterForm = () => {
 
     deleteCurrentDraft();
     showModal({
-      title: "上傳成功",
+      title: isEdit ? "更新成功" : "上傳成功",
       buttons: [
         {
           label: "關閉",
