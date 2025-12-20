@@ -101,7 +101,12 @@ export class AuthService {
     password: string;
   }): Promise<User> {
     const student = await this.prisma.user.findUnique({
-      where: { id: data.studentId },
+      where: {
+        schoolId_studentId: {
+          schoolId: data.schoolId,
+          studentId: data.studentId,
+        },
+      },
       select: { name: true },
     });
     if (student)
