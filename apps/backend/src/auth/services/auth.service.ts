@@ -100,11 +100,16 @@ export class AuthService {
     name: string;
     password: string;
   }): Promise<User> {
-    const student = await this.prisma.user.findUnique({
-      where: { id: data.studentId },
+    const existingUser = await this.prisma.user.findUnique({
+      where: {
+        schoolId_studentId: {
+          schoolId: data.schoolId,
+          studentId: data.studentId,
+        },
+      },
       select: { name: true },
     });
-    if (student)
+    if (existingUser)
       throw new AppError(
         'EXISTING_USER',
         'A user with given studentId is already existing.',

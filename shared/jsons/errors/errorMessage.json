@@ -4,31 +4,59 @@
     "devNote": "JWT-Refresh is expired."
   },
   "EXISTING_USER": {
-    "message": "您已註冊其帳號",
+    "message": "您已註冊過此帳號",
     "devNote": "A user with given studentId is already existing."
   },
   "EMAIL_SCHOOL_MISMATCH": {
-    "message": "請使用學校指定格式的電子郵件地址註冊。",
+    "message": "請使用學校指定格式的電子郵件地址註冊",
     "devNote": "Email address does not match any of the school's required formats."
   },
   "UNAUTHORIZED": {
     "message": "尚未登入或登入已過期",
-    "devNote": "User is not authenticated"
+    "devNote": "User is not authenticated or session missing."
   },
   "BAD_REQUEST": {
     "message": "請求錯誤，請稍後再試",
-    "devNote": "Malformed or invalid client request"
+    "devNote": "Malformed or invalid client request."
   },
   "INTERNAL_SERVER_ERROR": {
     "message": "系統錯誤，請稍後再試",
-    "devNote": "Unexpected server error"
+    "devNote": "Unexpected server error or data integrity issue."
   },
   "NO_PERMISSION": {
     "message": "沒有執行此操作的權限",
-    "devNote": "User lacks required permission"
+    "devNote": "User lacks required permission."
   },
   "INVALID_STUDENT_ID_FORMAT": {
     "message": "學號格式錯誤",
     "devNote": "Invalid Student ID format."
+  },
+  "INVALID_CREDENTIAL": {
+    "message": "學號或密碼不正確",
+    "devNote": "Invalid credentials or user-school mismatch."
+  },
+  "MISSING_DEVICE_ID": {
+    "message": "裝置識別碼缺失，無法登入",
+    "devNote": "Device ID is required for auth operations."
+  },
+  "MISSING_TARGET_UID": {
+    "message": "請選擇要切換的目標帳號",
+    "devNote": "Target User ID is required for account switching."
+  },
+  "SESSION_NOT_FOUND": {
+    "message": "找不到您的連線紀錄，請重新登入",
+    "devNote": "Session not found or already terminated."
+  },
+  "TOKEN_REUSE_DETECTED": {
+    "message": "安全偵測：帳號已在其他地方更新，請重新登入",
+    "devNote": "Refresh token reuse detected; all sessions for this device cleared."
+  },
+  "NO_SESSION": {
+    "message": "目前無活動中的登入階段",
+    "devNote": "No active session to restore."
+  },
+  "USER_NOT_FOUND": {
+    "message": "找不到該使用者資訊",
+    "devNote": "User data missing from the current session."
   }
 }

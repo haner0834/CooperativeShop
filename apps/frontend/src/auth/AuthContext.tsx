@@ -126,9 +126,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isLoadingRef = useRef<boolean>(isLoading);
-  useEffect(() => {
+  const setIsLoadingAndRef = (isLoading: boolean) => {
+    setIsLoading(isLoading);
     isLoadingRef.current = isLoading;
-  }, [isLoading]);
+  };
 
   const activeUserRef = useRef<UserPayload | null>(null);
   useEffect(() => {
@@ -188,7 +189,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [rawRefreshFunc]);
 
   const restoreSession = useCallback(async () => {
-    setIsLoading(true);
+    setIsLoadingAndRef(true);
     try {
       const res = await fetch(path("/api/auth/restore"), {
         method: "POST",
@@ -208,7 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       restorePromiseControls.resolve(false);
       // 即使失敗，也算是一次成功的「嘗試」
     } finally {
-      setIsLoading(false);
+      setIsLoadingAndRef(false);
       setHasAttemptedRestore(true);
     }
   }, []);
