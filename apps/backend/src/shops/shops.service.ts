@@ -15,11 +15,12 @@ import {
 } from 'src/types/error.types';
 import { instanceToPlain } from 'class-transformer';
 import { calculateRequestHash } from 'src/common/utils/calculate-req-hash.utils';
-import { Shop as PrismaShop } from '@prisma/client'; // 引入 Prisma 產生的類型
+import { Prisma, Shop as PrismaShop } from '@prisma/client'; // 引入 Prisma 產生的類型
 import { FileRecord } from '@prisma/client'; // 引入 FileRecord 類型
 import { ResponseImageDto, ResponseShopDto } from './dto/response-shop.dto';
 import { env } from 'src/common/utils/env.utils';
 import { UserPayload } from 'src/auth/types/auth.types';
+import { GetShopsDto, ShopSortBy } from './dto/get-shop.dto';
 
 type ShopWithRelations = PrismaShop & {
   school: { abbreviation: string };
@@ -155,17 +156,142 @@ export class ShopsService {
     });
   }
 
-  async findAll(schoolAbbr: string): Promise<ResponseShopDto[]> {
+  async findAll(dto: GetShopsDto) {
+    const {
+      q,
+      sortBy,
+      minLat,
+      maxLat,
+      minLng,
+      maxLng, // Map Viewport
+      userLat,
+      userLng, // User Location
+      isOpen,
+      hasDiscount,
+      schoolId,
+      limit = 20,
+      offset = 0,
+    } = dto;
+
+    const where: Prisma.ShopWhereInput = {};
+
+    // 1. 基礎篩選
+    if (schoolId) where.schoolId = schoolId;
+    if (hasDiscount) where.discount = { not: null };
+
+    // 2. 關鍵字搜尋 (標題或敘述)
+    if (q) {
+      where.OR = [
+        { title: { contains: q, mode: 'insensitive' } },
+        { description: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+
+    // 3. 地圖可視範圍 (Lazy Load 核心)
+    if (minLat && maxLat && minLng && maxLng) {
+      where.latitude = { gte: minLat, lte: maxLat };
+      where.longitude = { gte: minLng, lte: maxLng };
+    }
+
+    // 4. 營業中篩選 (Server Side Calculation)
+    if (isOpen) {
+      // 假設目標時區為台灣時間 (UTC+8)
+      const now = new Date();
+      const TW_OFFSET = 8 * 60; // 分鐘
+      const utcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+
+      // 計算台灣當地的 "星期幾" 與 "分鐘數"
+      // 注意：需處理跨日問題，這裡簡化處理，建議使用 date-fns-tz
+      const twNow = new Date(now.getTime() + TW_OFFSET * 60 * 1000);
+      const currentDay = twNow.getUTCDay();
+      const currentMinute = twNow.getUTCHours() * 60 + twNow.getUTCMinutes();
+
+      where.workSchedules = {
+        some: {
+          dayOfWeek: currentDay,
+          startMinute: { lte: currentMinute },
+          endMinute: { gte: currentMinute },
+        },
+      };
+    }
+
+    // 5. 排序邏輯
+    let orderBy: Prisma.ShopOrderByWithRelationInput | undefined;
+
+    // 根據 Cached Score 排序 (極快)
+    if (sortBy === ShopSortBy.HOT) orderBy = { cachedHotScore: 'desc' };
+    else if (sortBy === ShopSortBy.HOME) orderBy = { cachedHomeScore: 'desc' };
+
+    // 若為 Nearby，因 Prisma 不支援 PostGIS Distance 排序，需取出後在記憶體排序
+    // 考慮到總量僅 300 家，這在 Node.js 層處理非常快
+    const isNearbySort = sortBy === ShopSortBy.DISTANCE && userLat && userLng;
+
     const shops = await this.prisma.shop.findMany({
-      where: { school: { abbreviation: schoolAbbr } },
+      where,
+      // 若是 Nearby 排序，先不分頁 (take/skip)，全抓出來算距離
+      take: isNearbySort ? undefined : limit,
+      skip: isNearbySort ? undefined : offset,
+      orderBy: isNearbySort ? undefined : orderBy,
       include: {
+        images: { take: 1, orderBy: { order: 'asc' }, include: { file: true } },
+        workSchedules: true, // 前端可能需要顯示營業時間細節
         school: { select: { abbreviation: true } },
-        images: { include: { file: true } },
       },
     });
 
-    const shopsDto = shops.map((item) => this.transformShopToDto(item));
-    return shopsDto;
+    // 6. 資料轉換與距離計算
+    let results = shops.map((shop) => {
+      const thumbnail = shop.images[0]?.file?.url
+        ? `${process.env.R2_PUBLIC_URL}/${shop.images[0].file.fileKey}` // 或使用您現有的邏輯
+        : null;
+
+      let distance: number | null = null;
+      if (userLat && userLng) {
+        distance = this.calculateDistance(
+          userLat,
+          userLng,
+          shop.latitude,
+          shop.longitude,
+        );
+      }
+
+      return {
+        ...shop,
+        thumbnailLink: thumbnail,
+        distance, // km
+        // 為了前端方便，可直接回傳 isOpen boolean
+        // isOpen: this.checkIsOpen(shop.workSchedules)
+      };
+    });
+
+    // 7. Nearby 記憶體排序與手動分頁
+    if (isNearbySort) {
+      results.sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
+      // Manual Pagination
+      results = results.slice(offset, offset + limit);
+    }
+
+    return results;
+  }
+
+  // Haversine
+  private calculateDistance(
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number,
+  ): number {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLng = (lng2 - lng1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) *
+        Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   }
 
   async findOne(id: string): Promise<ResponseShopDto> {
