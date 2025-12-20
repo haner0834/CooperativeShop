@@ -110,7 +110,7 @@ const CredentialLogin = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedSchool, setSelectedSchool] = useState<string>("");
   const [schools, setSchools] = useState<School[]>([]);
-  const { setAccessToken } = useAuth();
+  const { login } = useAuth();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [name, setName] = useState("");
   const [id, setId] = useState("");
@@ -167,23 +167,22 @@ const CredentialLogin = () => {
         },
         body,
       });
-      const { success, data, error } = await res.json();
-      if (!success) {
+      try {
+        login(res.json());
+        localStorage.setItem("isLoggedIn", "true");
+        await new Promise((f) => setTimeout(f, 100));
+
+        const to = searchParams.get("to");
+
+        navigate(to && to !== "null" ? to : "/", { replace: true });
+      } catch (error: any) {
         showModal({
           title: "登入錯誤",
-          description: getErrorMessage(error.code),
+          description: getErrorMessage(error.message), // Error.message
           showDismissButton: true,
         });
         return;
       }
-      const { accessToken } = data;
-      setAccessToken(accessToken);
-      localStorage.setItem("isLoggedIn", "true");
-      await new Promise((f) => setTimeout(f, 100));
-
-      const to = searchParams.get("to");
-
-      navigate(to && to !== "null" ? to : "/", { replace: true });
     } else {
       showModal({
         title: "WTF is going on bruh",

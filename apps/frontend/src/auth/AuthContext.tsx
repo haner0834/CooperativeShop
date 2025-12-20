@@ -226,7 +226,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response = await loginPromise;
     if (!response.success) {
       // 可以在這裡處理登入失敗的通用邏輯，例如顯示錯誤訊息
-      throw new Error(response.error?.message || "Login failed");
+      throw new Error(response.error?.code);
     }
     handleAuthSuccess(response.data);
   };
