@@ -125,6 +125,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     tokenRef.current = newToken;
   };
 
+  // And yeah obviously there's exposed function for setting
+  // new access token. So the solution here is to expose
+  // `setAccessTokenAndTokenRef` as `setAccessToken`.
+  // Guess what, I'm like a joker. fuck react.
+  // Why the fuck managing data flow has to be aware
+  // of so fucking many things?
+
   const isLoadingRef = useRef<boolean>(isLoading);
   const setIsLoadingAndRef = (isLoading: boolean) => {
     setIsLoading(isLoading);
@@ -282,7 +289,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshAccessToken,
     hasAttemptedRestore,
     restoreSession,
-    setAccessToken,
+    setAccessToken: setAccessTokenAndTokenRef,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
