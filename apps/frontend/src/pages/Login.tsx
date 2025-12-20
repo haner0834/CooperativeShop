@@ -179,7 +179,7 @@ const CredentialLogin = () => {
       const { accessToken } = data;
       setAccessToken(accessToken);
       localStorage.setItem("isLoggedIn", "true");
-      await new Promise((f) => setTimeout(f, 500));
+      await new Promise((f) => setTimeout(f, 100));
 
       const to = searchParams.get("to");
 
