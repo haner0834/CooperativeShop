@@ -1,20 +1,20 @@
 import { PrismaClient } from '@prisma/client';
-import { Weekday } from '../src/shops/types/work-schedule.type'; // 根據您的路徑調整
 
 const prisma = new PrismaClient();
 
+export type Weekday = 'SUN' | 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT';
 /**
  * 將 Enum Weekday 轉換為 Prisma 中建議使用的 Int (0-6)
  * 這樣做是為了方便 Date.getDay() 直接比對，且效能最佳
  */
 const WeekdayToInt: Record<Weekday, number> = {
-  [Weekday.SUNDAY]: 0,
-  [Weekday.MONDAY]: 1,
-  [Weekday.TUESDAY]: 2,
-  [Weekday.WEDNESDAY]: 3,
-  [Weekday.THURSDAY]: 4,
-  [Weekday.FRIDAY]: 5,
-  [Weekday.SATURDAY]: 6,
+  ['SUN']: 0,
+  ['MON']: 1,
+  ['TUE']: 2,
+  ['WED']: 3,
+  ['THU']: 4,
+  ['FRI']: 5,
+  ['SAT']: 6,
 };
 
 async function migrate() {

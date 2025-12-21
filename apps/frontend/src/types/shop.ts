@@ -132,24 +132,24 @@ export function transformSchedules(
 }
 
 export const weekdayOrder: Weekday[] = [
-  "MON",
-  "TUE",
-  "WED",
-  "THU",
-  "FRI",
-  "SAT",
-  "SUN",
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+  "SUNDAY",
 ];
 
 export const getChineseWeekdayName = (weekday: Weekday): string => {
   const zhMap: Record<Weekday, string> = {
-    SUN: "週日",
-    MON: "週一",
-    TUE: "週二",
-    WED: "週三",
-    THU: "週四",
-    FRI: "週五",
-    SAT: "週六",
+    SUNDAY: "週日",
+    MONDAY: "週一",
+    TUESDAY: "週二",
+    WEDNESDAY: "週三",
+    THURSDAY: "週四",
+    FRIDAY: "週五",
+    SATURDAY: "週六",
   };
 
   return zhMap[weekday];

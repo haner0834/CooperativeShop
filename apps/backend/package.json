@@ -9,7 +9,7 @@
     "build": "npx nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "migrate:schedules": "te-node scripts/migrate-schedules.ts",
+    "migrate:schedules": "ts-node scripts/migrate-schedules.ts",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",

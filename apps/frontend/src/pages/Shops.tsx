@@ -47,7 +47,7 @@ const Shops = () => {
         throw new Error(error.code);
       }
       setShops(
-        Array.isArray(data.shops) ? data.shops.map(transformDtoToShop) : []
+        Array.isArray(data) ? data.map((s) => transformDtoToShop(s)) : []
       );
     } catch (err: any) {
       showModal({
@@ -232,7 +232,7 @@ const Shops = () => {
           <ShopSectionTitle title="All Shops" />
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 space-y-2">
             {isLoading &&
-              [...Array(12)].map((i) => (
+              [...Array(12)].map((_, i) => (
                 <div key={`FCUK_${i}`} className="flex flex-col space-y-4">
                   <div
                     key={`FUCK_YOU_${i}`}
