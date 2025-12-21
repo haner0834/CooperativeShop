@@ -4,6 +4,7 @@ import {
   Body,
   UseGuards,
   BadRequestException,
+  Headers,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { InteractionService } from './interaction.service';
@@ -32,7 +33,7 @@ export class InteractionController {
   @Post('impressions')
   @Throttle({ default: { limit: 150, ttl: 60 * 1000 } })
   async recordImpression(
-    @CurrentUser() user: UserPayload,
+    @CurrentUser() user: UserPayload | undefined,
     @Body() dto: RecordImpressionDto,
   ) {
     const { identifier, identifierType } = this.getIdentifier(
@@ -58,7 +59,7 @@ export class InteractionController {
   @Post('views')
   @Throttle({ default: { limit: 50, ttl: 60000 } })
   async recordView(
-    @CurrentUser() user: UserPayload,
+    @CurrentUser() user: UserPayload | undefined,
     @Body() dto: RecordViewDto,
   ) {
     const { identifier, identifierType } = this.getIdentifier(
@@ -83,7 +84,10 @@ export class InteractionController {
    */
   @Post('taps')
   @Throttle({ default: { limit: 30, ttl: 60000 } })
-  async recordTap(@CurrentUser() user: UserPayload, @Body() dto: RecordTapDto) {
+  async recordTap(
+    @CurrentUser() user: UserPayload | undefined,
+    @Body() dto: RecordTapDto,
+  ) {
     const { identifier, identifierType } = this.getIdentifier(
       user,
       dto.deviceId,
@@ -108,7 +112,7 @@ export class InteractionController {
   @Post('view-time')
   @Throttle({ default: { limit: 30, ttl: 60000 } })
   async recordViewTimeSec(
-    @CurrentUser() user: UserPayload,
+    @CurrentUser() user: UserPayload | undefined,
     @Body() dto: RecordViewTimeDto,
   ) {
     const { identifier, identifierType } = this.getIdentifier(

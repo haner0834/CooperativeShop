@@ -19,6 +19,7 @@ model Shop {
     requestHashId   String          @unique @default(uuid())
     cachedHotScore  Float           @default(0)
     cachedHomeScore Float           @default(0)
+    savedBy         SavedShop[]
 
     @@index([title])
     @@index([schoolId])

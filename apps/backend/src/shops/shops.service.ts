@@ -22,89 +22,15 @@ type ShopWithRelations = PrismaShop & {
   school: { abbreviation: string };
   workSchedules: WorkSchedule[];
   images: { file: FileRecord }[];
+  _count?: {
+    savedBy: number;
+  };
 };
 
 @Injectable()
 export class ShopsService {
   private readonly R2_PUBLIC_URL = env('R2_PUBLIC_URL');
   constructor(private readonly prisma: PrismaService) {}
-
-  private transformShopToDto(
-    shop: ShopWithRelations,
-    userLat?: number,
-    userLng?: number,
-    currentDay?: number,
-    currentMinute?: number,
-  ): ResponseShopDto {
-    // 計算距離
-    let distance: number | undefined;
-    if (userLat && userLng) {
-      distance = this.calculateDistance(
-        userLat,
-        userLng,
-        shop.latitude,
-        shop.longitude,
-      );
-    }
-
-    // 計算是否營業中 (即便沒篩選 isOpen，前端也需要這個 flag)
-    let isOpen = false;
-    if (currentDay !== undefined && currentMinute !== undefined) {
-      isOpen = shop.workSchedules.some(
-        (s) =>
-          s.dayOfWeek === currentDay &&
-          s.startMinute <= currentMinute &&
-          s.endMinute >= currentMinute,
-      );
-    }
-
-    // 圖片處理
-    const images = shop.images.map((img) => ({
-      fileUrl: img.file.url,
-      thumbnailUrl: img.file.thumbnailUrl, // 假設 FileRecord 有此欄位
-    }));
-
-    // 若沒有預先生成 thumbnailKey，則使用第一張圖
-    const thumbnailLink = shop.thumbnailKey
-      ? `${this.R2_PUBLIC_URL}/${shop.thumbnailKey}`
-      : images[0]?.thumbnailUrl || null;
-
-    // 修正 Google Maps Link
-    const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${shop.latitude},${shop.longitude}`;
-
-    // NOTE: contactInfo is already a Json
-    const contactInfo = shop.contactInfo as any;
-
-    // WorkSchedules 轉換 (Prisma Model -> DTO)
-    const workSchedules = shop.workSchedules.map((ws) => ({
-      weekday: this.mapIntToWeekday(ws.dayOfWeek),
-      startMinuteOfDay: ws.startMinute,
-      endMinuteOfDay: ws.endMinute,
-    }));
-
-    return {
-      id: shop.id,
-      title: shop.title,
-      subTitle: shop.subTitle,
-      description: shop.description,
-      contactInfo,
-      schoolId: shop.schoolId,
-      schoolAbbr: shop.school.abbreviation,
-      images,
-      thumbnailLink: thumbnailLink || '',
-      discount: shop.discount,
-      address: shop.address,
-      longitude: shop.longitude,
-      latitude: shop.latitude,
-      workSchedules,
-      googleMapsLink,
-
-      // 新增欄位
-      isOpen,
-      distance,
-      hotScore: shop.cachedHotScore,
-    };
-  }
 
   async create(createShopDto: CreateShopDto) {
     const requestHashId = calculateRequestHash(createShopDto);
@@ -189,7 +115,10 @@ export class ShopsService {
     });
   }
 
-  async findAll(dto: GetShopsDto): Promise<ResponseShopDto[]> {
+  async findAll(
+    dto: GetShopsDto,
+    userId: string | undefined,
+  ): Promise<ResponseShopDto[]> {
     const {
       q,
       sortBy,
@@ -262,6 +191,13 @@ export class ShopsService {
         },
         workSchedules: true,
         school: { select: { abbreviation: true } },
+        _count: userId
+          ? {
+              select: {
+                savedBy: { where: { userId } },
+              },
+            }
+          : undefined,
       },
     });
 
@@ -285,39 +221,6 @@ export class ShopsService {
     }
 
     return results;
-  }
-
-  private mapIntToWeekday(day: number): Weekday {
-    const map = [
-      Weekday.SUNDAY,
-      Weekday.MONDAY,
-      Weekday.TUESDAY,
-      Weekday.WEDNESDAY,
-      Weekday.THURSDAY,
-      Weekday.FRIDAY,
-      Weekday.SATURDAY,
-    ];
-    return map[day];
-  }
-
-  // Haversine
-  private calculateDistance(
-    lat1: number,
-    lng1: number,
-    lat2: number,
-    lng2: number,
-  ): number {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLng = (lng2 - lng1) * (Math.PI / 180);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) *
-        Math.cos(lat2 * (Math.PI / 180)) *
-        Math.sin(dLng / 2) *
-        Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
   }
 
   async findOne(id: string): Promise<ResponseShopDto> {
@@ -427,5 +330,178 @@ export class ShopsService {
     await this.prisma.shop.delete({
       where: { id },
     });
+  }
+
+  async toggleSaveShop(
+    userId: string,
+    shopId: string,
+  ): Promise<{ saved: boolean }> {
+    // 1. Check if shop exist
+    const shop = await this.prisma.shop.findUnique({ where: { id: shopId } });
+    if (!shop) throw new NotFoundError('SHOP_NOT_FOUND', 'Shop not found');
+
+    // 2. Check if has saved
+    const existingSave = await this.prisma.savedShop.findUnique({
+      where: {
+        userId_shopId: { userId, shopId },
+      },
+    });
+
+    if (existingSave) {
+      // 3. has saved, delete it
+      await this.prisma.savedShop.delete({
+        where: { id: existingSave.id },
+      });
+      return { saved: false };
+    } else {
+      // 4. hasn't saved, create
+      await this.prisma.savedShop.create({
+        data: { userId, shopId },
+      });
+      return { saved: true };
+    }
+  }
+
+  async getSavedShops(userId: string): Promise<ResponseShopDto[]> {
+    const savedItems = await this.prisma.savedShop.findMany({
+      where: { userId },
+      include: {
+        shop: {
+          include: {
+            images: { orderBy: { order: 'asc' }, include: { file: true } },
+            school: true,
+            workSchedules: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return savedItems.map((item) =>
+      this.transformShopToDto(item.shop, undefined, undefined),
+    );
+  }
+
+  async getSavedShopIds(userId: string): Promise<string[]> {
+    const savedItemIds = await this.prisma.savedShop.findMany({
+      where: { userId },
+      select: { id: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return savedItemIds.map((s) => s.id);
+  }
+
+  private transformShopToDto(
+    shop: ShopWithRelations,
+    userLat?: number,
+    userLng?: number,
+    currentDay?: number,
+    currentMinute?: number,
+  ): ResponseShopDto {
+    // 計算距離
+    let distance: number | undefined;
+    if (userLat && userLng) {
+      distance = this.calculateDistance(
+        userLat,
+        userLng,
+        shop.latitude,
+        shop.longitude,
+      );
+    }
+
+    // 計算是否營業中 (即便沒篩選 isOpen，前端也需要這個 flag)
+    let isOpen = false;
+    if (currentDay !== undefined && currentMinute !== undefined) {
+      isOpen = shop.workSchedules.some(
+        (s) =>
+          s.dayOfWeek === currentDay &&
+          s.startMinute <= currentMinute &&
+          s.endMinute >= currentMinute,
+      );
+    }
+
+    const isSaved = shop._count ? shop._count?.savedBy > 0 : false;
+
+    // 圖片處理
+    const images = shop.images.map((img) => ({
+      fileUrl: img.file.url,
+      thumbnailUrl: img.file.thumbnailUrl, // 假設 FileRecord 有此欄位
+    }));
+
+    // 若沒有預先生成 thumbnailKey，則使用第一張圖
+    const thumbnailLink = shop.thumbnailKey
+      ? `${this.R2_PUBLIC_URL}/${shop.thumbnailKey}`
+      : images[0]?.thumbnailUrl || null;
+
+    // 修正 Google Maps Link
+    const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${shop.latitude},${shop.longitude}`;
+
+    // NOTE: contactInfo is already a Json
+    const contactInfo = shop.contactInfo as any;
+
+    // WorkSchedules 轉換 (Prisma Model -> DTO)
+    const workSchedules = shop.workSchedules.map((ws) => ({
+      weekday: this.mapIntToWeekday(ws.dayOfWeek),
+      startMinuteOfDay: ws.startMinute,
+      endMinuteOfDay: ws.endMinute,
+    }));
+
+    return {
+      id: shop.id,
+      title: shop.title,
+      subTitle: shop.subTitle,
+      description: shop.description,
+      contactInfo,
+      schoolId: shop.schoolId,
+      schoolAbbr: shop.school.abbreviation,
+      images,
+      thumbnailLink: thumbnailLink || '',
+      discount: shop.discount,
+      address: shop.address,
+      longitude: shop.longitude,
+      latitude: shop.latitude,
+      workSchedules,
+      googleMapsLink,
+
+      // 新增欄位
+      isOpen,
+      distance,
+      hotScore: shop.cachedHotScore,
+      isSaved,
+    };
+  }
+
+  private mapIntToWeekday(day: number): Weekday {
+    const map = [
+      Weekday.SUNDAY,
+      Weekday.MONDAY,
+      Weekday.TUESDAY,
+      Weekday.WEDNESDAY,
+      Weekday.THURSDAY,
+      Weekday.FRIDAY,
+      Weekday.SATURDAY,
+    ];
+    return map[day];
+  }
+
+  // Haversine
+  private calculateDistance(
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number,
+  ): number {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLng = (lng2 - lng1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) *
+        Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   }
 }

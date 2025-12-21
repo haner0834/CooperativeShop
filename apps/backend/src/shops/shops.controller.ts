@@ -18,10 +18,40 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { type UserPayload } from 'src/auth/types/auth.types';
 import { query } from 'winston';
 import { GetShopsDto } from './dto/get-shop.dto';
+import { BypassJwt } from 'src/common/decorators/bypass-jwt.decorator';
 
 @Controller('shops')
 export class ShopsController {
   constructor(private readonly shopsService: ShopsService) {}
+
+  /**
+   * POST /shops/:id/save
+   * 切換收藏狀態 (收藏/取消收藏)
+   */
+  @Post(':id/save')
+  @UseGuards(JwtAccessGuard)
+  async toggleSave(
+    @Param('id') shopId: string,
+    @CurrentUser() user: UserPayload,
+  ) {
+    return this.shopsService.toggleSaveShop(user.id, shopId);
+  }
+
+  /**
+   * GET /shops/saved
+   * 取得當前用戶所有收藏的商店
+   */
+  @Get('saved')
+  @UseGuards(JwtAccessGuard)
+  async getSavedShops(@CurrentUser() user: UserPayload) {
+    return this.shopsService.getSavedShops(user.id);
+  }
+
+  @Get('saved-ids')
+  @UseGuards(JwtAccessGuard)
+  async getSavedShopIds(@CurrentUser() user: UserPayload) {
+    this.shopsService.getSavedShopIds(user.id);
+  }
 
   @Post()
   @UseGuards(JwtAccessGuard)
@@ -31,8 +61,13 @@ export class ShopsController {
   }
 
   @Get()
-  findAll(@Query() query: GetShopsDto) {
-    return this.shopsService.findAll(query);
+  @UseGuards(JwtAccessGuard)
+  @BypassJwt()
+  findAll(
+    @Query() query: GetShopsDto,
+    @CurrentUser() user: UserPayload | undefined,
+  ) {
+    return this.shopsService.findAll(query, user?.id);
   }
 
   @Get(':id')

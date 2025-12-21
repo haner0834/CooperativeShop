@@ -81,4 +81,8 @@ export class ResponseShopDto {
 
   @IsNumber()
   hotScore: number;
+
+  @IsBoolean()
+  @IsOptional()
+  isSaved?: boolean = false;
 }
