@@ -35,56 +35,79 @@ export class ShopsService {
   async create(createShopDto: CreateShopDto) {
     const requestHashId = calculateRequestHash(createShopDto);
 
-    const { contactInfo, schedules, images, ...rest } = createShopDto;
+    // 1. 解構資料，注意現在不需要 plainSchedules JSON 了
+    const {
+      contactInfo,
+      schedules: workSchedules,
+      images,
+      ...rest
+    } = createShopDto;
     const plainContactInfo = instanceToPlain(contactInfo);
-    const plainSchedules = instanceToPlain(schedules);
 
-    await this.prisma.$transaction(async (tx) => {
+    const WeekdayToInt: Record<string, number> = {
+      MONDAY: 1,
+      TUESDAY: 2,
+      WEDNESDAY: 3,
+      THURSDAY: 4,
+      FRIDAY: 5,
+      SATURDAY: 6,
+      SUNDAY: 0,
+    };
+
+    return await this.prisma.$transaction(async (tx) => {
+      // 2. 冪等性檢查 (Request Hash)
       const existingShop = await tx.shop.findUnique({
         where: { requestHashId: requestHashId },
-        select: { id: true, title: true },
+        select: { id: true },
       });
 
       if (existingShop) {
         throw new ConflictError(
           'DUPLICATE_REQUEST',
-          `Shop creation with this content has already been processed (Shop ID: ${existingShop.id}).`,
+          `Shop creation already processed (Shop ID: ${existingShop.id}).`,
         );
       }
 
+      // 3. 檢查圖片是否被佔用
       const fileKeys = images.map((img) => img.fileKey);
-
       if (fileKeys.length > 0) {
         const occupiedImages = await tx.shopImage.findMany({
-          where: {
-            file: {
-              fileKey: { in: fileKeys },
-            },
-          },
-          select: {
-            fileId: true,
-            file: { select: { fileKey: true } },
-          },
+          where: { file: { fileKey: { in: fileKeys } } },
+          select: { file: { select: { fileKey: true } } },
         });
 
         if (occupiedImages.length > 0) {
           const occupiedKeys = occupiedImages.map((img) => img.file.fileKey);
           throw new ConflictError(
             'FILE_ALREADY_USED',
-            `One or more files have already been used by another Shop: ${occupiedKeys.join(', ')}.`,
+            `Files already used: ${occupiedKeys.join(', ')}.`,
           );
         }
       }
 
+      // 4. 建立商店本體
       const shop = await tx.shop.create({
         data: {
-          contactInfo: plainContactInfo,
-          schedules: plainSchedules,
-          requestHashId: requestHashId,
           ...rest,
+          schedules: {},
+          contactInfo: plainContactInfo,
+          requestHashId: requestHashId,
         },
       });
 
+      // 5. 處理 WorkSchedules 關聯建立
+      if (workSchedules && workSchedules.length > 0) {
+        await tx.workSchedule.createMany({
+          data: workSchedules.map((s) => ({
+            shopId: shop.id,
+            dayOfWeek: WeekdayToInt[s.weekday],
+            startMinute: s.startMinuteOfDay,
+            endMinute: s.endMinuteOfDay,
+          })),
+        });
+      }
+
+      // 6. 處理圖片關聯
       const fileRecords = await tx.fileRecord.findMany({
         where: { fileKey: { in: fileKeys } },
         select: { id: true, fileKey: true },
@@ -94,12 +117,9 @@ export class ShopsService {
         fileRecords.map((f) => [f.fileKey, f.id]),
       );
 
-      for (const img of images) {
-        if (!fileRecordMap[img.fileKey]) {
-          throw new BadRequestError(
-            'FILE_NOT_FOUND',
-            'File not found or not uploaded.',
-          );
+      for (const key of fileKeys) {
+        if (!fileRecordMap[key]) {
+          throw new BadRequestError('FILE_NOT_FOUND', `File ${key} not found.`);
         }
       }
 
