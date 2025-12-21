@@ -41,9 +41,7 @@ const Shops = () => {
   const getShops = async () => {
     setIsLoading(true);
     try {
-      const { data: resData } = await axios.get(
-        path("/api/shops/rankings?type=home")
-      );
+      const { data: resData } = await axios.get(path("/api/shops?type=home"));
       const { success, data, error } = resData;
       if (!success && error) {
         throw new Error(error.code);
