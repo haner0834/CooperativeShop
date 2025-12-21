@@ -52,7 +52,6 @@ const ShopPreview = () => {
       longitude: data.selectedPoint?.lng ?? 0,
       latitude: data.selectedPoint?.lat ?? 0,
       workSchedules: transformSchedules(storedWorkSchedules),
-      mode: data.mode,
     };
     setShop(shop);
   }, []);

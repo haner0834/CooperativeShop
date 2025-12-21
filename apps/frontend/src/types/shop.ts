@@ -30,8 +30,9 @@ export interface Shop {
   address: string;
   longitude: number;
   latitude: number;
-  mode: ShopMode;
   workSchedules: WorkScheduleBackend[];
+  distance?: number;
+  hotScore?: number;
 }
 
 export interface CreateShopDto {
@@ -66,13 +67,12 @@ export interface ResponseShopDto {
   latitude: number;
   workSchedules: WorkScheduleBackend[];
   googleMapsLink: string | null;
+  distance?: number;
+  hotScore: number;
 }
 
 // 轉換函數：將後端 DTO 轉換為前端 Shop 介面
-export function transformDtoToShop(
-  dto: ResponseShopDto,
-  mode: ShopMode = "create"
-): Shop {
+export function transformDtoToShop(dto: ResponseShopDto): Shop {
   // 由於後端 DTO 被設計為盡可能與前端 Shop 介面保持一致，轉換操作極為簡單。
   // 只需要確保所有欄位都存在即可。
 
@@ -101,7 +101,6 @@ export function transformDtoToShop(
     longitude: dto.longitude,
     latitude: dto.latitude,
     workSchedules: dto.workSchedules,
-    mode,
   };
 }
 
