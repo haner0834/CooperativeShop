@@ -81,7 +81,6 @@ export class CreateShopDto {
   @Type(() => ImageDto)
   images: ImageDto[];
 
-  @IsUrl()
   @IsString()
   @IsNotEmpty()
   thumbnailKey: string;
