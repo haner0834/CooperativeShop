@@ -1,23 +1,30 @@
 model Shop {
-    id            String          @id @default(cuid())
-    title         String
-    subTitle      String?
-    description   String
-    contactInfo   Json // An array
-    thumbnailKey  String
-    discount      String?
-    schedules     Json
-    address       String
-    longitude     Float
-    latitude      Float
-    images        ShopImage[]
-    school        School          @relation(fields: [schoolId], references: [id])
-    schoolId      String
-    dailyStats    ShopDailyStat[]
-    rankings      ShopRanking[]
-    requestHashId String          @unique @default(uuid())
+    id              String          @id @default(cuid())
+    title           String
+    subTitle        String?
+    description     String
+    contactInfo     Json // An array
+    thumbnailKey    String
+    discount        String?
+    schedules       Json
+    workSchedules   WorkSchedule[]
+    address         String
+    longitude       Float
+    latitude        Float
+    images          ShopImage[]
+    school          School          @relation(fields: [schoolId], references: [id])
+    schoolId        String
+    dailyStats      ShopDailyStat[]
+    rankings        ShopRanking[]
+    requestHashId   String          @unique @default(uuid())
+    cachedHotScore  Float           @default(0)
+    cachedHomeScore Float           @default(0)
 
     @@index([title])
+    @@index([schoolId])
+    @@index([latitude, longitude]) // 為了地圖範圍搜尋 (Viewport)
+    @@index([cachedHotScore]) // 為了熱門排序
+    @@index([cachedHomeScore]) // 為了首頁預設排序
 }
 
 model ShopImage {
@@ -27,4 +34,19 @@ model ShopImage {
     shop   Shop       @relation(fields: [shopId], references: [id], onDelete: Cascade)
     shopId String
     order  Int
+}
+
+model WorkSchedule {
+    id     String @id @default(cuid())
+    shopId String
+    shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+    // 0=Sun, 1=Mon, ..., 6=Sat
+    dayOfWeek Int
+
+    // 0 - 1439 (例如 09:00 = 540)
+    startMinute Int
+    endMinute   Int
+
+    @@index([shopId, dayOfWeek])
 }

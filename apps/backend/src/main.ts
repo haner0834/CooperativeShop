@@ -6,6 +6,7 @@ import { GlobalExceptionFilter } from './common/interceptors/response-errpr.inte
 import { SuccessResponseInterceptor } from './common/interceptors/response-success.interceptor';
 import cookieParser from 'cookie-parser';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -22,6 +23,13 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   app.use(cookieParser());
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+    }),
+  );
 
   // To behav like what I did in express's response
   app.useGlobalInterceptors(new SuccessResponseInterceptor());

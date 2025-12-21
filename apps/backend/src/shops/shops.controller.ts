@@ -16,6 +16,8 @@ import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
 import { Log } from 'src/common/decorators/logger.decorator';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { type UserPayload } from 'src/auth/types/auth.types';
+import { query } from 'winston';
+import { GetShopsDto } from './dto/get-shop.dto';
 
 @Controller('shops')
 export class ShopsController {
@@ -29,8 +31,8 @@ export class ShopsController {
   }
 
   @Get()
-  findAll(@Query('school') schoolAbbr: string) {
-    return this.shopsService.findAll(schoolAbbr);
+  findAll(@Query() query: GetShopsDto) {
+    return this.shopsService.findAll(query);
   }
 
   @Get(':id')

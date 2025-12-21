@@ -151,11 +151,7 @@ const FilteredShops = () => {
     }
     const shop: ResponseShopDto = data;
     const key = `SHOP_DRAFT_${shopId}`;
-    const {
-      images: _,
-      workSchedules: wb,
-      ...rest
-    } = transformDtoToShop(shop, "edit");
+    const { images: _, workSchedules: wb, ...rest } = transformDtoToShop(shop);
     const images: SelectedImage[] = shop.images.map((image) => ({
       localId: crypto.randomUUID() as string,
       isUploading: false,
@@ -183,6 +179,7 @@ const FilteredShops = () => {
         images,
         discount: shop.discount ?? "",
         selectedPoint,
+        mode: "edit",
         workSchedules: fromBackendSchedules(shop.workSchedules),
       },
     };

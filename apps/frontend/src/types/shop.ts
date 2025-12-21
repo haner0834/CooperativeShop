@@ -30,8 +30,9 @@ export interface Shop {
   address: string;
   longitude: number;
   latitude: number;
-  mode: ShopMode;
   workSchedules: WorkScheduleBackend[];
+  distance?: number;
+  hotScore?: number;
 }
 
 export interface CreateShopDto {
@@ -66,13 +67,12 @@ export interface ResponseShopDto {
   latitude: number;
   workSchedules: WorkScheduleBackend[];
   googleMapsLink: string | null;
+  distance?: number;
+  hotScore: number;
 }
 
 // 轉換函數：將後端 DTO 轉換為前端 Shop 介面
-export function transformDtoToShop(
-  dto: ResponseShopDto,
-  mode: ShopMode = "create"
-): Shop {
+export function transformDtoToShop(dto: ResponseShopDto): Shop {
   // 由於後端 DTO 被設計為盡可能與前端 Shop 介面保持一致，轉換操作極為簡單。
   // 只需要確保所有欄位都存在即可。
 
@@ -101,7 +101,6 @@ export function transformDtoToShop(
     longitude: dto.longitude,
     latitude: dto.latitude,
     workSchedules: dto.workSchedules,
-    mode,
   };
 }
 
@@ -132,24 +131,24 @@ export function transformSchedules(
 }
 
 export const weekdayOrder: Weekday[] = [
-  "MON",
-  "TUE",
-  "WED",
-  "THU",
-  "FRI",
-  "SAT",
-  "SUN",
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+  "SUNDAY",
 ];
 
 export const getChineseWeekdayName = (weekday: Weekday): string => {
   const zhMap: Record<Weekday, string> = {
-    SUN: "週日",
-    MON: "週一",
-    TUE: "週二",
-    WED: "週三",
-    THU: "週四",
-    FRI: "週五",
-    SAT: "週六",
+    SUNDAY: "週日",
+    MONDAY: "週一",
+    TUESDAY: "週二",
+    WEDNESDAY: "週三",
+    THURSDAY: "週四",
+    FRIDAY: "週五",
+    SATURDAY: "週六",
   };
 
   return zhMap[weekday];

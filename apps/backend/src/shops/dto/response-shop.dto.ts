@@ -3,24 +3,28 @@ import {
   IsBoolean,
   IsNumber,
   IsString,
+  IsOptional,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ContactInfoDto, WorkScheduleDto } from './create-shop.dto';
 
 export class ResponseImageDto {
+  @IsString()
   fileUrl: string;
 
+  @IsString()
   thumbnailUrl: string;
 }
 
 export class ResponseShopDto {
   @IsString()
-  id: string; // 商店 ID
+  id: string;
 
   @IsString()
   title: string;
 
+  @IsOptional()
   @IsString()
   subTitle: string | null;
 
@@ -36,7 +40,7 @@ export class ResponseShopDto {
   schoolId: string;
 
   @IsString()
-  schoolAbbr: string; // 從 School 關聯取得的縮寫
+  schoolAbbr: string;
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -44,8 +48,9 @@ export class ResponseShopDto {
   images: ResponseImageDto[];
 
   @IsString()
-  thumbnailLink: string; // 商店縮圖 URL
+  thumbnailLink: string;
 
+  @IsOptional()
   @IsString()
   discount: string | null;
 
@@ -61,8 +66,19 @@ export class ResponseShopDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => WorkScheduleDto)
-  workSchedules: WorkScheduleDto[]; // 營業時間排程
+  workSchedules: WorkScheduleDto[];
 
+  @IsOptional()
   @IsString()
-  googleMapsLink: string | null; // Google Maps 連結 (可選)
+  googleMapsLink: string | null;
+
+  @IsBoolean()
+  isOpen: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  distance?: number;
+
+  @IsNumber()
+  hotScore: number;
 }
