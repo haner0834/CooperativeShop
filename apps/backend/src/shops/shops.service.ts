@@ -1,13 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import {
-  ContactInfoDto,
-  CreateShopDto,
-  WorkScheduleDto,
-} from './dto/create-shop.dto';
+import { CreateShopDto } from './dto/create-shop.dto';
 import { UpdateShopDto } from './dto/update-shop.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
-  AppError,
   AuthError,
   BadRequestError,
   ConflictError,
@@ -15,15 +10,17 @@ import {
 } from 'src/types/error.types';
 import { instanceToPlain } from 'class-transformer';
 import { calculateRequestHash } from 'src/common/utils/calculate-req-hash.utils';
-import { Prisma, Shop as PrismaShop } from '@prisma/client'; // 引入 Prisma 產生的類型
+import { Prisma, Shop as PrismaShop, WorkSchedule } from '@prisma/client'; // 引入 Prisma 產生的類型
 import { FileRecord } from '@prisma/client'; // 引入 FileRecord 類型
-import { ResponseImageDto, ResponseShopDto } from './dto/response-shop.dto';
+import { ResponseShopDto } from './dto/response-shop.dto';
 import { env } from 'src/common/utils/env.utils';
 import { UserPayload } from 'src/auth/types/auth.types';
 import { GetShopsDto, ShopSortBy } from './dto/get-shop.dto';
+import { Weekday } from './types/work-schedule.type';
 
 type ShopWithRelations = PrismaShop & {
   school: { abbreviation: string };
+  workSchedules: WorkSchedule[];
   images: { file: FileRecord }[];
 };
 
@@ -32,27 +29,58 @@ export class ShopsService {
   private readonly R2_PUBLIC_URL = env('R2_PUBLIC_URL');
   constructor(private readonly prisma: PrismaService) {}
 
-  private transformShopToDto(shop: ShopWithRelations): ResponseShopDto {
-    const contactInfo: ContactInfoDto[] =
-      shop.contactInfo as unknown as ContactInfoDto[];
+  private transformShopToDto(
+    shop: ShopWithRelations,
+    userLat?: number,
+    userLng?: number,
+    currentDay?: number,
+    currentMinute?: number,
+  ): ResponseShopDto {
+    // 計算距離
+    let distance: number | undefined;
+    if (userLat && userLng) {
+      distance = this.calculateDistance(
+        userLat,
+        userLng,
+        shop.latitude,
+        shop.longitude,
+      );
+    }
 
-    const workSchedules: WorkScheduleDto[] =
-      shop.schedules as unknown as WorkScheduleDto[];
+    // 計算是否營業中 (即便沒篩選 isOpen，前端也需要這個 flag)
+    let isOpen = false;
+    if (currentDay !== undefined && currentMinute !== undefined) {
+      isOpen = shop.workSchedules.some(
+        (s) =>
+          s.dayOfWeek === currentDay &&
+          s.startMinute <= currentMinute &&
+          s.endMinute >= currentMinute,
+      );
+    }
 
-    const thumbnailKey = shop.thumbnailKey;
-
-    const getFileUrlByKey = (key: string): string => {
-      return `${this.R2_PUBLIC_URL}/${key}`;
-    };
-
-    const thumbnailLink = getFileUrlByKey(thumbnailKey);
-
-    const images: ResponseImageDto[] = shop.images.map((shopImage) => ({
-      fileUrl: shopImage.file.url,
-      thumbnailUrl: shopImage.file.thumbnailUrl,
+    // 圖片處理
+    const images = shop.images.map((img) => ({
+      fileUrl: img.file.url,
+      thumbnailUrl: img.file.thumbnailUrl, // 假設 FileRecord 有此欄位
     }));
 
+    // 若沒有預先生成 thumbnailKey，則使用第一張圖
+    const thumbnailLink = shop.thumbnailKey
+      ? `${this.R2_PUBLIC_URL}/${shop.thumbnailKey}`
+      : images[0]?.thumbnailUrl || null;
+
+    // 修正 Google Maps Link
     const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${shop.latitude},${shop.longitude}`;
+
+    // NOTE: contactInfo is already a Json
+    const contactInfo = shop.contactInfo as any;
+
+    // WorkSchedules 轉換 (Prisma Model -> DTO)
+    const workSchedules = shop.workSchedules.map((ws) => ({
+      weekday: this.mapIntToWeekday(ws.dayOfWeek),
+      startMinuteOfDay: ws.startMinute,
+      endMinuteOfDay: ws.endMinute,
+    }));
 
     return {
       id: shop.id,
@@ -63,13 +91,18 @@ export class ShopsService {
       schoolId: shop.schoolId,
       schoolAbbr: shop.school.abbreviation,
       images,
-      thumbnailLink,
+      thumbnailLink: thumbnailLink || '',
       discount: shop.discount,
       address: shop.address,
       longitude: shop.longitude,
       latitude: shop.latitude,
       workSchedules,
       googleMapsLink,
+
+      // 新增欄位
+      isOpen,
+      distance,
+      hotScore: shop.cachedHotScore,
     };
   }
 
@@ -156,30 +189,29 @@ export class ShopsService {
     });
   }
 
-  async findAll(dto: GetShopsDto) {
+  async findAll(dto: GetShopsDto): Promise<ResponseShopDto[]> {
     const {
       q,
       sortBy,
       minLat,
       maxLat,
       minLng,
-      maxLng, // Map Viewport
+      maxLng,
       userLat,
-      userLng, // User Location
+      userLng,
       isOpen,
       hasDiscount,
-      schoolId,
+      schoolAbbr,
       limit = 20,
       offset = 0,
     } = dto;
 
     const where: Prisma.ShopWhereInput = {};
 
-    // 1. 基礎篩選
-    if (schoolId) where.schoolId = schoolId;
+    // --- 篩選邏輯 ---
+    if (schoolAbbr) where.school = { abbreviation: schoolAbbr };
     if (hasDiscount) where.discount = { not: null };
 
-    // 2. 關鍵字搜尋 (標題或敘述)
     if (q) {
       where.OR = [
         { title: { contains: q, mode: 'insensitive' } },
@@ -187,25 +219,19 @@ export class ShopsService {
       ];
     }
 
-    // 3. 地圖可視範圍 (Lazy Load 核心)
     if (minLat && maxLat && minLng && maxLng) {
       where.latitude = { gte: minLat, lte: maxLat };
       where.longitude = { gte: minLng, lte: maxLng };
     }
 
-    // 4. 營業中篩選 (Server Side Calculation)
+    // 計算當前時間 (UTC+8 簡易版，建議用 date-fns-tz 處理時區)
+    const now = new Date();
+    // 假設 Server 是 UTC，轉換為台灣時間
+    const twTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+    const currentDay = twTime.getUTCDay();
+    const currentMinute = twTime.getUTCHours() * 60 + twTime.getUTCMinutes();
+
     if (isOpen) {
-      // 假設目標時區為台灣時間 (UTC+8)
-      const now = new Date();
-      const TW_OFFSET = 8 * 60; // 分鐘
-      const utcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
-
-      // 計算台灣當地的 "星期幾" 與 "分鐘數"
-      // 注意：需處理跨日問題，這裡簡化處理，建議使用 date-fns-tz
-      const twNow = new Date(now.getTime() + TW_OFFSET * 60 * 1000);
-      const currentDay = twNow.getUTCDay();
-      const currentMinute = twNow.getUTCHours() * 60 + twNow.getUTCMinutes();
-
       where.workSchedules = {
         some: {
           dayOfWeek: currentDay,
@@ -215,63 +241,63 @@ export class ShopsService {
       };
     }
 
-    // 5. 排序邏輯
+    // --- 排序邏輯 ---
     let orderBy: Prisma.ShopOrderByWithRelationInput | undefined;
-
-    // 根據 Cached Score 排序 (極快)
     if (sortBy === ShopSortBy.HOT) orderBy = { cachedHotScore: 'desc' };
     else if (sortBy === ShopSortBy.HOME) orderBy = { cachedHomeScore: 'desc' };
 
-    // 若為 Nearby，因 Prisma 不支援 PostGIS Distance 排序，需取出後在記憶體排序
-    // 考慮到總量僅 300 家，這在 Node.js 層處理非常快
-    const isNearbySort = sortBy === ShopSortBy.DISTANCE && userLat && userLng;
+    const isNearbySort =
+      sortBy === ShopSortBy.DISTANCE && !!userLat && !!userLng;
 
+    // --- 查詢資料庫 ---
     const shops = await this.prisma.shop.findMany({
       where,
-      // 若是 Nearby 排序，先不分頁 (take/skip)，全抓出來算距離
       take: isNearbySort ? undefined : limit,
       skip: isNearbySort ? undefined : offset,
       orderBy: isNearbySort ? undefined : orderBy,
       include: {
-        images: { take: 1, orderBy: { order: 'asc' }, include: { file: true } },
-        workSchedules: true, // 前端可能需要顯示營業時間細節
+        images: {
+          orderBy: { order: 'asc' },
+          include: { file: true },
+        },
+        workSchedules: true,
         school: { select: { abbreviation: true } },
       },
     });
 
-    // 6. 資料轉換與距離計算
-    let results = shops.map((shop) => {
-      const thumbnail = shop.images[0]?.file?.url
-        ? `${process.env.R2_PUBLIC_URL}/${shop.images[0].file.fileKey}` // 或使用您現有的邏輯
-        : null;
+    // --- 轉換為 ResponseShopDto ---
+    let results = shops.map((shop) =>
+      this.transformShopToDto(
+        shop,
+        userLat,
+        userLng,
+        currentDay,
+        currentMinute,
+      ),
+    );
 
-      let distance: number | null = null;
-      if (userLat && userLng) {
-        distance = this.calculateDistance(
-          userLat,
-          userLng,
-          shop.latitude,
-          shop.longitude,
-        );
-      }
-
-      return {
-        ...shop,
-        thumbnailLink: thumbnail,
-        distance, // km
-        // 為了前端方便，可直接回傳 isOpen boolean
-        // isOpen: this.checkIsOpen(shop.workSchedules)
-      };
-    });
-
-    // 7. Nearby 記憶體排序與手動分頁
+    // --- Nearby 記憶體排序 ---
     if (isNearbySort) {
-      results.sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
-      // Manual Pagination
+      results.sort(
+        (a, b) => (a.distance || Infinity) - (b.distance || Infinity),
+      );
       results = results.slice(offset, offset + limit);
     }
 
     return results;
+  }
+
+  private mapIntToWeekday(day: number): Weekday {
+    const map = [
+      Weekday.SUNDAY,
+      Weekday.MONDAY,
+      Weekday.TUESDAY,
+      Weekday.WEDNESDAY,
+      Weekday.THURSDAY,
+      Weekday.FRIDAY,
+      Weekday.SATURDAY,
+    ];
+    return map[day];
   }
 
   // Haversine
@@ -300,6 +326,7 @@ export class ShopsService {
       include: {
         school: { select: { abbreviation: true } },
         images: { include: { file: true } },
+        workSchedules: true,
       },
     });
     if (!shop) {

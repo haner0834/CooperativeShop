@@ -8,10 +8,7 @@ import { env } from 'src/common/utils/env.utils';
 
 @Injectable()
 export class ShopRankingService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly storageService: StorageService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   private readonly R2_PUBLIC_URL = env('R2_PUBLIC_URL');
 
@@ -21,7 +18,6 @@ export class ShopRankingService {
   async calculateAndUploadHotRankings(): Promise<void> {
     try {
       await this.calculateHotShopsRanking();
-      await this.uploadRankingsToR2('hot');
     } catch (error) {
       throw error;
     }
@@ -30,7 +26,6 @@ export class ShopRankingService {
   async calculateAndUploadHomeRankings(): Promise<void> {
     try {
       await this.calculateHomeRanking();
-      await this.uploadRankingsToR2('home');
     } catch (error) {
       throw error;
     }
@@ -355,114 +350,114 @@ export class ShopRankingService {
   /**
    * Upload rankings to R2 as JSON
    */
-  private async uploadRankingsToR2(type: RankingType): Promise<void> {
-    const today = this.getTodayDate();
+  // private async uploadRankingsToR2(type: RankingType): Promise<void> {
+  //   const today = this.getTodayDate();
 
-    const shops = await this.prisma.shop.findMany({
-      include: {
-        rankings: {
-          where: {
-            type,
-            date: today,
-          },
-          select: {
-            rank: true,
-            score: true,
-          },
-        },
-      },
-    });
+  //   const shops = await this.prisma.shop.findMany({
+  //     include: {
+  //       rankings: {
+  //         where: {
+  //           type,
+  //           date: today,
+  //         },
+  //         select: {
+  //           rank: true,
+  //           score: true,
+  //         },
+  //       },
+  //     },
+  //   });
 
-    const shopsWithRankings: ShopWithRanking[] = shops.map((shop) => ({
-      id: shop.id,
-      title: shop.title,
-      description: shop.description,
-      contactInfo: shop.contactInfo,
-      thumbnailLink: this.R2_PUBLIC_URL + '/' + shop.thumbnailKey,
-      discount: shop.discount,
-      address: shop.address,
-      longitude: shop.longitude,
-      latitude: shop.latitude,
-      schoolId: shop.schoolId,
-      rank: shop.rankings[0]?.rank,
-      score: shop.rankings[0]?.score,
-    }));
+  //   const shopsWithRankings: ShopWithRanking[] = shops.map((shop) => ({
+  //     id: shop.id,
+  //     title: shop.title,
+  //     description: shop.description,
+  //     contactInfo: shop.contactInfo,
+  //     thumbnailLink: this.R2_PUBLIC_URL + '/' + shop.thumbnailKey,
+  //     discount: shop.discount,
+  //     address: shop.address,
+  //     longitude: shop.longitude,
+  //     latitude: shop.latitude,
+  //     schoolId: shop.schoolId,
+  //     rank: shop.rankings[0]?.rank,
+  //     score: shop.rankings[0]?.score,
+  //   }));
 
-    const data: CachedRankingData = {
-      type,
-      date: today.toISOString(),
-      shops: shopsWithRankings,
-      generatedAt: new Date().toISOString(),
-    };
+  //   const data: CachedRankingData = {
+  //     type,
+  //     date: today.toISOString(),
+  //     shops: shopsWithRankings,
+  //     generatedAt: new Date().toISOString(),
+  //   };
 
-    // Upload to R2
-    const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
-    const key = `rankings/${type}/${dateStr}.json`;
-    await this.storageService.uploadJson(key, data);
-  }
+  //   // Upload to R2
+  //   const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+  //   const key = `rankings/${type}/${dateStr}.json`;
+  //   await this.storageService.uploadJson(key, data);
+  // }
 
   /**
    * Get rankings from R2
    */
-  async getRankingsFromR2(type: RankingType): Promise<CachedRankingData> {
-    const today = this.getTodayDate();
-    const dateStr = today.toISOString().split('T')[0];
-    const key = `rankings/${type}/${dateStr}.json`;
+  // async getRankingsFromR2(type: RankingType): Promise<CachedRankingData> {
+  //   const today = this.getTodayDate();
+  //   const dateStr = today.toISOString().split('T')[0];
+  //   const key = `rankings/${type}/${dateStr}.json`;
 
-    try {
-      const data =
-        await this.storageService.downloadJson<CachedRankingData>(key);
-      return data;
-    } catch (error) {
-      return this.getRankingsFromDB(type);
-    }
-  }
+  //   try {
+  //     const data =
+  //       await this.storageService.downloadJson<CachedRankingData>(key);
+  //     return data;
+  //   } catch (error) {
+  //     return this.getRankingsFromDB(type);
+  //   }
+  // }
 
   /**
    * Fallback: Get rankings from database
    */
-  private async getRankingsFromDB(
-    type: RankingType,
-  ): Promise<CachedRankingData> {
-    const today = this.getTodayDate();
+  // private async getRankingsFromDB(
+  //   type: RankingType,
+  // ): Promise<CachedRankingData> {
+  //   const today = this.getTodayDate();
 
-    const shops = await this.prisma.shop.findMany({
-      include: {
-        rankings: {
-          where: {
-            type,
-            date: today,
-          },
-          select: {
-            rank: true,
-            score: true,
-          },
-        },
-      },
-    });
+  //   const shops = await this.prisma.shop.findMany({
+  //     include: {
+  //       rankings: {
+  //         where: {
+  //           type,
+  //           date: today,
+  //         },
+  //         select: {
+  //           rank: true,
+  //           score: true,
+  //         },
+  //       },
+  //     },
+  //   });
 
-    const shopsWithRankings: ShopWithRanking[] = shops.map((shop) => ({
-      id: shop.id,
-      title: shop.title,
-      description: shop.description,
-      contactInfo: shop.contactInfo,
-      thumbnailLink: this.R2_PUBLIC_URL + '/' + shop.thumbnailKey,
-      discount: shop.discount,
-      address: shop.address,
-      longitude: shop.longitude,
-      latitude: shop.latitude,
-      schoolId: shop.schoolId,
-      rank: shop.rankings[0]?.rank,
-      score: shop.rankings[0]?.score,
-    }));
+  //   const shopsWithRankings: ShopWithRanking[] = shops.map((shop) => ({
+  //     id: shop.id,
+  //     title: shop.title,
+  //     description: shop.description,
+  //     contactInfo: shop.contactInfo,
+  //     thumbnailLink: this.R2_PUBLIC_URL + '/' + shop.thumbnailKey,
+  //     discount: shop.discount,
+  //     address: shop.address,
+  //     longitude: shop.longitude,
+  //     latitude: shop.latitude,
+  //     schoolId: shop.schoolId,
+  //     rank: shop.rankings[0]?.rank,
+  //     score: shop.rankings[0]?.score,
+  //   }));
 
-    return {
-      type,
-      date: today.toISOString(),
-      shops: shopsWithRankings,
-      generatedAt: new Date().toISOString(),
-    };
-  }
+  //   return {
+  //     type,
+  //     date: today.toISOString(),
+  //     shops: shopsWithRankings,
+  //     generatedAt: new Date().toISOString(),
+  //   };
+  // }
 
   /**
    * Helper: Get today's date at 00:00:00

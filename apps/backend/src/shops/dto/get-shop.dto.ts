@@ -14,7 +14,7 @@ export class GetShopsDto {
 
   @IsOptional()
   @IsString()
-  schoolId?: string;
+  schoolAbbr?: string;
 
   @IsOptional()
   @IsEnum(ShopSortBy)
