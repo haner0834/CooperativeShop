@@ -69,7 +69,7 @@ const FilteredShops = () => {
 
         const { data: resData } = await axios.get(path("/api/shops"), {
           params: {
-            school: schoolAbbr,
+            schoolAbbr,
           },
         });
         const { success, data, error } = resData;
