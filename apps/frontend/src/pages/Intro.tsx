@@ -149,7 +149,7 @@ const schoolIconFileNames: string[][] = [
     "dwsh.png",
     "hhsh.png",
     "hhvs.png",
-    "hkhs.png",
+    "ctbchs.png",
     "hyivs.png",
     "hysh.png",
   ],

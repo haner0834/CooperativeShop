@@ -8,7 +8,7 @@ const schoolIconFileNameMap: Record<string, string> = {
   dwsh: "dwsh.png",
   hhsh: "hhsh.png",
   hhvs: "hhvs.png",
-  hkhs: "hkhs.png",
+  ctbchs: "ctbchs.png",
   hyivs: "hyivs.png",
   hysh: "hysh.png",
   kmsh: "kmsh.gif",
