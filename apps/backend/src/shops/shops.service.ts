@@ -259,6 +259,7 @@ export class ShopsService {
   }
 
   async update(id: string, user: UserPayload, updateShopDto: UpdateShopDto) {
+    // 1. 取得當前商店資料進行權限檢查
     const currentShop = await this.prisma.shop.findUnique({
       where: { id },
       include: { images: { include: { file: true } } },
@@ -266,31 +267,68 @@ export class ShopsService {
 
     if (!currentShop)
       throw new NotFoundError('SHOP_NOT_FOUND', 'Shop not found.');
+
+    // 權限檢查：僅限同校管理員修改
     if (currentShop.schoolId !== user.schoolId) {
       throw new AuthError('ACCESS_DENIED', 'Modification is forbidden.');
     }
 
-    const { contactInfo, schedules, images, ...rest } = updateShopDto;
-    const plainContactInfo = instanceToPlain(contactInfo);
-    const plainSchedules = instanceToPlain(schedules);
+    // 2. 解構資料
+    const {
+      contactInfo,
+      schedules: workSchedules,
+      images,
+      ...rest
+    } = updateShopDto;
+
+    const WeekdayToInt: Record<string, number> = {
+      MONDAY: 1,
+      TUESDAY: 2,
+      WEDNESDAY: 3,
+      THURSDAY: 4,
+      FRIDAY: 5,
+      SATURDAY: 6,
+      SUNDAY: 0,
+    };
 
     return await this.prisma.$transaction(async (tx) => {
+      // 3. 更新商店基本資料 (不包含 schedules JSON)
       await tx.shop.update({
         where: { id },
         data: {
-          contactInfo: plainContactInfo,
-          schedules: plainSchedules,
           ...rest,
+          schedules: {},
+          contactInfo: contactInfo ? instanceToPlain(contactInfo) : undefined,
         },
       });
 
-      // 2. Diff images and update
+      // 4. 更新 WorkSchedules (採用全刪全建策略)
+      if (workSchedules) {
+        // 先刪除舊的所有排程
+        await tx.workSchedule.deleteMany({
+          where: { shopId: id },
+        });
+
+        // 建立新的排程
+        if (workSchedules.length > 0) {
+          await tx.workSchedule.createMany({
+            data: workSchedules.map((s) => ({
+              shopId: id,
+              dayOfWeek: WeekdayToInt[s.weekday],
+              startMinute: s.startMinuteOfDay,
+              endMinute: s.endMinuteOfDay,
+            })),
+          });
+        }
+      }
+
+      // 5. 更新圖片 (保留您原本的 Diff 邏輯)
       if (images) {
         const currentImages = currentShop.images;
         const newFileKeys = images.map((img) => img.fileKey);
         const currentFileKeys = currentImages.map((img) => img.file.fileKey);
 
-        // A. Find relationships to remove (current has, new value hasn't)
+        // A. 刪除不再需要的圖片關聯
         const keysToDelete = currentFileKeys.filter(
           (key) => !newFileKeys.includes(key),
         );
@@ -303,7 +341,7 @@ export class ShopsService {
           });
         }
 
-        // B. Find relationships to create (new value has, current hasn't)
+        // B. 新增圖片關聯
         const keysToAdd = newFileKeys.filter(
           (key) => !currentFileKeys.includes(key),
         );
@@ -322,6 +360,7 @@ export class ShopsService {
                 'FILE_NOT_FOUND',
                 `File ${key} not found.`,
               );
+
             await tx.shopImage.create({
               data: {
                 shopId: id,
@@ -332,7 +371,7 @@ export class ShopsService {
           }
         }
 
-        // C. update existings (order may change)
+        // C. 更新現有圖片的排序
         for (let i = 0; i < newFileKeys.length; i++) {
           await tx.shopImage.updateMany({
             where: {
