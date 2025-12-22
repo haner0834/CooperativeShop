@@ -1,9 +1,9 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // 定義學號格式的 Schema，方便解析和驗證
 const StudentIdFormatSchema = z
   .object({
-    length: z.number().optional(),
+    length: z.number().nullable().optional(),
     prefix: z.string().optional(),
     suffix: z.string().optional(),
     regex: z.string().optional(),
@@ -14,7 +14,7 @@ type StudentIdFormat = z.infer<typeof StudentIdFormatSchema>;
 
 export const validateStudentId = (
   studentId: string,
-  format: unknown
+  format: unknown,
 ): boolean => {
   const parsedFormat: StudentIdFormat = StudentIdFormatSchema.parse(format);
 
