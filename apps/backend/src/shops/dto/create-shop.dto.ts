@@ -103,7 +103,7 @@ export class CreateShopDto {
 
   @IsArray()
   @ArrayMinSize(1)
-  @ArrayMaxSize(7)
+  @ArrayMaxSize(21) // Bruh nobody would have more than 3 schedules in a day for all week right?
   @ValidateNested({ each: true })
   @Type(() => WorkScheduleDto)
   schedules: WorkScheduleDto[];
