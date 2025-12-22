@@ -33,6 +33,7 @@ export interface Shop {
   workSchedules: WorkScheduleBackend[];
   distance?: number;
   hotScore?: number;
+  isSaved?: boolean
 }
 
 export interface CreateShopDto {
@@ -69,6 +70,7 @@ export interface ResponseShopDto {
   googleMapsLink: string | null;
   distance?: number;
   hotScore: number;
+  isSaved?: boolean
 }
 
 // 轉換函數：將後端 DTO 轉換為前端 Shop 介面
@@ -101,6 +103,7 @@ export function transformDtoToShop(dto: ResponseShopDto): Shop {
     longitude: dto.longitude,
     latitude: dto.latitude,
     workSchedules: dto.workSchedules,
+    isSaved: dto.isSaved
   };
 }
 
