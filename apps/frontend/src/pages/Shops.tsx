@@ -11,6 +11,7 @@ import axios from "axios";
 import { useModal } from "../widgets/ModalContext";
 import { getErrorMessage } from "../utils/errors";
 import { path } from "../utils/path";
+import { useAuthFetch } from "../auth/useAuthFetch";
 
 export const ShopSectionTitle = ({ title }: { title: string }) => {
   return (
@@ -34,6 +35,7 @@ const Shops = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { showModal } = useModal();
+  const { authedFetch } = useAuthFetch();
 
   const closeSidebar = () => setIsSidebarOpen(false);
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
@@ -46,9 +48,26 @@ const Shops = () => {
       if (!success && error) {
         throw new Error(error.code);
       }
-      setShops(
-        Array.isArray(data) ? data.map((s) => transformDtoToShop(s)) : []
-      );
+      const newShops = Array.isArray(data)
+        ? data.map((s) => transformDtoToShop(s))
+        : [];
+      setShops(newShops);
+      const {
+        success: s2,
+        data: d2,
+        error: _,
+      } = await authedFetch(path("/api/shops/saved-ids"));
+      if (s2) {
+      }
+      setTimeout(() => {
+        setShops((prev) => {
+          console.log(prev, d2);
+          return prev.map((s) => ({
+            ...s,
+            isSaved: d2.includes(s.id),
+          }));
+        });
+      }, 0);
     } catch (err: any) {
       showModal({
         title: "無法取得商家",

@@ -405,11 +405,11 @@ export class ShopsService {
   async getSavedShopIds(userId: string): Promise<string[]> {
     const savedItemIds = await this.prisma.savedShop.findMany({
       where: { userId },
-      select: { id: true },
+      select: { shopId: true },
       orderBy: { createdAt: 'desc' },
     });
 
-    return savedItemIds.map((s) => s.id);
+    return savedItemIds.map((s) => s.shopId);
   }
 
   private transformShopToDto(

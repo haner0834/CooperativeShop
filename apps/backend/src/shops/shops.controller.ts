@@ -50,7 +50,7 @@ export class ShopsController {
   @Get('saved-ids')
   @UseGuards(JwtAccessGuard)
   async getSavedShopIds(@CurrentUser() user: UserPayload) {
-    this.shopsService.getSavedShopIds(user.id);
+    return this.shopsService.getSavedShopIds(user.id);
   }
 
   @Post()
