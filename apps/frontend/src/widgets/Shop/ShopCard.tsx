@@ -44,14 +44,17 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
             </div>
 
             <button
-              className="btn btn-square"
+              className="btn btn-square btn-sm"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 toggleSave();
               }}
             >
-              <Bookmark className={`${isSaved ? "fill-current" : ""}`} />
+              <Bookmark
+                className={`${isSaved ? "fill-current" : ""}`}
+                size={20}
+              />
             </button>
           </div>
 
