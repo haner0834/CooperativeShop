@@ -24,6 +24,8 @@ export class RateLimitService {
     deviceId: string | null,
     limitConfig?: RateLimitConfig,
   ): Promise<boolean> {
+    // console.log('ip', 'userId', 'deviceId', 'limitConfig');
+    // console.log(ip, userId, deviceId, limitConfig);
     const globalIpKey = `rl:ip:${ip}`;
 
     let targetKey = `rl:ip:${ip}:anon`;
@@ -52,6 +54,7 @@ export class RateLimitService {
     }
 
     const isBlocked = await this.redis.get(`rl:block:${ip}`);
+    // console.log('isBlocked:', isBlocked, ',', typeof isBlocked);
     if (isBlocked) return false;
 
     // --- 執行 Lua Script 同時檢查 Global IP 和 Target Key ---
@@ -74,6 +77,8 @@ export class RateLimitService {
         return 1
       end
     `;
+    // console.log('targetKey', 'targetLimit', 'limitConfig');
+    // console.log(targetKey, targetLimit, limitConfig);
 
     const result = await this.redis.eval(
       script,
@@ -92,9 +97,9 @@ export class RateLimitService {
     await this.redis.expire(key, 5 * 60); // 風險值保留 5 分鐘
 
     // 累計錯誤超過閾值，直接封鎖
-    if (currentScore >= 10) {
-      await this.blockIp(ip, 10 * 60, 'Risk Score Exceeded');
-    }
+    // if (currentScore >= 10) {
+    //   await this.blockIp(ip, 10 * 60, 'Risk Score Exceeded');
+    // }
   }
 
   private async blockIp(ip: string, ttl: number, reason: string) {

@@ -40,7 +40,7 @@ export class RateLimitGuard implements CanActivate {
     const limits = {
       uid: options?.uid ?? 100,
       did: options?.did ?? 50,
-      global: options?.global ?? 500,
+      global: options?.global ?? 2000,
     };
 
     const ip = request.ip || request.connection.remoteAddress;

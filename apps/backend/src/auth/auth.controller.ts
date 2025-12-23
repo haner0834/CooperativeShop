@@ -110,7 +110,7 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @RateLimit({ uid: 40, did: 40, global: 200 })
+  @RateLimit({ uid: 30, did: 30, global: 200 })
   async refreshToken(
     @Req() req: express.Request,
     @Headers('x-device-id') deviceId: string,
@@ -133,7 +133,7 @@ export class AuthController {
 
   @Post('restore')
   @HttpCode(HttpStatus.OK)
-  @RateLimit({ uid: 60, did: 60, global: 200 })
+  @RateLimit({ uid: 30, did: 30, global: 200 })
   @Log({ prefix: 'AuthController.restoreSession', logReturn: false })
   async restoreSession(
     @Req() req: express.Request,
