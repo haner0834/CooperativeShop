@@ -7,6 +7,7 @@ import { SuccessResponseInterceptor } from './common/interceptors/response-succe
 import cookieParser from 'cookie-parser';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
+import { RiskAssessmentInterceptor } from './rate-limit/risk-assessment.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -30,10 +31,6 @@ async function bootstrap() {
       whitelist: true,
     }),
   );
-
-  // To behav like what I did in express's response
-  app.useGlobalInterceptors(new SuccessResponseInterceptor());
-  app.useGlobalFilters(new GlobalExceptionFilter());
 
   await app.listen(process.env.PORT ?? 3000);
 }

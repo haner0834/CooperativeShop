@@ -16,12 +16,14 @@ export class JwtAccessGuard implements CanActivate {
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const bypass = this.reflector.get<boolean>(
-      BYPASS_JWT_KEY,
+    const bypass = this.reflector.getAllAndOverride<boolean>(BYPASS_JWT_KEY, [
       context.getHandler(),
-    );
+      context.getClass(),
+    ]);
 
     const request = context.switchToHttp().getRequest();
+    // `RateLimitGuard` may be called before `JwtAccessGuard`, if authorized, it will add it to `request.user`
+    if (request.user) return true;
     const authHeader = request.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
