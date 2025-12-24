@@ -22,7 +22,7 @@ export class RiskAssessmentInterceptor implements NestInterceptor {
         // 可選：成功請求降低風險值
         // await this.rateLimitService.decreaseRiskScore(ip, 1);
       }),
-      catchError(async (err) => {
+      catchError((err) => {
         let score = 0;
 
         if (err instanceof HttpException) {
@@ -43,7 +43,7 @@ export class RiskAssessmentInterceptor implements NestInterceptor {
 
         if (score > 0) {
           // Fire-and-forget 方式，不阻塞回傳
-          this.rateLimitService.addRiskScore(ip, score).catch(() => {});
+          void this.rateLimitService.addRiskScore(ip, score).catch(() => {});
         }
 
         // 將錯誤往上丟，交給 global exception filter 處理
