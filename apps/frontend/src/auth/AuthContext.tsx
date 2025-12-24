@@ -30,17 +30,19 @@ export type SwitchableAccount = {
   schoolId: string;
 };
 
+type RestoreResult = { ok: true } | { ok: false; errorCode?: string };
+
 type RestorePromiseControls = {
   /**
    * 這是外部組件 (如 useAuthFetch) await 的 Promise。
    * 它會在會話恢復成功或失敗 (已嘗試) 後被 resolve(true) 或 resolve(false)。
    */
-  promise: Promise<boolean>;
+  promise: Promise<RestoreResult>;
 
   /**
    * 用於手動完成 Promise 的 resolve 函式。
    */
-  resolve: (value: boolean) => void;
+  resolve: (value: RestoreResult) => void;
 
   /**
    * 用於手動拒絕 Promise 的 reject 函式 (備用)。
@@ -58,7 +60,7 @@ type AuthContextType = {
   isLoading: boolean; // 這個 loading 現在代表「正在進行某項認證操作」
   isLoadingRef: React.RefObject<boolean>;
   hasAttemptedRestore: boolean; // ✨ 新增：標記是否已嘗試過恢復
-  restorePromise: Promise<boolean>;
+  restorePromise: Promise<RestoreResult>;
   login: (loginFunction: Promise<any>) => Promise<void>;
   logout: () => Promise<void>;
   switchAccount: (targetUserId: string) => Promise<void>;
@@ -78,11 +80,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [hasAttemptedRestore, setHasAttemptedRestore] = useState(false);
   const [restorePromiseControls] = useState<RestorePromiseControls>(() => {
-    let res: (value: boolean) => void;
+    let res: (value: RestoreResult) => void;
     let rej: (reason?: any) => void;
 
-    // 建立一個會被 boolean resolve 的 Promise
-    const promise = new Promise<boolean>((resolve, reject) => {
+    // 建立一個會被 `RestoreResult` resolve 的 Promise
+    const promise = new Promise<RestoreResult>((resolve, reject) => {
       res = resolve;
       rej = reject;
     });
@@ -184,7 +186,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setActiveUser(null);
       setAccessTokenAndTokenRef(null);
       setSwitchableAccounts([]);
-      throw new Error("Unable to refresh access token.");
+      throw new Error(json.error?.code);
     }
 
     setAccessTokenAndTokenRef(json.data.accessToken);
@@ -206,14 +208,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const json = await res.json();
       if (json.success) {
         handleAuthSuccess(json.data);
-        restorePromiseControls.resolve(true);
+        restorePromiseControls.resolve({ ok: true });
         // return json.data.accessToken;
       } else {
-        restorePromiseControls.resolve(false);
+        restorePromiseControls.resolve({
+          ok: false,
+          errorCode: json.error?.code,
+        });
       }
     } catch (error) {
       console.log("No active session to restore.");
-      restorePromiseControls.resolve(false);
+      restorePromiseControls.resolve({
+        ok: false,
+        errorCode: (error as any).message,
+      });
       // 即使失敗，也算是一次成功的「嘗試」
     } finally {
       setIsLoadingAndRef(false);
@@ -243,7 +251,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({ targetUserId }),
     });
     const json = await res.json();
-    if (!json.success) throw new Error("Failed to switch account");
+    if (!json.success) throw new Error(json.error?.code);
 
     // 切換成功後，後端只回傳新的 accessToken 和 user
     const { accessToken: newAccessToken, user: newUser } = json.data;
@@ -269,7 +277,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSwitchableAccounts([]);
 
     if (!json.success) {
-      throw new Error("Failed to logout");
+      throw new Error(json.error?.code);
     }
   };
 
