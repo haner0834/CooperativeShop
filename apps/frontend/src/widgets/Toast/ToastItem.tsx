@@ -39,10 +39,10 @@ export const ToastItem: React.FC<ToastItemProps> = ({
     // Mobile: 簡單的滑入滑出
     if (isMobile) {
       return {
-        initial: { y: isTop ? -50 : 50, opacity: 0 },
+        initial: { y: isTop ? "-100%" : "100%", opacity: 0 },
         animate: { y: 0, opacity: 1 },
         exit: {
-          y: isTop ? -50 : 50,
+          y: isTop ? "-100%" : "100%",
           opacity: 0,
           scale: 0.9,
           // 確保 exit 夠快，讓 replace 感覺流暢
@@ -146,30 +146,34 @@ export const ToastItem: React.FC<ToastItemProps> = ({
             )}
           </div>
         ) : (
-          <div className="flex-1 flex flex-col sm:flex-row gap-2 items-center w-full">
+          <div className="relative flex-1 flex flex-col sm:flex-row gap-2 items-center w-full">
             <span className="flex-1 font-bold">{title}</span>
-            {buttons && (
-              <div className="flex gap-2">
-                {buttons.map((btn, idx) => (
-                  <button
-                    key={idx}
-                    onClick={btn.onClick}
-                    className={`btn btn-sm ${btn.variant || ""}`}
-                  >
-                    {btn.label}
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex space-x-2">
+              {buttons && (
+                <div className="flex gap-2">
+                  {buttons.map((btn, idx) => (
+                    <button
+                      key={idx}
+                      onClick={btn.onClick}
+                      className={`btn btn-sm ${btn.variant || ""}`}
+                    >
+                      {btn.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        <button
-          onClick={() => onRemove(id)}
-          className="btn btn-sm btn-circle btn-ghost border-transparent bg-transparent hover:bg-transparent hover:opacity-30 hover:border-base-300 self-center"
-        >
-          ✕
-        </button>
+        {buttons?.length === 0 && (
+          <button
+            onClick={() => onRemove(id)}
+            className="btn btn-sm btn-circle btn-ghost border-transparent bg-transparent hover:bg-transparent hover:opacity-30 hover:border-base-300 self-center"
+          >
+            ✕
+          </button>
+        )}
       </div>
     </motion.div>
   );
