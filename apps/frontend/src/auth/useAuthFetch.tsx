@@ -33,8 +33,13 @@ type AuthFetchOptions = RequestInit & {
  * @returns { authedFetch: (url: string, options?: AuthFetchOptions) => Promise<any> }
  */
 export const useAuthFetch = () => {
-  const { tokenRef, refreshAccessToken, activeUserRef, restorePromise } =
-    useAuth();
+  const {
+    tokenRef,
+    accessToken,
+    refreshAccessToken,
+    activeUserRef,
+    restorePromise,
+  } = useAuth();
 
   const authedFetch = useCallback(
     async (url: string, options: AuthFetchOptions = {}) => {
@@ -48,12 +53,12 @@ export const useAuthFetch = () => {
         // and `AuthContext` has waiting `restorePromise，`
         // then wait for the session to resume and the Promise to complete.
         console.log("[AuthFetch] Waiting for session restore to complete...");
-        await restorePromise;
+        const result = await restorePromise;
 
         // After waiting, if `activeUser` is still `null`
         // it failed.
-        if (!activeUserRef) {
-          throw new Error("Session restore failed, please log in again.");
+        if (!result.ok) {
+          throw new Error(result.errorCode ?? "SESSION_NOT_FOUND");
         }
       }
 
@@ -125,7 +130,7 @@ export const useAuthFetch = () => {
                 }th attempt will be made.`
               );
               continue; // Immediately enter the next loop to retry the request
-            } catch (refreshError) {
+            } catch (refreshError: any) {
               // If refreshAccessToken itself fails,
               // it means the refresh token may also have expired.
               console.error(
@@ -197,7 +202,7 @@ export const useAuthFetch = () => {
       );
     },
     // When accessToken or refreshAccessToken changed, re-generate the function
-    [tokenRef, refreshAccessToken]
+    [accessToken, refreshAccessToken]
   );
 
   return { authedFetch };

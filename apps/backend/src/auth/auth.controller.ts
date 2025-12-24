@@ -14,7 +14,6 @@ import {
 } from '@nestjs/common';
 import express from 'express';
 import { AuthService } from './services/auth.service';
-import { TokenService } from './services/token.service';
 import { Log } from 'src/common/decorators/logger.decorator';
 import { JwtAccessGuard } from './guards/jwt-access.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
@@ -31,8 +30,8 @@ import type { User } from '@prisma/client';
 import { BadRequestError, UnauthorizedError } from 'src/types/error.types';
 import { AuthGuard } from '@nestjs/passport';
 import { env } from 'src/common/utils/env.utils';
-import { Throttle } from '@nestjs/throttler';
 import { GoogleRedirectGuard } from './guards/google-redirect.guard';
+import { RateLimit } from 'src/rate-limit/rate-limit.decorator';
 
 const httpOnlyCookieOptions = {
   httpOnly: true,
@@ -41,8 +40,8 @@ const httpOnlyCookieOptions = {
   path: '/api/auth',
 } as const;
 
-@Throttle({ default: { ttl: 1 * 60 * 1000, limit: 20 } })
 @Controller('auth')
+@RateLimit({ uid: 20, did: 20, global: 150 })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -59,6 +58,7 @@ export class AuthController {
   }
 
   @Post('register')
+  @RateLimit({ uid: 5, did: 5, global: 100 })
   @HttpCode(HttpStatus.CREATED)
   async register(
     @Body() registerDto: RegisterDto,
@@ -72,6 +72,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @RateLimit({ uid: 5, did: 5, global: 100 })
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() loginDto: LoginDto,
@@ -86,6 +87,7 @@ export class AuthController {
 
   @Post('logout')
   @UseGuards(JwtRefreshGuard)
+  @RateLimit({ uid: 5, did: 0, global: 20 })
   @HttpCode(HttpStatus.OK)
   async logout(
     @Req() req: express.Request,
@@ -108,7 +110,7 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { ttl: 1 * 60 * 1000, limit: 100 } })
+  @RateLimit({ uid: 30, did: 30, global: 200 })
   async refreshToken(
     @Req() req: express.Request,
     @Headers('x-device-id') deviceId: string,
@@ -131,7 +133,7 @@ export class AuthController {
 
   @Post('restore')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { ttl: 1 * 60 * 1000, limit: 100 } })
+  @RateLimit({ uid: 30, did: 30, global: 200 })
   @Log({ prefix: 'AuthController.restoreSession', logReturn: false })
   async restoreSession(
     @Req() req: express.Request,
@@ -152,6 +154,7 @@ export class AuthController {
 
   @Post('switch-account')
   @UseGuards(JwtAccessGuard)
+  @RateLimit({ uid: 15, did: 0, global: 100 })
   @HttpCode(HttpStatus.OK)
   async switchAccount(
     @Body() switchAccountDto: SwitchAccountDto,
@@ -186,6 +189,7 @@ export class AuthController {
   }
 
   @Get('google/callback')
+  @RateLimit({ uid: 10, did: 10, global: 80 })
   @UseGuards(GoogleRedirectGuard)
   async googleCallback(
     @Req() req: express.Request,

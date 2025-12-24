@@ -57,24 +57,53 @@ const Home = () => {
   const [qrData, setQrData] = useState<string | null>(null);
 
   const getQrCode = async () => {
-    const { success, data, error } = await authedFetch(
-      path("/api/qr/generate-data")
-    );
-    if (!success) {
-      setIsLoading(false);
-      showModal({
-        title: "無法取得 QR code",
-        description: getErrorMessage(error.code),
-        buttons: [
-          {
-            label: "返回登入",
-            onClick: () => navigate("/choose-school"),
-          },
-        ],
-      });
-    }
+    try {
+      const { success, data, error } = await authedFetch(
+        path("/api/qr/generate-data")
+      );
+      if (!success) {
+        setIsLoading(false);
 
-    setQrData(data);
+        showModal({
+          title: "無法取得 QR code",
+          description: getErrorMessage(error.code),
+          buttons: [
+            {
+              label: "返回登入",
+              onClick: () => navigate("/choose-school"),
+            },
+          ],
+        });
+        throw new Error(error.code);
+      }
+      setQrData(data);
+    } catch (error: any) {
+      const code = error.message;
+      if (code === "TOO_MANY_REQUESTS") {
+        showModal({
+          title: "操作過於頻繁，請稍後再試",
+          description:
+            "若您正在使用 Wi-Fi ，可嘗試使用個人熱點，或等待人潮高峰消退。",
+          buttons: [
+            {
+              label: "關閉",
+              onClick: () => navigate("/choose-school"),
+            },
+          ],
+        });
+      } else {
+        showModal({
+          title: "無法取得 QR code",
+          description: getErrorMessage(error.message),
+          buttons: [
+            {
+              label: "返回登入",
+              onClick: () => navigate("/choose-school"),
+            },
+          ],
+        });
+      }
+    }
   };
 
   useEffect(() => {

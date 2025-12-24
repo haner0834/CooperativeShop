@@ -58,5 +58,9 @@
   "USER_NOT_FOUND": {
     "message": "找不到該使用者資訊",
     "devNote": "User data missing from the current session."
+  },
+  "TOO_MANY_REQUESTS": {
+    "message": "您的操作過於頻，請稍後再試",
+    "devNote": "Too many requests."
   }
 }

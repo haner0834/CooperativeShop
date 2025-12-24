@@ -31,7 +31,7 @@ export class GoogleOAuthGuard extends AuthGuard('google') {
       JSON.stringify({ schoolId, deviceId, to }),
     ).toString('base64');
 
-    return { state };
+    return { state, prompt: 'select_account' };
   }
 
   handleRequest(err: any, user: any, info: any) {

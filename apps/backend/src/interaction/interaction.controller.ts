@@ -6,7 +6,6 @@ import {
   BadRequestException,
   Headers,
 } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
 import { InteractionService } from './interaction.service';
 import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
 import { BypassJwt } from 'src/common/decorators/bypass-jwt.decorator';
@@ -17,6 +16,7 @@ import { RecordViewTimeDto } from './dto/record-view-time.dto';
 import { RecordViewDto } from './dto/record-view.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { type UserPayload } from 'src/auth/types/auth.types';
+import { RateLimit } from 'src/rate-limit/rate-limit.decorator';
 
 @Controller('interactions')
 @UseGuards(JwtAccessGuard)
@@ -31,7 +31,7 @@ export class InteractionController {
    * Rate limit: 150 requests per minute
    */
   @Post('impressions')
-  @Throttle({ default: { limit: 150, ttl: 60 * 1000 } })
+  @RateLimit({ uid: 150, did: 150 })
   async recordImpression(
     @CurrentUser() user: UserPayload | undefined,
     @Body() dto: RecordImpressionDto,
@@ -57,7 +57,7 @@ export class InteractionController {
    * Rate limit: 50 requests per minute
    */
   @Post('views')
-  @Throttle({ default: { limit: 50, ttl: 60000 } })
+  @RateLimit({ uid: 50, did: 50 })
   async recordView(
     @CurrentUser() user: UserPayload | undefined,
     @Body() dto: RecordViewDto,
@@ -83,7 +83,7 @@ export class InteractionController {
    * Rate limit: 30 requests per minute
    */
   @Post('taps')
-  @Throttle({ default: { limit: 30, ttl: 60000 } })
+  @RateLimit({ uid: 30, did: 30 })
   async recordTap(
     @CurrentUser() user: UserPayload | undefined,
     @Body() dto: RecordTapDto,
@@ -110,7 +110,7 @@ export class InteractionController {
    * Rate limit: 30 requests per minute
    */
   @Post('view-time')
-  @Throttle({ default: { limit: 30, ttl: 60000 } })
+  @RateLimit({ uid: 30, did: 30 })
   async recordViewTimeSec(
     @CurrentUser() user: UserPayload | undefined,
     @Body() dto: RecordViewTimeDto,
