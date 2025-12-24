@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ChevronRight, Menu, Search, X } from "lucide-react";
+import { ChevronRight, CircleAlert, Menu, Search, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../widgets/Sidebar";
 import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
@@ -12,6 +12,7 @@ import { useModal } from "../widgets/ModalContext";
 import { getErrorMessage } from "../utils/errors";
 import { path } from "../utils/path";
 import { useAuthFetch } from "../auth/useAuthFetch";
+import { useToast } from "../widgets/Toast/ToastProvider";
 
 export const ShopSectionTitle = ({ title }: { title: string }) => {
   return (
@@ -35,6 +36,7 @@ const Shops = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { showModal } = useModal();
+  const { showToast } = useToast();
   const { authedFetch } = useAuthFetch();
 
   const closeSidebar = () => setIsSidebarOpen(false);
@@ -52,22 +54,31 @@ const Shops = () => {
         ? data.map((s) => transformDtoToShop(s))
         : [];
       setShops(newShops);
-      const {
-        success: s2,
-        data: d2,
-        error: _,
-      } = await authedFetch(path("/api/shops/saved-ids"));
-      if (s2) {
-      }
-      setTimeout(() => {
-        setShops((prev) => {
-          console.log(prev, d2);
-          return prev.map((s) => ({
-            ...s,
-            isSaved: d2.includes(s.id),
-          }));
+      try {
+        const {
+          success: s2,
+          data: d2,
+          error: _,
+        } = await authedFetch(path("/api/shops/saved-ids"));
+        if (s2) {
+        }
+        setTimeout(() => {
+          setShops((prev) => {
+            console.log(prev, d2);
+            return prev.map((s) => ({
+              ...s,
+              isSaved: d2.includes(s.id),
+            }));
+          });
+        }, 0);
+      } catch (err: any) {
+        showToast({
+          title: "登入失敗",
+          icon: <CircleAlert className="text-error" />,
+          placement: "top",
+          replace: true,
         });
-      }, 0);
+      }
     } catch (err: any) {
       showModal({
         title: "無法取得商家",

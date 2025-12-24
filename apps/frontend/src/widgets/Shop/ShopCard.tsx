@@ -1,25 +1,43 @@
 import { Bookmark, Tag } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { Shop } from "../../types/shop";
 import { path } from "../../utils/path";
 import { useEffect, useState } from "react";
 import { useAuthFetch } from "../../auth/useAuthFetch";
+import { useToast } from "../Toast/ToastProvider";
 
 const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
   const [isSaved, setIsSaved] = useState(false);
   const { authedFetch } = useAuthFetch();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const toggleSave = async () => {
     setIsSaved((prev) => !prev);
-    const {
-      success,
-      data,
-      error: _,
-    } = await authedFetch(path(`/api/shops/${shop.id}/save`), {
-      method: "POST",
-    });
-    if (!success) setIsSaved((prev) => !prev);
-    setIsSaved(data.saved);
+    try {
+      const {
+        success,
+        data,
+        error: _,
+      } = await authedFetch(path(`/api/shops/${shop.id}/save`), {
+        method: "POST",
+      });
+      if (!success) setIsSaved((prev) => !prev);
+      setIsSaved(data.saved);
+    } catch (err: any) {
+      setIsSaved((prev) => !prev);
+      showToast({
+        title: "請先登入帳號",
+        replace: true,
+        buttons: [
+          {
+            label: "繼續",
+            onClick: () =>
+              navigate(`/choose-school?to=${encodeURI(location.pathname)}`),
+          },
+        ],
+      });
+    }
   };
 
   useEffect(() => {
