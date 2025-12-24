@@ -13,6 +13,7 @@ import { getErrorMessage } from "../utils/errors";
 import { path } from "../utils/path";
 import { useAuthFetch } from "../auth/useAuthFetch";
 import { useToast } from "../widgets/Toast/ToastProvider";
+import { useNavigate } from "react-router-dom";
 
 export const ShopSectionTitle = ({ title }: { title: string }) => {
   return (
@@ -38,6 +39,7 @@ const Shops = () => {
   const { showModal } = useModal();
   const { showToast } = useToast();
   const { authedFetch } = useAuthFetch();
+  const navigate = useNavigate();
 
   const closeSidebar = () => setIsSidebarOpen(false);
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
@@ -77,6 +79,14 @@ const Shops = () => {
           icon: <CircleAlert className="text-error" />,
           placement: "top",
           replace: true,
+          buttons: [
+            {
+              label: "重新登入",
+              variant: "btn-primary",
+              onClick: () =>
+                navigate(`/choose-school?to=${encodeURI(location.pathname)}`),
+            },
+          ],
         });
       }
     } catch (err: any) {

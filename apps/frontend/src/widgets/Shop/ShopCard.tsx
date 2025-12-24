@@ -32,6 +32,7 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
         buttons: [
           {
             label: "繼續",
+            variant: "btn-primary",
             onClick: () =>
               navigate(`/choose-school?to=${encodeURI(location.pathname)}`),
           },
