@@ -610,7 +610,7 @@ export const ShopDetailContent = ({
 
             <div className="flex items-center gap-3">
               <TicketPercent className="text-indigo-500 w-6 h-6 flex-shrink-0" />
-              <p className="text-xl sm:text-lg font-bold text-base-content/90">
+              <p className="text-xl sm:text-lg font-bold text-base-content/90 z-10">
                 {shop?.discount || "目前沒有特別優惠"}
               </p>
             </div>
