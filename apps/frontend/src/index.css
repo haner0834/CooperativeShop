@@ -70,3 +70,5 @@
   --depth: 0;
   --noise: 0;
 }
+
+@custom-variant pwa (@media (display-mode: standalone));
