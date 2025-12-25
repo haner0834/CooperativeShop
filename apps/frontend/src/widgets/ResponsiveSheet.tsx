@@ -64,7 +64,7 @@ const ResponsiveSheet: React.FC<Props> = ({
       <div
         className={`
           fixed z-50 bg-base-100 shadow-xl transition-transform duration-300 ease-out
-          overflow-y-auto
+          overflow-y-auto pb-[env(safe-area-inset-bottom)]
           ${
             isMobile
               ? `
