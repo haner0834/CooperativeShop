@@ -23,6 +23,17 @@ export default defineConfig({
       devOptions: {
         enabled: true,
       },
+      workbox: {
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/cooperativeshops\.org\/.*/,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "api-cache",
+            },
+          },
+        ],
+      },
       manifest: {
         name: "南校聯合特約",
         short_name: "南校聯合特約",
