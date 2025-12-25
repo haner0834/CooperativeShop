@@ -46,53 +46,51 @@ const Shops = () => {
 
   const getShops = async () => {
     setIsLoading(true);
+
+    let newShops: Shop[] = [];
+
     try {
       const { data: resData } = await axios.get(path("/api/shops?type=home"));
       const { success, data, error } = resData;
-      if (!success && error) {
-        throw new Error(error.code);
-      }
-      const newShops = Array.isArray(data)
-        ? data.map((s) => transformDtoToShop(s))
-        : [];
+
+      if (!success && error) throw new Error(error.code);
+
+      newShops = Array.isArray(data) ? data.map(transformDtoToShop) : [];
+
       setShops(newShops);
-      try {
-        const {
-          success: s2,
-          data: d2,
-          error: _,
-        } = await authedFetch(path("/api/shops/saved-ids"));
-        if (s2) {
-        }
-        setTimeout(() => {
-          setShops((prev) => {
-            console.log(prev, d2);
-            return prev.map((s) => ({
-              ...s,
-              isSaved: d2.includes(s.id),
-            }));
-          });
-        }, 0);
-      } catch (err: any) {
-        showToast({
-          title: "登入失敗",
-          icon: <CircleAlert className="text-error" />,
-          placement: "top",
-          replace: true,
-          buttons: [
-            {
-              label: "重新登入",
-              variant: "btn-primary",
-              onClick: () =>
-                navigate(`/choose-school?to=${encodeURI(location.pathname)}`),
-            },
-          ],
-        });
-      }
     } catch (err: any) {
       showModal({
         title: "無法取得商家",
         description: getErrorMessage(err.message),
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const res = await authedFetch(path("/api/shops/saved-ids"));
+      if (res?.success && Array.isArray(res.data)) {
+        setShops((prev) =>
+          prev.map((s) => ({
+            ...s,
+            isSaved: res.data.includes(s.id),
+          }))
+        );
+      }
+    } catch {
+      showToast({
+        title: "登入失敗",
+        icon: <CircleAlert className="text-error" />,
+        placement: "top",
+        replace: true,
+        buttons: [
+          {
+            label: "重新登入",
+            variant: "btn-primary",
+            onClick: () =>
+              navigate(`/choose-school?to=${encodeURI(location.pathname)}`),
+          },
+        ],
       });
     } finally {
       setIsLoading(false);
