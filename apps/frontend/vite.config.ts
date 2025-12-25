@@ -24,15 +24,36 @@ export default defineConfig({
         enabled: true,
       },
       workbox: {
-        navigateFallbackDenylist: [/^\/api\/google/],
+        // 1. 讓 Workbox 完全不要掃描 API 相關檔案
+        globIgnores: ["**/api/**/*"],
+
+        // 2. 這是解決白屏的關鍵：防止 SPA 路由攔截 API 請求
+        navigateFallbackDenylist: [/^\/api/],
+
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/cooperativeshops\.org\/.*/,
+            // 3. 修正：只快取「非 API」的資源，或是確保 API 請求能正確處理跳轉
+            urlPattern: ({ url }) => {
+              // 排除掉所有 /api 開頭的請求，讓它們直接走瀏覽器原生請求，不經過 Service Worker 緩存
+              return (
+                url.origin === "https://cooperativeshops.org" &&
+                !url.pathname.startsWith("/api")
+              );
+            },
             handler: "NetworkFirst",
             options: {
-              cacheName: "api-cache",
+              cacheName: "static-assets-cache",
             },
           },
+          // {
+          //   // 4. 如果您真的要快取 API，請針對特定的資料介面，而不是包含 Google 登入的跳轉介面
+          //   urlPattern: /^https:\/\/cooperativeshops\.org\/api\/data\/.*/, // 範例：只快取資料類 API
+          //   handler: "NetworkFirst",
+          //   options: {
+          //     cacheName: "api-data-cache",
+          //     networkTimeoutSeconds: 5, // 5秒沒回應就抓舊資料
+          //   },
+          // },
         ],
       },
       manifest: {
