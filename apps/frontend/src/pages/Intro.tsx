@@ -27,11 +27,11 @@ import { useMemo } from "react";
 import { useDevice } from "../widgets/DeviceContext";
 import { Link } from "react-router-dom";
 
-const ScanButton = () => (
-  <Link to="/qr-scanner" className="btn btn-circle btn-ghost">
-    <ScanLine />
-  </Link>
-);
+// const ScanButton = () => (
+//   <Link to="/qr-scanner" className="btn btn-circle btn-ghost">
+//     <ScanLine />
+//   </Link>
+// );
 
 const Hero = () => {
   return (
@@ -137,7 +137,7 @@ const Hero = () => {
 };
 
 const schoolIconClassName = (isMobile: boolean) =>
-  `h-16 w-auto grayscale ${
+  `h-16 w-16 object-contain grayscale ${
     isMobile ? "grayscale-0" : "opacity-50"
   } hover:grayscale-0 hover:opacity-100 transition-all duration-300 cursor-pointer mx-6`;
 
@@ -725,13 +725,7 @@ const Intro = () => {
       .map((type) => NavbarButtonTypeMap.get(type))
       .filter(Boolean) as NavbarButton[];
 
-    const scanButton: NavbarButton = {
-      placement: "end",
-      id: "navbar_scan_btn",
-      content: <ScanButton />,
-    };
-
-    setNavbarButtons([...baseButtons, scanButton]);
+    setNavbarButtons([...baseButtons]);
   }, [setNavbarButtons]);
 
   return (

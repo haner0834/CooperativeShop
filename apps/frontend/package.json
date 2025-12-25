@@ -10,7 +10,8 @@
     "build": "npm run generate-sitemap && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "prebuild": "node scripts/sync-assets.js"
+    "prebuild": "node scripts/sync-assets.js",
+    "generate-pwa-assets": "npx pwa-assets-generator -c pwa-icon.config.js && npx pwa-assets-generator -c pwa-splash.config.js && npx pwa-assets-generator -c pwa-favicon.config.js"
   },
   "dependencies": {
     "@mapbox/mapbox-gl-language": "^1.0.1",
@@ -24,6 +25,7 @@
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.548.0",
     "mapbox-gl": "^3.16.0",
+    "pwa-asset-generator": "^8.1.2",
     "qr-code-styling": "^1.9.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -40,6 +42,7 @@
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@types/react-router-dom": "^5.3.3",
+    "@vite-pwa/assets-generator": "^1.0.2",
     "@vitejs/plugin-react": "^5.0.0",
     "daisyui": "^5.5.8",
     "eslint": "^9.33.0",
@@ -50,6 +53,7 @@
     "ts-node": "^10.9.2",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",
-    "vite": "^7.1.2"
+    "vite": "^7.1.2",
+    "vite-plugin-pwa": "^1.2.0"
   }
 }
