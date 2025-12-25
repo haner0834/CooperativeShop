@@ -39,10 +39,10 @@ export const ToastItem: React.FC<ToastItemProps> = ({
     // Mobile: 簡單的滑入滑出
     if (isMobile) {
       return {
-        initial: { y: isTop ? -20 : 20, opacity: 0 },
+        initial: { y: isTop ? -50 : 50, opacity: 0 },
         animate: { y: 0, opacity: 1 },
         exit: {
-          y: isTop ? -20 : 20,
+          y: isTop ? -50 : 50,
           opacity: 0,
           scale: 0.9,
           // 確保 exit 夠快，讓 replace 感覺流暢
