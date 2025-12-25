@@ -43,6 +43,11 @@ export default defineConfig({
         display: "standalone",
         icons: [
           {
+            src: "apple-touch-icon-180x180.jpg",
+            sizes: "180x180",
+            type: "image/jpeg",
+          },
+          {
             src: "pwa-192x192.png",
             sizes: "192x192",
             type: "image/png",
