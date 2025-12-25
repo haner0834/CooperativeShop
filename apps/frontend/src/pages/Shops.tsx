@@ -78,6 +78,7 @@ const Shops = () => {
         );
       }
     } catch {
+      const target = "/shops";
       showToast({
         title: "登入失敗",
         icon: <CircleAlert className="text-error" />,
@@ -87,8 +88,7 @@ const Shops = () => {
           {
             label: "重新登入",
             variant: "btn-primary",
-            onClick: () =>
-              navigate(`/choose-school?to=${encodeURI(location.pathname)}`),
+            onClick: () => navigate(`/choose-school?to=${encodeURI(target)}`),
           },
         ],
       });

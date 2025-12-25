@@ -26,6 +26,7 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
       setIsSaved(data.saved);
     } catch (err: any) {
       setIsSaved((prev) => !prev);
+      const target = "/shops";
       showToast({
         title: "請先登入帳號",
         replace: true,
@@ -33,8 +34,7 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
           {
             label: "繼續",
             variant: "btn-primary",
-            onClick: () =>
-              navigate(`/choose-school?to=${encodeURI(location.pathname)}`),
+            onClick: () => navigate(`/choose-school?to=${target})}`),
           },
         ],
       });
