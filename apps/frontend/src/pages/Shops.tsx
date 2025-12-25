@@ -65,6 +65,8 @@ const Shops = () => {
       });
       setIsLoading(false);
       return;
+    } finally {
+      setIsLoading(false);
     }
 
     try {
