@@ -137,7 +137,7 @@ const Hero = () => {
 };
 
 const schoolIconClassName = (isMobile: boolean) =>
-  `h-16 w-auto grayscale ${
+  `h-16 w-16 object-contain grayscale ${
     isMobile ? "grayscale-0" : "opacity-50"
   } hover:grayscale-0 hover:opacity-100 transition-all duration-300 cursor-pointer mx-6`;
 
