@@ -24,6 +24,7 @@ export default defineConfig({
         enabled: true,
       },
       workbox: {
+        navigateFallbackDenylist: [/^\/api\/google/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/cooperativeshops\.org\/.*/,
