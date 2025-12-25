@@ -166,7 +166,7 @@ export const ToastItem: React.FC<ToastItemProps> = ({
           </div>
         )}
 
-        {buttons?.length === 0 && (
+        {(buttons ?? []).length === 0 && (
           <button
             onClick={() => onRemove(id)}
             className="btn btn-sm btn-circle btn-ghost border-transparent bg-transparent hover:bg-transparent hover:opacity-30 hover:border-base-300 self-center"
