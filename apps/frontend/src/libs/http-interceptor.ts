@@ -24,9 +24,16 @@ const shouldIntercept = (url: string | undefined): boolean => {
 
 // 1. Axios 攔截器
 axios.interceptors.request.use((config) => {
+  // 如果是上傳到 R2 的網址，直接回傳，不要動 Header
+  if (
+    config.url?.includes("r2.cloudflarestorage.com") ||
+    config.url?.includes("你的圖片域名")
+  ) {
+    return config;
+  }
+
   if (shouldIntercept(config.url)) {
-    config.headers = config.headers || {};
-    config.headers["X-Device-ID"] = getDeviceId();
+    config.headers.set("X-Device-ID", getDeviceId());
   }
   return config;
 });
