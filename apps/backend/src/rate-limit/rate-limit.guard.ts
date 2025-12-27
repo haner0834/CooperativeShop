@@ -38,8 +38,8 @@ export class RateLimitGuard implements CanActivate {
     );
 
     const limits = {
-      uid: options?.uid ?? 100,
-      did: options?.did ?? 50,
+      uid: options?.uid ?? 300,
+      did: options?.did ?? 150,
       global: options?.global ?? 2000,
     };
 
@@ -54,7 +54,7 @@ export class RateLimitGuard implements CanActivate {
     );
 
     if (!isAllowed) {
-      throw new TooManyRequestsError();
+      throw new TooManyRequestsError(60);
     }
 
     return true;
