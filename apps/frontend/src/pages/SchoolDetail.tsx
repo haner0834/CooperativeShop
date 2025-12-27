@@ -22,6 +22,7 @@ import { usePathHistory } from "../contexts/PathHistoryContext";
 import axios from "axios";
 import { useToast } from "../widgets/Toast/ToastProvider";
 import { transformDtoToShop } from "../types/shop";
+import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
 
 const mockSchool: School = {
   id: "123",
@@ -154,7 +155,7 @@ const SchoolDetail = () => {
     a();
   }, [schoolAbbrParam]);
   return (
-    <div className="min-h-screen bg-base-300 flex flex-col items-center lg:ps-64 pt-18">
+    <div className="min-h-screen bg-base-300 flex flex-col items-center pt-18">
       <nav className="navbar fixed z-50 bg-base-100 top-0 shadow-xs">
         <div className="navbar-start space-x-2">
           <button
@@ -163,6 +164,8 @@ const SchoolDetail = () => {
           >
             <Menu />
           </button>
+
+          <Logo className="h-9 w-auto hidden md:block" />
         </div>
         <div className="navbar-center space-x-2">
           <h3 className="font-semibold">我的學校</h3>
@@ -174,7 +177,7 @@ const SchoolDetail = () => {
         <SidebarContent />
       </Sidebar>
 
-      <div className="max-w-xl pt-10 w-full p-4 space-y-4">
+      <div className="max-w-xl pt-10 w-full p-4 space-y-4 lg:ms-64">
         <div className="flex flex-col items-center space-y-2">
           <div className="relative">
             <div className="p-5 bg-white rounded-full overflow-clip border-2 border-neutral/9">
