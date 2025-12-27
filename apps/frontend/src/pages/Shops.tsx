@@ -78,7 +78,7 @@ const SearchResultItem = ({
         <span className="font-bold text-[15px] truncate">{shop.title}</span>
         <span className="text-xs opacity-50 flex items-center gap-1 min-w-0">
           <MapPin size={12} className="shrink-0" />
-          <span className="truncate">{shop.address || "No address"}</span>
+          <span className="truncate">{shop.address || "無地址"}</span>
         </span>
       </div>
 
@@ -485,7 +485,7 @@ const Shops = () => {
                       onKeyDown={(e) =>
                         e.key === "Enter" && updateQuery({ q: searchInput })
                       }
-                      placeholder="Search"
+                      placeholder="搜尋"
                     />
                     <kbd className="kbd kbd-sm rounded-sm opacity-50">⌘ K</kbd>
                   </label>
@@ -509,7 +509,7 @@ const Shops = () => {
                           ))
                         ) : (
                           <div className="p-4 text-center opacity-50 text-sm">
-                            No results found
+                            沒有結果
                           </div>
                         )}
                       </ul>
@@ -609,7 +609,7 @@ const Shops = () => {
                   }
                 >
                   <span className="flex items-center gap-1">
-                    <Clock size={16} /> Open Now
+                    <Clock size={16} /> 營業中
                   </span>
                   {isOpenFilter && <Check size={16} strokeWidth={3} />}
                 </a>
@@ -714,10 +714,10 @@ const Shops = () => {
           <ShopSectionTitle
             title={
               searchQuery
-                ? `Results for "${searchQuery}"`
+                ? `搜尋結果：「${searchQuery}」`
                 : currentType === "home"
-                ? "All Shops"
-                : "Shops"
+                ? "所有商家"
+                : "商家"
             }
             onClickArrow={
               currentType === "home"
