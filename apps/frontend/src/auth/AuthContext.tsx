@@ -141,9 +141,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const activeUserRef = useRef<UserPayload | null>(null);
-  useEffect(() => {
-    activeUserRef.current = activeUser;
-  }, [activeUser]);
+  const setActiveUserAndRef = (user: UserPayload | null) => {
+    setActiveUser(user);
+    activeUserRef.current = user;
+  };
 
   useEffect(() => {
     if (!activeUser) {
@@ -158,7 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("Invalid response from server after auth.");
     }
     setAccessTokenAndTokenRef(accessToken);
-    setActiveUser(user);
+    setActiveUserAndRef(user);
     setSwitchableAccounts(switchableAccounts || []);
   };
 
@@ -183,7 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!res.ok || !json.success || !json.data.accessToken) {
       // 刷新失敗，清空所有狀態
-      setActiveUser(null);
+      setActiveUserAndRef(null);
       setAccessTokenAndTokenRef(null);
       setSwitchableAccounts([]);
       throw new Error(json.error?.code);
@@ -256,7 +257,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 切換成功後，後端只回傳新的 accessToken 和 user
     const { accessToken: newAccessToken, user: newUser } = json.data;
     setAccessTokenAndTokenRef(newAccessToken);
-    setActiveUser(newUser);
+    setActiveUserAndRef(newUser);
   };
 
   const logout = async () => {
@@ -272,7 +273,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     const json = await res.json();
 
-    setActiveUser(null);
+    setActiveUserAndRef(null);
     setAccessTokenAndTokenRef(null);
     setSwitchableAccounts([]);
 
