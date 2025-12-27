@@ -74,7 +74,7 @@ const FAQPage: React.FC = () => {
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-base-200 py-12 px-4 sm:px-6 lg:px-8 pt-22 lg:ps-72">
+      <div className="min-h-screen bg-base-300 py-12 px-4 sm:px-6 lg:px-8 pt-22 lg:ps-72">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
