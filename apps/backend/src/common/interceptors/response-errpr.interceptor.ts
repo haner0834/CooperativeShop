@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { ApiError } from 'src/types/api.types';
-import { AppError } from 'src/types/error.types';
+import { AppError, TooManyRequestsError } from 'src/types/error.types';
 
 @Catch()
 @Injectable()
@@ -77,6 +77,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
       // Winston can handle objects as meta
       this.logger.error('Unhandled exception', { exceptionInfo, ...meta });
+    }
+
+    if (exception instanceof TooManyRequestsError) {
+      response.header('Retry-After', `${exception.retryAfterSec}`);
     }
 
     const errorResponse: ApiError = {

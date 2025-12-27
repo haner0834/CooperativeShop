@@ -46,6 +46,8 @@ export type MenuItem = {
   icon?: IconName;
   color?: string;
   children?: MenuItem[];
+
+  match?: (location: Location) => boolean;
 };
 
 // ✅ 現有 menu 結構不變，只是 icon 型別更嚴謹
@@ -54,14 +56,46 @@ export const menu: MenuItem[] = [
     label: "合作商家",
     icon: "ShoppingCart",
     color: "text-amber-500",
-    href: "/shops",
+    href: "/shops?type=home",
     children: [
-      { label: "近期訪問", icon: "RotateCcw" },
-      { label: "熱門", icon: "Flame" },
-      { label: "已保存", icon: "BookmarkIcon" },
-      { label: "附近商家", icon: "MapPin" },
-      { label: "商家地圖", icon: "Map" },
+      {
+        label: "近期訪問",
+        href: "/shops?type=recent",
+        icon: "RotateCcw",
+        match: (loc) =>
+          loc.pathname === "/shops" &&
+          new URLSearchParams(loc.search).get("type") === "recent",
+      },
+      {
+        label: "熱門",
+        href: "/shops?type=hot",
+        icon: "Flame",
+        match: (loc) =>
+          loc.pathname === "/shops" &&
+          new URLSearchParams(loc.search).get("type") === "hot",
+      },
+      {
+        label: "已保存",
+        href: "/shops?type=saved",
+        icon: "BookmarkIcon",
+        match: (loc) =>
+          loc.pathname === "/shops" &&
+          new URLSearchParams(loc.search).get("type") === "saved",
+      },
+      {
+        label: "附近商家",
+        href: "/shops?type=nearby",
+        icon: "MapPin",
+        match: (loc) =>
+          loc.pathname === "/shops" &&
+          new URLSearchParams(loc.search).get("type") === "nearby",
+      },
+      { label: "商家地圖", href: "/shops/map", icon: "Map" },
     ],
+    match: (loc) =>
+      (loc.pathname === "/shops" &&
+        new URLSearchParams(loc.search).get("type") === "home") ||
+      new URLSearchParams(loc.search).get("type") === null,
   },
   {
     label: "我的",
@@ -112,6 +146,11 @@ const SidebarItem = ({
       placement: "top-left",
     });
   };
+  const isActive =
+    item.match?.(location) ??
+    (item.href &&
+      location.pathname ===
+        new URL(item.href, window.location.origin).pathname);
 
   return (
     <>
@@ -122,7 +161,7 @@ const SidebarItem = ({
             {item.label}
           </button>
         ) : item.href ? (
-          <Link to={item.href}>
+          <Link to={item.href} className={isActive ? "menu-active" : ""}>
             <Icon name={item.icon} color={item.color} />
             {item.label}
           </Link>
