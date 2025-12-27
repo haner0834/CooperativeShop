@@ -4,6 +4,7 @@ import { Route, Routes } from "react-router-dom";
 import Root from "./pages/Root";
 import ProtectedGate from "./auth/ProtectedGate";
 import FilteredShops from "./pages/CategorizedShops";
+import ShopMap from "./pages/ShopMap";
 const SchoolDetail = lazy(() => import("./pages/SchoolDetail"));
 const Navbar = lazy(() => import("./widgets/Navbar"));
 const LoginHint = lazy(() => import("./pages/LoginHint"));
@@ -58,6 +59,8 @@ function App() {
       <Route path="schools/:abbr" element={<SchoolDetail />} />
 
       <Route path="faq" element={<FAQPage />} />
+
+      <Route path="shops/map" element={<ShopMap />} />
 
       <Route path="shops/preview" element={<ShopPreview />} />
 
