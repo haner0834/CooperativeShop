@@ -39,6 +39,8 @@ export class SchoolsService {
       name: school.name,
       abbreviation: school.abbreviation,
       loginMethod: school.emailFormats.length > 0 ? 'google' : 'credential',
+      instagramAccount: school.instagramAccount,
+      websiteUrl: school.websiteUrl,
     }));
   }
 
@@ -54,6 +56,25 @@ export class SchoolsService {
       name: school.name,
       abbreviation: school.abbreviation,
       loginMethod: school.studentIdFormat ? 'credential' : 'google',
+      instagramAccount: school.instagramAccount,
+      websiteUrl: school.websiteUrl,
+    };
+  }
+
+  async getSchoolByAbbr(abbr: string): Promise<SchoolDTO> {
+    const school = await this.prisma.school.findUnique({
+      where: { abbreviation: abbr },
+    });
+
+    if (!school) throw new NotFoundError('SCHOOL');
+
+    return {
+      id: school.id,
+      name: school.name,
+      abbreviation: school.abbreviation,
+      loginMethod: school.studentIdFormat ? 'credential' : 'google',
+      instagramAccount: school.instagramAccount,
+      websiteUrl: school.websiteUrl,
     };
   }
 }
