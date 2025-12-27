@@ -1,11 +1,13 @@
 model School {
-    id              String   @id @default(cuid())
-    name            String
-    abbreviation    String   @unique
-    emailFormats    String[]
-    studentIdFormat Json?
-    users           User[]
-    shops           Shop[]
+    id               String   @id @default(cuid())
+    name             String
+    abbreviation     String   @unique
+    emailFormats     String[]
+    studentIdFormat  Json?
+    users            User[]
+    shops            Shop[]
+    instagramAccount String?
+    websiteUrl       String?
 
     @@index([abbreviation])
 }
