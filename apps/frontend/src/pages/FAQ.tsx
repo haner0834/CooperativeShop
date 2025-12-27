@@ -7,6 +7,7 @@ import {
   AlertCircle,
   Info,
   Menu,
+  ShoppingCart,
 } from "lucide-react";
 import faqData from "@shared/jsons/faq.json";
 import { SidebarContent } from "../widgets/SidebarContent";
@@ -62,6 +63,8 @@ const FAQPage: React.FC = () => {
         return <Smartphone className="w-5 h-5" />;
       case "服務限制與經費":
         return <AlertCircle className="w-5 h-5" />;
+      case "商家簽約與目標":
+        return <ShoppingCart className="w-5 h-5" />;
       default:
         return <HelpCircle className="w-5 h-5" />;
     }
@@ -71,7 +74,7 @@ const FAQPage: React.FC = () => {
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-base-200 py-12 px-4 sm:px-6 lg:px-8 pt-22 lg:ps-64">
+      <div className="min-h-screen bg-base-300 py-12 px-4 sm:px-6 lg:px-8 pt-22 lg:ps-72">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">

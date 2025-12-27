@@ -3,4 +3,6 @@ export interface SchoolDTO {
   name: string;
   abbreviation: string;
   loginMethod: string;
+  instagramAccount: string | null;
+  websiteUrl: string | null;
 }

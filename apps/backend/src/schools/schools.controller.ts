@@ -37,4 +37,19 @@ export class SchoolsController {
 
     return school;
   }
+
+  @Get('abbr/:abbr')
+  async getSchoolByAbbr(@Param('abbr') abbr: string) {
+    if (!abbr || typeof abbr !== 'string') {
+      throw new BadRequestException('School abbreviation is required.');
+    }
+
+    const school = await this.schoolsService.getSchoolByAbbr(abbr);
+
+    if (!school) {
+      throw new NotFoundException(`School with abbreviation ${abbr} not found`);
+    }
+
+    return school;
+  }
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   transformDtoToShop,
   weekdayOrder,
@@ -22,7 +22,6 @@ import {
   Phone,
   CircleUserRound,
   CircleX,
-  MapPinX,
   UserRoundX,
 } from "lucide-react";
 import ImageGalleryModal from "../widgets/ImageGalleryModal";
@@ -249,6 +248,7 @@ export const ShopDetailContent = ({
   const { isMobile } = useDevice();
   const { goBack } = usePathHistory();
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeImgIndex, setActiveImgIndex] = useState(0);
@@ -647,12 +647,7 @@ export const ShopDetailContent = ({
           <div className="lg:hidden h-20" /> {/* Spacer */}
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-base-100/90 backdrop-blur-xl border-t border-base-200 z-30 lg:hidden flex gap-3 safe-area-bottom pwa:pb-[34pt]">
             <button
-              onClick={() =>
-                showToast({
-                  title: "尚無法使用",
-                  icon: <MapPinX className="text-error" />,
-                })
-              }
+              onClick={() => navigate("/shops/map")}
               className="btn btn-primary flex-1 rounded-xl shadow-lg shadow-primary/20"
             >
               地圖中開啟

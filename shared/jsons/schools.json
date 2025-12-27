@@ -3,7 +3,9 @@
     "name": "南科實中",
     "abbreviation": "nnkieh",
     "emailFormat": ["@ms.nnkieh.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.nnkieh.tn.edu.tw",
+    "instagramAccount": "nnkieh_sa"
   },
   {
     "name": "南大附中",
@@ -14,25 +16,33 @@
       "prefix": "",
       "suffix": "",
       "regex": "^(4|3|2|1)1(0?[1-9]|1[0-5])\\d{2}$"
-    }
+    },
+    "websiteUrl": "https://www.tntcsh.tn.edu.tw",
+    "instagramAccount": "ashs.nutn_116th"
   },
   {
     "name": "曾文農工",
     "abbreviation": "twais",
     "emailFormat": ["@twivs.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.twivs.tn.edu.tw",
+    "instagramAccount": null
   },
   {
     "name": "北門農工",
     "abbreviation": "pmai",
     "emailFormat": ["@goo.pmai.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.pmai.tn.edu.tw",
+    "instagramAccount": "pmai_116th"
   },
   {
     "name": "曾文家商",
     "abbreviation": "twvs",
     "emailFormat": ["@ms2.twvs.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.twvs.tn.edu.tw",
+    "instagramAccount": "twvs_116th_sa_"
   },
   {
     "name": "臺南高商",
@@ -43,7 +53,9 @@
       "prefix": "",
       "suffix": "",
       "regex": "^(4|3|2|1)(11|12|13|14|15|16|17|19)\\d{3}$"
-    }
+    },
+    "websiteUrl": "https://www.tncvs.tn.edu.tw",
+    "instagramAccount": "tncvs_116th"
   },
   {
     "name": "新營高工",
@@ -54,49 +66,65 @@
       "prefix": "",
       "suffix": "",
       "regex": "^(4|3|2|1)(11|14|15|16|17|18|32|36|37|39)\\d{3}$"
-    }
+    },
+    "websiteUrl": "https://www.hyivs.tn.edu.tw",
+    "instagramAccount": "hyivs_10"
   },
   {
     "name": "新化高工",
     "abbreviation": "hhvs",
     "emailFormat": ["@sgm.hhvs.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.hhvs.tn.edu.tw",
+    "instagramAccount": "hhvs_116th"
   },
   {
     "name": "瀛海高中",
     "abbreviation": "yhsh",
     "emailFormat": ["@gm.yhsh.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.yhsh.tn.edu.tw",
+    "instagramAccount": "yhsh_116th"
   },
   {
     "name": "台南二中",
     "abbreviation": "tnssh",
     "emailFormat": ["@stu.tnssh.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.tnssh.tn.edu.tw",
+    "instagramAccount": "tnsshsa_116th"
   },
   {
     "name": "南光高中",
     "abbreviation": "nkhs",
     "emailFormat": ["@nkhs.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.nkhs.tn.edu.tw",
+    "instagramAccount": "nkhs_116th_official"
   },
   {
     "name": "長榮高中",
     "abbreviation": "cjshs",
     "emailFormat": ["@st.cjshs.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.cjshs.tn.edu.tw",
+    "instagramAccount": "cjsa_116th"
   },
   {
     "name": "新豐高中",
     "abbreviation": "sfsh",
     "emailFormat": ["@sfsh.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.sfsh.tn.edu.tw",
+    "instagramAccount": "sfshsa_116th"
   },
   {
     "name": "北門高中",
     "abbreviation": "bmsh",
     "emailFormat": ["@bmsh.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.bmsh.tn.edu.tw",
+    "instagramAccount": "bmsa_116th"
   },
   {
     "name": "新營高中",
@@ -107,49 +135,65 @@
       "prefix": "",
       "suffix": "",
       "regex": "^(4|3|2)([1-9]|1[0-5])(\\d{3})$"
-    }
+    },
+    "websiteUrl": "https://www.hysh.tn.edu.tw",
+    "instagramAccount": "hysh.116th"
   },
   {
     "name": "新化高中",
     "abbreviation": "hhsh",
     "emailFormat": ["@stu.hhsh.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.hhsh.tn.edu.tw",
+    "instagramAccount": "hhshsa116"
   },
   {
     "name": "大灣高中",
     "abbreviation": "dwsh",
     "emailFormat": ["@stu.dwhs.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.dwhs.tn.edu.tw",
+    "instagramAccount": "c3_dwhs"
   },
   {
     "name": "南寧高中",
     "abbreviation": "nnsh",
     "emailFormat": ["@nnjh.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.nnjh.tn.edu.tw",
+    "instagramAccount": "nnsh_s.a"
   },
   {
     "name": "土城高中",
     "abbreviation": "tcjh",
     "emailFormat": ["@tcjh.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.tcjh.tn.edu.tw",
+    "instagramAccount": "tcsa_116th"
   },
   {
     "name": "永仁高中",
     "abbreviation": "yrhs",
     "emailFormat": ["@yrhs.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.yrhs.tn.edu.tw",
+    "instagramAccount": "yrsa_116th"
   },
   {
     "name": "興國高中",
     "abbreviation": "hkhs",
     "emailFormat": ["@ctbchs.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://ctbchs.tn.edu.tw",
+    "instagramAccount": "ctbc_sc116"
   },
   {
     "name": "港明高中",
     "abbreviation": "kmsh",
     "emailFormat": ["@web.kmsh.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.kmsh.tn.edu.tw",
+    "instagramAccount": "kmsa_116th"
   },
   {
     "name": "台南海事",
@@ -160,7 +204,9 @@
       "prefix": "",
       "suffix": "",
       "regex": "^(4|3|2|1)1(11|21|22|31|32|41|51|52|61|62|71|81)\\d{2}$"
-    }
+    },
+    "websiteUrl": "https://www.tnvs.tn.edu.tw",
+    "instagramAccount": "tnvs_116th"
   },
   {
     "name": "黎明高中",
@@ -171,18 +217,24 @@
       "prefix": "",
       "suffix": "",
       "regex": "^(1(14|13|12)0\\d{3}|(4|3|2|1)10\\d{3})$"
-    }
+    },
+    "websiteUrl": "https://www.lmsh.tn.edu.tw",
+    "instagramAccount": "lmsh_114_student"
   },
   {
     "name": "明達高中",
     "abbreviation": "mdsh",
     "emailFormat": ["@mdsh.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.mdsh.tn.edu.tw",
+    "instagramAccount": "mdsa_116th"
   },
   {
     "name": "家齊高中",
     "abbreviation": "ccsh",
     "emailFormat": ["@ms2.ccsh.tn.edu.tw"],
-    "studentIdFormat": null
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.ccsh.tn.edu.tw",
+    "instagramAccount": "ccsa_116th"
   }
 ]
