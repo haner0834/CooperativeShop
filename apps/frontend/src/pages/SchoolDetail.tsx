@@ -174,7 +174,7 @@ const SchoolDetail = () => {
         <SidebarContent />
       </Sidebar>
 
-      <div className="max-w-lg pt-10 w-full p-4 space-y-4">
+      <div className="max-w-xl pt-10 w-full p-4 space-y-4">
         <div className="flex flex-col items-center space-y-2">
           <div className="relative">
             <div className="p-5 bg-white rounded-full overflow-clip border-2 border-neutral/9">
