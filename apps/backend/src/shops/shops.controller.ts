@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  Header,
 } from '@nestjs/common';
 import { ShopsService } from './shops.service';
 import { CreateShopDto } from './dto/create-shop.dto';
@@ -61,6 +62,7 @@ export class ShopsController {
   }
 
   @Get()
+  @Header('Cache-Control', 'public, max-age=60')
   @UseGuards(JwtAccessGuard)
   @BypassJwt()
   findAll(
