@@ -137,7 +137,7 @@ const Home = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-blue-300">
       <PageMeta />
 
-      <div className="bg-base-100 flex flex-col items-center justify-center max-w-sm min-w-xs mx-10 p-4 px-8 rounded-box shadow-md">
+      <div className="bg-base-100 flex flex-col items-center justify-center max-w-sm min-w-xs mx-10 p-4 px-8 rounded-box shadow-md lg:ms-64">
         <button
           onClick={() => setIsNormal((prev) => !prev)}
           className={`text-lg font-bold mb-2 ${isNormal ? "" : "text-success"}`}
