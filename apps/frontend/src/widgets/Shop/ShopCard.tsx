@@ -1,4 +1,4 @@
-import { Bookmark, Tag } from "lucide-react";
+import { Bookmark } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import type { Shop } from "../../types/shop";
 import { path } from "../../utils/path";
@@ -45,10 +45,9 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
     setIsSaved(shop.isSaved ?? false);
   }, [shop.isSaved]);
 
-  const badgeStyle = shop.isOpen ? "badge-success" : "badge-error";
   return (
     <Link to={`/shops/${shop.id}`} className="flex-none">
-      <article className="space-y-2 transition-transform ease-in-out duration-300 hover:scale-98">
+      <article className="relative space-y-2 transition-transform ease-in-out duration-300 hover:scale-98">
         <img
           src={shop.thumbnailLink}
           className={`${className} aspect-[5/3] object-cover rounded-box`}
@@ -63,7 +62,7 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
             </div>
 
             <button
-              className="btn btn-square btn-sm"
+              className="btn btn-square btn-ghost btn-sm"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -77,11 +76,22 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
             </button>
           </div>
 
-          <div className="space-x-2">
-            <span className={`badge ${badgeStyle} badge-soft uppercase mt-2`}>
-              <Tag className="w-4 h-4" /> {shop.isOpen ? "open" : "closed"}
-            </span>
-          </div>
+          <div className="space-x-2"></div>
+        </div>
+
+        <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-base-100 border border-base-300 w-fit">
+          <span
+            className={`status w-2.5 h-2.5 ${
+              shop.isOpen ? "status-success" : "status-error"
+            }`}
+          ></span>
+          <span
+            className={`text-xs font-semibold tracking-wide ${
+              shop.isOpen ? "text-success" : "text-error"
+            }`}
+          >
+            {shop.isOpen ? "營業中" : "休息中"}
+          </span>
         </div>
       </article>
     </Link>

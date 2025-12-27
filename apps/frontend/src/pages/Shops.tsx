@@ -85,9 +85,9 @@ const SearchResultItem = ({
       {/* Status */}
       <div className="flex items-center gap-2 shrink-0">
         {shop.isOpen ? (
-          <span className="text-[10px] font-bold text-success">OPEN</span>
+          <span className="text-[10px] font-bold text-success">營業中</span>
         ) : (
-          <span className="text-[10px] font-bold opacity-30">CLOSED</span>
+          <span className="text-[10px] font-bold opacity-30">休息中</span>
         )}
         <ChevronRight size={16} className="opacity-30" />
       </div>
