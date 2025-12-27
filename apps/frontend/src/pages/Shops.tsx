@@ -436,7 +436,7 @@ const Shops = () => {
           {!isSearchFocused || !isMobile ? (
             <>
               <motion.div
-                className="navbar-start"
+                className="navbar-start space-x-4"
                 key="navbar-start"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -457,7 +457,7 @@ const Shops = () => {
                 >
                   <Menu />
                 </button>
-                <Logo className="h-10 w-auto hidden lg:block" />
+                <Logo className="h-10 w-auto" />
               </motion.div>
 
               <motion.div
@@ -476,8 +476,6 @@ const Shops = () => {
                 }}
                 transition={transitionProps}
               >
-                <Logo className="h-10 w-auto hidden lg:hidden sm:block" />
-
                 <div className="hidden lg:block relative">
                   <label className="input w-[400px] flex items-center gap-2">
                     <Search className="opacity-50 w-5 h-5" />

@@ -183,16 +183,17 @@ const Home = () => {
       </div>
 
       <nav className="navbar bg-base-100 fixed top-0 z-50 shadow-xs">
-        <div className="navbar-start">
+        <div className="navbar-start space-x-4">
           <button
             className="btn btn-ghost btn-square"
             onClick={() => setShowSidebar((prev) => !prev)}
           >
             <Menu />
           </button>
+          <Logo className="h-9 w-auto hidden lg:block" />
         </div>
         <div className="navbar-center">
-          <Logo className="h-9 w-auto" />
+          <Logo className="h-9 w-auto lg:hidden" />
         </div>
         <div className="navbar-end">
           <MenuToggle
