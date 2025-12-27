@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
-import {
-  NavbarButtonTypeMap,
-  useNavbarButtons,
-} from "../widgets/NavbarButtonsContext";
+
 import { useAuth } from "../auth/AuthContext";
 import type { LoginMethod } from "../types/school";
 import { useAuthFetch } from "../auth/useAuthFetch";
 import { Google } from "@icons";
-import { IdCard, School as SchoolIcon, Menu } from "lucide-react";
-import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
+import { IdCard, School as SchoolIcon, Menu, User } from "lucide-react";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
 import { path } from "../utils/path";
 import QRDisplay from "../widgets/QRDisplay";
@@ -17,11 +13,14 @@ import { SwictableAccountsSheet } from "../widgets/SwitchableAccountSheet";
 import { useModal } from "../widgets/ModalContext";
 import { getErrorMessage } from "../utils/errors";
 import { useNavigate } from "react-router-dom";
+import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
+import { SidebarContent } from "../widgets/SidebarContent";
+import Sidebar from "../widgets/Sidebar";
 
 const MenuToggle = ({ onClick }: { onClick: () => void }) => {
   return (
-    <div onClick={onClick} className="btn btn-square btn-ghost">
-      <Menu className="w-6 h-6 text-neutral" />
+    <div onClick={onClick} className="btn btn-circle btn-ghost">
+      <User className="w-6 h-6 text-neutral" />
     </div>
   );
 };
@@ -45,7 +44,6 @@ export const Avator = ({ method }: { method: LoginMethod }) => {
 };
 
 const Home = () => {
-  const { setNavbarButtons, setNavbarTitle } = useNavbarButtons();
   const { switchAccount, activeUser } = useAuth();
   const { authedFetch } = useAuthFetch();
   const { showModal } = useModal();
@@ -55,6 +53,7 @@ const Home = () => {
   const [isNormal, setIsNormal] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [qrData, setQrData] = useState<string | null>(null);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   const getQrCode = async () => {
     try {
@@ -131,28 +130,6 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const baseButtons: NavbarButton[] = (
-      ["logo", "themeToggle"] as NavbarButtonType[]
-    )
-      .map((type) => NavbarButtonTypeMap.get(type))
-      .filter(Boolean) as NavbarButton[];
-
-    const menuToggleButton: NavbarButton = {
-      placement: "end",
-      order: 100,
-      id: "navbar_menu_toggle",
-      content: (
-        <MenuToggle
-          onClick={() => {
-            setIsSheetOn(true);
-          }}
-        />
-      ),
-    };
-
-    setNavbarButtons([...baseButtons, menuToggleButton]);
-    setNavbarTitle(undefined);
-
     setIsAnonymous(localStorage.getItem("isAnonymous") === "true");
   }, []);
 
@@ -203,6 +180,31 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      <nav className="navbar bg-base-100 fixed top-0 z-50 shadow-xs">
+        <div className="navbar-start">
+          <button
+            className="btn btn-ghost btn-square"
+            onClick={() => setShowSidebar((prev) => !prev)}
+          >
+            <Menu />
+          </button>
+        </div>
+        <div className="navbar-center">
+          <Logo className="h-9 w-auto" />
+        </div>
+        <div className="navbar-end">
+          <MenuToggle
+            onClick={() => {
+              setIsSheetOn(true);
+            }}
+          />
+        </div>
+      </nav>
+
+      <Sidebar isOpen={showSidebar} onClose={() => setShowSidebar(false)}>
+        <SidebarContent />
+      </Sidebar>
 
       <ResponsiveSheet
         isOn={isSheetOn}
