@@ -56,9 +56,14 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
         <div className="">
           <div className="flex space-x-2">
             <div className="flex-1">
-              <h3 className="text-lg font-bold">{shop.title}</h3>
+              <div className="flex-1 flex items-baseline space-x-2">
+                <h3 className="text-xl font-bold">{shop.title}</h3>
+                <span className="min-w-0 opacity-60 text-sm">
+                  {shop.subTitle}
+                </span>
+              </div>
 
-              <p className="opacity-60 text-sm">{shop.address}</p>
+              <span className="opacity-60 text-sm">{shop.address}</span>
             </div>
 
             <button
