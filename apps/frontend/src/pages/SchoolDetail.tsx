@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import type { School } from "../types/school";
 import SchoolIcon from "../widgets/SchoolIcon";
@@ -23,6 +23,7 @@ import axios from "axios";
 import { useToast } from "../widgets/Toast/ToastProvider";
 import { transformDtoToShop } from "../types/shop";
 import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
+import faqData from "@shared/jsons/faq.json";
 
 const mockSchool: School = {
   id: "123",
@@ -87,6 +88,7 @@ const SchoolDetail = () => {
   const { showModal } = useModal();
   const { showToast } = useToast();
   const { goBack } = usePathHistory();
+  const navigate = useNavigate();
 
   const getUserSchool = async (): Promise<string | undefined> => {
     if (schoolAbbrParam === "me") {
@@ -269,12 +271,24 @@ const SchoolDetail = () => {
               );
             })()}
 
-            <Link
-              to="/faq?filter=about_shops"
+            <button
+              onClick={() => {
+                showModal({
+                  title: faqData[faqData.length - 1].items[1].question,
+                  description: faqData[faqData.length - 1].items[1].answer,
+                  showDismissButton: true,
+                  buttons: [
+                    {
+                      label: "常見問題",
+                      onClick: () => navigate("/faq"),
+                    },
+                  ],
+                });
+              }}
               className="btn btn-circle btn-xs"
             >
               <Info size={16} />
-            </Link>
+            </button>
           </li>
         </ul>
 
