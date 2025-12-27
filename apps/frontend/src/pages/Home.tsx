@@ -131,6 +131,7 @@ const Home = () => {
 
   useEffect(() => {
     setIsAnonymous(localStorage.getItem("isAnonymous") === "true");
+    localStorage.setItem("lastOpen", "/home");
   }, []);
 
   return (

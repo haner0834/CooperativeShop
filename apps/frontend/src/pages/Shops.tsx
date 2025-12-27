@@ -421,6 +421,10 @@ const Shops = () => {
     fetchShops(false);
   }, [currentType, searchQuery, isOpenFilter]);
 
+  useEffect(() => {
+    localStorage.setItem("lastOpen", `/shops?type=${currentType}`);
+  }, []);
+
   return (
     <div>
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)}>
