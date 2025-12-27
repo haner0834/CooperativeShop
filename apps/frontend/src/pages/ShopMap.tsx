@@ -4,9 +4,11 @@ import Sidebar from "../widgets/Sidebar";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
+import { usePathHistory } from "../contexts/PathHistoryContext";
 
 const ShopMap = () => {
   const [showSidebar, setShowSidebar] = useState(false);
+  const { goBack } = usePathHistory();
   return (
     <div className="min-h-screen bg-base-300 flex flex-col items-center justify-center p-6 text-center pt-24">
       <nav className="navbar fixed z-50 bg-base-100 top-0 shadow-xs">
@@ -46,7 +48,8 @@ const ShopMap = () => {
             <span className="text-primary text-2xl align-top">Beta</span>
           </h1>
           <p className="opacity-50 max-w-md mx-auto">
-            我們正在打造最直覺的在地商圈地圖系統。
+            此功能尚為 Beta
+            版，仍在測試中。我們正在打造最直覺的在地商圈地圖系統。
           </p>
         </div>
 
@@ -66,9 +69,17 @@ const ShopMap = () => {
           </div>
         </div>
 
-        <Link to="/shops" className="btn btn-primary btn-wide rounded-full">
-          回首頁
-        </Link>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => goBack()}
+            className="btn flex-1 rounded-full bg-base-100"
+          >
+            返回
+          </button>
+          <Link to="/shops" className="btn btn-primary flex-1 rounded-full">
+            回首頁
+          </Link>
+        </div>
       </div>
 
       {/* 底部裝飾 */}
