@@ -9,23 +9,25 @@ import { usePathHistory } from "../contexts/PathHistoryContext";
 const LoginHint = () => {
   const [searchParams] = useSearchParams();
   const { setNavbarButtonsByType, setNavbarTitle } = useNavbarButtons();
-  const [schoolAbbr, setSchoolAbbr] = useState<string | null>(null);
-  const [method, setMethod] = useState<"credential" | "google" | null>(null);
   const { goBack } = usePathHistory();
 
-  const getLoginPath = (method: string) =>
-    `/login/${method}?school=${searchParams.get(
-      "school"
-    )}&to=${searchParams.get("to")}`;
+  const schoolAbbr = searchParams.get("schoolAbbr");
+  const method =
+    (searchParams.get("method") as "credential" | "google" | null) ??
+    "credential";
+  const school = searchParams.get("school") ?? "";
+  const to = searchParams.get("to") ?? "";
 
-  const [dontShowAgain, setDontShowAgain] = useState(() => {
+  const getLoginPath = (m: string) => `/login/${m}?school=${school}&to=${to}`;
+
+  const [shouldRedirectImmediately] = useState(() => {
     return (
-      localStorage.getItem(
-        `login-hint_dont-show-again_${searchParams.get("schoolAbbr")}`
-      ) === "true"
+      localStorage.getItem(`login-hint_dont-show-again_${schoolAbbr}`) ===
+      "true"
     );
   });
-  if (dontShowAgain) {
+  const [dontShowAgain, setDontShowAgain] = useState(shouldRedirectImmediately);
+  if (shouldRedirectImmediately) {
     return (
       <Navigate
         to={getLoginPath(searchParams.get("method") ?? "credential")}
@@ -36,12 +38,6 @@ const LoginHint = () => {
   useEffect(() => {
     setNavbarButtonsByType(["back"]);
     setNavbarTitle(undefined);
-
-    const schoolAbbr = searchParams.get("schoolAbbr");
-    setSchoolAbbr(schoolAbbr);
-
-    const method = searchParams.get("method");
-    setMethod(method as any);
   }, []);
 
   const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
