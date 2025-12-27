@@ -4,6 +4,7 @@ import { Route, Routes } from "react-router-dom";
 import Root from "./pages/Root";
 import ProtectedGate from "./auth/ProtectedGate";
 import FilteredShops from "./pages/CategorizedShops";
+const SchoolDetail = lazy(() => import("./pages/SchoolDetail"));
 const Navbar = lazy(() => import("./widgets/Navbar"));
 const LoginHint = lazy(() => import("./pages/LoginHint"));
 const FAQPage = lazy(() => import("./pages/FAQ"));
@@ -53,6 +54,8 @@ function App() {
       <Route element={<ProtectedGate />}>
         <Route path="home" element={<Home />} />
       </Route>
+
+      <Route path="schools/:abbr" element={<SchoolDetail />} />
 
       <Route path="faq" element={<FAQPage />} />
 

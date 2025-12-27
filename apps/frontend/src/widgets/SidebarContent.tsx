@@ -107,7 +107,7 @@ export const menu: MenuItem[] = [
       { label: "個人 QR", icon: "QrCode", href: "/home" },
       { label: "帳號中心", icon: "UserRoundCog" },
       { label: "QR 掃描", icon: "ScanLine" },
-      { label: "學校", icon: "School" },
+      { label: "學校", icon: "School", href: "/schools/me" },
     ],
   },
   {
