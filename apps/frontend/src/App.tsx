@@ -48,9 +48,10 @@ function App() {
         <Route path="qr-scanner" element={<QrScannerRef />} />
         <Route path="qr-verification" element={<QrVerification />} />
         <Route path="schools" element={<Schools />} />
-        <Route element={<ProtectedGate />}>
-          <Route path="home" element={<Home />} />
-        </Route>
+      </Route>
+
+      <Route element={<ProtectedGate />}>
+        <Route path="home" element={<Home />} />
       </Route>
 
       <Route path="faq" element={<FAQPage />} />
