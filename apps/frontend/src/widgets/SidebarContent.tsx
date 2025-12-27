@@ -92,10 +92,12 @@ export const menu: MenuItem[] = [
       },
       { label: "商家地圖", href: "/shops/map", icon: "Map" },
     ],
-    match: (loc) =>
-      (loc.pathname === "/shops" &&
-        new URLSearchParams(loc.search).get("type") === "home") ||
-      new URLSearchParams(loc.search).get("type") === null,
+    match: (loc) => {
+      const params = new URLSearchParams(loc.search);
+      const type = params.get("type");
+
+      return loc.pathname === "/shops" && (type === "home" || type === null);
+    },
   },
   {
     label: "我的",
