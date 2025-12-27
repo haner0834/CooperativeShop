@@ -48,8 +48,7 @@ const ShopMap = () => {
             <span className="text-primary text-2xl align-top">Beta</span>
           </h1>
           <p className="opacity-50 max-w-md mx-auto">
-            此功能尚為 Beta
-            版，仍在測試中。我們正在打造最直覺的在地商圈地圖系統。
+            此功能尚為 Beta 版，仍在測試中。
           </p>
         </div>
 
