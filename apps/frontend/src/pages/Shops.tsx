@@ -27,6 +27,7 @@ import { useToast } from "../widgets/Toast/ToastProvider";
 import { useModal } from "../widgets/ModalContext";
 import { getErrorMessage } from "../utils/errors";
 import { useAuth } from "../auth/AuthContext";
+import { usePathHistory } from "../contexts/PathHistoryContext";
 
 // --- Helpers ---
 const transitionProps = { type: "tween", duration: 0.2 } as const;
@@ -134,6 +135,7 @@ const Shops = () => {
   const { showModal } = useModal();
   const { isMobile } = useDevice();
   const { activeUserRef, restorePromise } = useAuth();
+  const { goBack } = usePathHistory();
 
   // --- Functions ---
   const updateQuery = (updates: Record<string, string | null>) => {
@@ -156,7 +158,6 @@ const Shops = () => {
         try {
           if (restorePromise) {
             const result = await restorePromise;
-            console.log(result, activeUserRef.current);
             if (!result.ok) throw new Error("");
           } else {
             throw new Error("");
@@ -170,7 +171,13 @@ const Shops = () => {
             }`,
             buttons: [
               {
+                label: "返回",
+                onClick: () => goBack(),
+              },
+              {
                 label: "繼續",
+                role: "primary",
+                style: "btn-primary",
                 onClick: () => navigate(url),
               },
             ],
@@ -225,11 +232,9 @@ const Shops = () => {
         // const { data: resData } = await axios.get(path(endpoint), { params });
         let resData = undefined;
         if (activeUserRef.current) {
-          console.log("authedFetch");
           const apiRoute = `${path(endpoint)}?${new URLSearchParams(params)}`;
           resData = await authedFetch(apiRoute);
         } else {
-          console.log("axios.get");
           const { data } = await axios.get(path(endpoint), { params });
           resData = data;
         }
@@ -399,7 +404,6 @@ const Shops = () => {
           setPreviewResults(resData.data.map(transformDtoToShop));
         }
       } catch (e) {
-        console.error("Search preview failed", e);
       } finally {
         setIsPreviewLoading(false);
       }
