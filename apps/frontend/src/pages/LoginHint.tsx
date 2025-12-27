@@ -13,10 +13,11 @@ const LoginHint = () => {
   const [method, setMethod] = useState<"credential" | "google" | null>(null);
   const { goBack } = usePathHistory();
 
-  const getLoginPath = (method: string) =>
-    `/login/${method}?school=${searchParams.get(
-      "school"
-    )}&to=${searchParams.get("to")}`;
+  const getLoginPath = (method: string) => {
+    const school = searchParams.get("school") || "";
+    const to = searchParams.get("to") || "";
+    return `/login/${method}?school=${school}&to=${to}`;
+  };
 
   const [dontShowAgain, setDontShowAgain] = useState(() => {
     return (
