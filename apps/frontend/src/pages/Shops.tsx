@@ -517,7 +517,7 @@ const Shops = () => {
                   {/* 下拉選單顯示條件 */}
                   {isSearchFocused && searchInput && (
                     <div className="absolute top-full left-0 w-full mt-2 bg-base-100 shadow-xl rounded-box overflow-hidden border border-base-200 z-[60]">
-                      <ul className="flex flex-col divide-y p-2">
+                      <ul className="flex flex-col p-2">
                         {isPreviewLoading ? (
                           <div className="p-4 flex justify-center">
                             <span className="loading loading-spinner loading-sm"></span>
