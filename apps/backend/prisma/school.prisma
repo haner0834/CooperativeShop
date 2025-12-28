@@ -8,6 +8,7 @@ model School {
     shops            Shop[]
     instagramAccount String?
     websiteUrl       String?
+    isLimited        Boolean  @default(false)
 
     @@index([abbreviation])
 }
