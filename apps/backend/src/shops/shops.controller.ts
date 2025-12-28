@@ -20,6 +20,7 @@ import { type UserPayload } from 'src/auth/types/auth.types';
 import { query } from 'winston';
 import { GetShopsDto } from './dto/get-shop.dto';
 import { BypassJwt } from 'src/common/decorators/bypass-jwt.decorator';
+import { SchoolRateLimitGuard } from './shops.guard';
 
 @Controller('shops')
 export class ShopsController {
@@ -63,7 +64,7 @@ export class ShopsController {
 
   @Get()
   @Header('Cache-Control', 'public, max-age=60')
-  @UseGuards(JwtAccessGuard)
+  @UseGuards(JwtAccessGuard, SchoolRateLimitGuard)
   @BypassJwt()
   findAll(
     @Query() query: GetShopsDto,
