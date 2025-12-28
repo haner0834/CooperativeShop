@@ -153,6 +153,8 @@ export class ShopsService {
       where.OR = [
         { title: { contains: q, mode: 'insensitive' } },
         { description: { contains: q, mode: 'insensitive' } },
+        { address: { contains: q, mode: 'insensitive' } },
+        { subTitle: { startsWith: q, mode: 'insensitive' } },
       ];
     }
 
