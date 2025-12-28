@@ -43,7 +43,9 @@ export class AuthService {
       select: {
         id: true,
         user: {
-          include: { school: { select: { abbreviation: true } } },
+          include: {
+            school: { select: { abbreviation: true, isLimited: true } },
+          },
         },
       },
     });
@@ -59,6 +61,7 @@ export class AuthService {
       name: user.name,
       schoolId: user.schoolId,
       schoolAbbr: account.user.school.abbreviation,
+      isSchoolLimited: account.user.school.isLimited,
     };
 
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =
@@ -287,6 +290,7 @@ export class AuthService {
                   select: {
                     id: true,
                     abbreviation: true,
+                    isLimited: true,
                   },
                 },
               },
@@ -317,6 +321,7 @@ export class AuthService {
       name: session.account.user.name,
       schoolId: session.account.user.school.id,
       schoolAbbr: session.account.user.school.abbreviation,
+      isSchoolLimited: session.account.user.school.isLimited,
     };
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =
       await this.tokenService.generateTokens(payload);
@@ -355,6 +360,7 @@ export class AuthService {
                 school: {
                   select: {
                     abbreviation: true,
+                    isLimited: true,
                   },
                 },
               },
@@ -377,6 +383,7 @@ export class AuthService {
       name: user.name,
       schoolId: user.schoolId,
       schoolAbbr: user.school.abbreviation,
+      isSchoolLimited: user.school.isLimited,
     };
     // 這裡我們進行一次完整的輪換
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =
