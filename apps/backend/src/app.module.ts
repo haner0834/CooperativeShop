@@ -19,6 +19,7 @@ import { RiskAssessmentInterceptor } from './rate-limit/risk-assessment.intercep
 import { RateLimitGuard } from './rate-limit/rate-limit.guard';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { env } from './common/utils/env.utils';
+import { SitemapModule } from './site-map/site-map.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { env } from './common/utils/env.utils';
       url: env('REDIS_URI'),
       type: 'single',
     }),
+    SitemapModule,
   ],
   controllers: [AppController],
   providers: [
