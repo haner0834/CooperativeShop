@@ -14,6 +14,7 @@ async function main() {
     studentIdFormat: school.studentIdFormat,
     instagramAccount: school.instagramAccount,
     websiteUrl: school.websiteUrl,
+    isLimited: school.isLimited,
   }));
 
   for (const s of schools) {

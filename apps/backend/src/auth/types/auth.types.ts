@@ -6,6 +6,7 @@ export interface UserPayload {
   name: string;
   schoolId: string;
   schoolAbbr: string;
+  isSchoolLimited: boolean;
 }
 
 export interface AuthRequest extends Request {
