@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
 import { useModal } from "../widgets/ModalContext";
 import { getErrorMessage, type ErrorCode } from "../utils/errors";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 const LoginFailed = () => {
   const [searchParams] = useSearchParams();
@@ -26,7 +27,7 @@ const LoginFailed = () => {
       ],
     });
   }, []);
-  return <div className="pt-19"></div>;
+  return <PageMeta {...routesMeta.loginFailed} />;
 };
 
 export default LoginFailed;

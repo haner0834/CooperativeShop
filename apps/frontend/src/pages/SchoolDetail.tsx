@@ -24,6 +24,7 @@ import { useToast } from "../widgets/Toast/ToastProvider";
 import { transformDtoToShop } from "../types/shop";
 import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
 import faqData from "@shared/jsons/faq.json";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 const SchoolDetail = () => {
   const { abbr: schoolAbbrParam } = useParams();
@@ -106,6 +107,8 @@ const SchoolDetail = () => {
   }, [schoolAbbrParam]);
   return (
     <div className="min-h-screen bg-base-300 flex flex-col items-center pt-18">
+      {school?.name && <PageMeta {...routesMeta.schoolDetail(school.name)} />}
+
       <nav className="navbar fixed z-50 bg-base-100 top-0 shadow-xs">
         <div className="navbar-start space-x-2">
           <button

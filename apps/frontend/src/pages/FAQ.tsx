@@ -12,6 +12,7 @@ import {
 import faqData from "@shared/jsons/faq.json";
 import { SidebarContent } from "../widgets/SidebarContent";
 import Sidebar from "../widgets/Sidebar";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 // interface FAQItem {
 //   question: string;
@@ -72,6 +73,7 @@ const FAQPage: React.FC = () => {
 
   return (
     <>
+      <PageMeta {...routesMeta.faq} />
       <Navbar />
 
       <div className="min-h-screen bg-base-300 py-12 px-4 sm:px-6 lg:px-8 pt-22 lg:ps-72">

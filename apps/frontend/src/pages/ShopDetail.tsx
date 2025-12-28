@@ -39,6 +39,7 @@ import axios from "axios";
 import { path } from "../utils/path";
 import { useModal } from "../widgets/ModalContext";
 import { getErrorMessage } from "../utils/errors";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 const getCurrentMinOfDay = () => {
   const now = new Date();
@@ -377,6 +378,7 @@ export const ShopDetailContent = ({
 
     return (
       <div className="space-y-4">
+        <PageMeta {...routesMeta.shopDetail(shop.title)} />
         {displayGroups.map((group, idx) => {
           const isToday = group.days.includes(currentWeekday);
 

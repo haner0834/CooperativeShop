@@ -9,6 +9,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { path } from "../utils/path";
 import { usePathHistory } from "../contexts/PathHistoryContext";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 const GooglePlaceholder = () => {
   const [searchParams] = useSearchParams();
@@ -193,6 +194,7 @@ const CredentialLogin = () => {
 
   return (
     <div className="h-screen flex flex-col items-center justify-center">
+      <PageMeta {...routesMeta.login} />
       <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
         <legend className="fieldset-legend">
           {mode === "login" ? "登入" : "註冊"}

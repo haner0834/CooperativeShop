@@ -5,12 +5,14 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
 import { usePathHistory } from "../contexts/PathHistoryContext";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 const ShopMap = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const { goBack } = usePathHistory();
   return (
     <div className="min-h-screen bg-base-300 flex flex-col items-center justify-center p-6 text-center pt-24">
+      <PageMeta {...routesMeta.shopsMap} />
       <nav className="navbar fixed z-50 bg-base-100 top-0 shadow-xs">
         <div className="navbar-start space-x-2">
           <button

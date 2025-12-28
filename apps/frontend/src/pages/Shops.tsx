@@ -28,6 +28,7 @@ import { useModal } from "../widgets/ModalContext";
 import { getErrorMessage } from "../utils/errors";
 import { useAuth } from "../auth/AuthContext";
 import { usePathHistory } from "../contexts/PathHistoryContext";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 // --- Helpers ---
 const transitionProps = { type: "tween", duration: 0.2 } as const;
@@ -444,6 +445,7 @@ const Shops = () => {
 
   return (
     <div>
+      <PageMeta {...routesMeta.shops} />
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)}>
         <SidebarContent />
       </Sidebar>

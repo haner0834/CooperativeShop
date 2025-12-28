@@ -5,6 +5,7 @@ import SchoolIcon from "../widgets/SchoolIcon";
 import { Google } from "@icons";
 import { ArrowRight, IdCard, LinkIcon } from "lucide-react";
 import { usePathHistory } from "../contexts/PathHistoryContext";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 const LoginHint = () => {
   const [searchParams] = useSearchParams();
@@ -51,6 +52,7 @@ const LoginHint = () => {
 
   return (
     <div className="pt-18 min-h-screen flex flex-col items-center justify-center space-y-8 p-8">
+      <PageMeta {...routesMeta.loginHint} />
       <div className="flex justify-center items-center space-x-8">
         {schoolAbbr && (
           <div className="p-4 bg-white rounded-full overflow-clip shadow">

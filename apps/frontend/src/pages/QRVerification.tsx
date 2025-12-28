@@ -6,6 +6,7 @@ import { path } from "../utils/path";
 import SchoolIcon from "../widgets/SchoolIcon";
 import { getErrorMessage } from "../utils/errors";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 // --- Helpers ---
 const formatScanTime = (timestamp: number) => {
@@ -51,6 +52,7 @@ const ResultCard = ({ status, data, error, timestamp }: ResultCardProps) => {
 
   return (
     <div className="relative w-full max-w-[400px] aspect-[1.58/1] mx-auto">
+      <PageMeta {...routesMeta.qrVerification} />
       <div
         className={`w-full h-full rounded-box border shadow-xl flex flex-col p-6 justify-between overflow-hidden relative bg-base-100 ${
           isError ? "border-error/50" : "border-base-content/10"
