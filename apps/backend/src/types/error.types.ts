@@ -61,8 +61,12 @@ export class AuthError extends AppError {
 
 export class TooManyRequestsError extends AppError {
   public readonly retryAfterSec: number;
-  constructor(retryAfterSec = 60) {
-    super('TOO_MANY_REQUESTS', 'Too many requests', 429);
+  constructor(
+    retryAfterSec = 60,
+    code: string = 'TOO_MANY_REQUESTS',
+    message: string = 'Too many requests',
+  ) {
+    super(code, message, 429);
     this.retryAfterSec = retryAfterSec;
   }
 }
