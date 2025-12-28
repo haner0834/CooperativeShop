@@ -9,6 +9,7 @@ import {
   MapPin,
   Check,
   AlertCircle,
+  Frown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../widgets/Sidebar";
@@ -16,10 +17,9 @@ import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
 import { transformDtoToShop, type Shop } from "../types/shop";
 import { SidebarContent } from "../widgets/SidebarContent";
 import ShopCard from "../widgets/Shop/ShopCard";
-import axios from "axios";
 import { path } from "../utils/path";
 import { useAuthFetch } from "../auth/useAuthFetch";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import clsx from "clsx";
 import ThemeToggle from "../widgets/ThemeToggle";
 import { useDevice } from "../widgets/DeviceContext";
@@ -126,6 +126,7 @@ const Shops = () => {
   const [hasMore, setHasMore] = useState(true);
   const [previewResults, setPreviewResults] = useState<Shop[]>([]);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [hasExceedLimit, setHasExceedLimit] = useState(true);
   const LIMIT = 12;
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -231,11 +232,13 @@ const Shops = () => {
 
         // const { data: resData } = await axios.get(path(endpoint), { params });
         let resData = undefined;
+        const apiRoute = `${path(endpoint)}?${new URLSearchParams(params)}`;
+        console.log(activeUserRef.current);
         if (activeUserRef.current) {
-          const apiRoute = `${path(endpoint)}?${new URLSearchParams(params)}`;
           resData = await authedFetch(apiRoute);
         } else {
-          const { data } = await axios.get(path(endpoint), { params });
+          const res = await fetch(apiRoute);
+          const data = await res.json();
           resData = data;
         }
         const { success, data, error } = resData;
@@ -272,10 +275,15 @@ const Shops = () => {
 
         return fetchedShops; // Return for chaining
       } catch (err: any) {
-        showModal({
-          title: "無法取得商家",
-          description: getErrorMessage(err.message),
-        });
+        console.log(err);
+        if (err.message === "SCHOOL_QUOTA_EXCEEDED") {
+          setHasExceedLimit(true);
+        } else {
+          showModal({
+            title: "無法取得商家",
+            description: getErrorMessage(err.message),
+          });
+        }
         setHasMore(false);
       } finally {
         setIsLoading(false);
@@ -391,15 +399,24 @@ const Shops = () => {
         setPreviewResults([]);
         return;
       }
+      if (hasExceedLimit) return;
 
       setIsPreviewLoading(true);
       try {
-        const { data: resData } = await axios.get(path("/api/shops"), {
-          params: {
-            q: searchInput,
-            limit: 10, // 預覽顯示前 8 筆
-          },
-        });
+        const params: Record<string, any> = {
+          q: searchInput,
+          limit: 10,
+        };
+
+        let resData = undefined;
+        const apiRoute = `${path("/api/shops")}?${new URLSearchParams(params)}`;
+        if (activeUserRef.current) {
+          resData = await authedFetch(apiRoute);
+        } else {
+          const res = await fetch(apiRoute);
+          const data = await res.json();
+          resData = data;
+        }
         if (resData.success) {
           setPreviewResults(resData.data.map(transformDtoToShop));
         }
@@ -482,6 +499,7 @@ const Shops = () => {
                     <input
                       type="search"
                       value={searchInput}
+                      ref={searchInputRef}
                       onFocus={() => setIsSearchFocused(true)} // 1. 啟動選單
                       onBlur={() => {
                         // 延遲關閉，確保點擊搜尋結果的 onClick 能先執行
@@ -503,6 +521,13 @@ const Shops = () => {
                         {isPreviewLoading ? (
                           <div className="p-4 flex justify-center">
                             <span className="loading loading-spinner loading-sm"></span>
+                          </div>
+                        ) : hasExceedLimit ? (
+                          <div className="p-2 text-center opacity-50 text-sm flex items-center">
+                            貴校於搜索、篩選、排序等功能已達到本日上限。
+                            <Link to="/faq" className="btn btn-xs">
+                              瞭解更多
+                            </Link>
                           </div>
                         ) : previewResults.length > 0 ? (
                           previewResults.map((shop, i) => (
@@ -687,33 +712,56 @@ const Shops = () => {
 
         {/* Mobile 實時搜尋列表：當 Focus 且有字時顯示 */}
         <AnimatePresence>
-          {isMobile && isSearchFocused && searchInput && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-base-100 pt-20 px-2 overflow-y-auto"
-            >
-              <ul className="menu w-full p-0">
-                {isPreviewLoading ? (
-                  <div className="flex justify-center p-10">
-                    <span className="loading loading-dots"></span>
+          {isMobile &&
+            isSearchFocused &&
+            searchInput &&
+            (!true ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-40 bg-base-100 pt-20 px-2 overflow-y-auto"
+              >
+                <ul className="menu w-full p-0">
+                  {isPreviewLoading ? (
+                    <div className="flex justify-center p-10">
+                      <span className="loading loading-dots"></span>
+                    </div>
+                  ) : (
+                    previewResults.map((shop, i) => (
+                      <SearchResultItem
+                        shop={shop}
+                        index={i}
+                        onClick={() => {
+                          navigate(`/shops/${shop.id}`);
+                          setIsSearchFocused(false);
+                        }}
+                      />
+                    ))
+                  )}
+                </ul>
+              </motion.div>
+            ) : (
+              <div className="fixed inset-0 z-40 bg-base-100 pt-20 px-10 overflow-y-auto flex flex-col justify-center items-center gap-4">
+                <div className="p-4 flex flex-col items-center gap-4 rounded-box bg-base-200 border border-neutral/10">
+                  <Frown className="text-warning/60" size={60} />
+                  <h3 className="text-center">
+                    很抱歉，貴校於搜索、篩選、排序等功能已達到本日上限。
+                  </h3>
+                  <div className="flex gap-4">
+                    <Link to="/faq" className="btn btn-ghost">
+                      為什麼我會被限制？
+                    </Link>
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleCancelSearch}
+                    >
+                      關閉
+                    </button>
                   </div>
-                ) : (
-                  previewResults.map((shop, i) => (
-                    <SearchResultItem
-                      shop={shop}
-                      index={i}
-                      onClick={() => {
-                        navigate(`/shops/${shop.id}`);
-                        setIsSearchFocused(false);
-                      }}
-                    />
-                  ))
-                )}
-              </ul>
-            </motion.div>
-          )}
+                </div>
+              </div>
+            ))}
         </AnimatePresence>
 
         <section>

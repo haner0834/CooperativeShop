@@ -17,7 +17,8 @@ export class SchoolRateLimitGuard implements CanActivate {
 
     const isExpensive = !!(
       query.q ||
-      query.sortBy ||
+      query.sortBy === 'nearby' ||
+      query.sortBy === 'hot' ||
       query.isOpen ||
       query.minLat
     );
@@ -27,7 +28,7 @@ export class SchoolRateLimitGuard implements CanActivate {
     let schoolAbbr: string | null = request.user?.schoolAbbr || null;
     let isLimited: boolean | null = request.user?.isSchoolLimited || null;
 
-    if (!schoolAbbr || isLimited) {
+    if (!schoolAbbr || isLimited === null) {
       const authHeader = request.headers.authorization;
       if (authHeader?.startsWith('Bearer ')) {
         const token = authHeader.split(' ')[1];
@@ -37,7 +38,7 @@ export class SchoolRateLimitGuard implements CanActivate {
       }
     }
 
-    if (schoolAbbr && isLimited) {
+    if (schoolAbbr && isLimited !== null) {
       const isAllowed = await this.rateLimitService.checkSchoolQuota(
         schoolAbbr,
         Number(env('SCHOOL_FUNC_SHOPS_LIMIT')),
