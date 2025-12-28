@@ -21,7 +21,7 @@ async function bootstrap() {
 
   // app.set('trust proxy', 1);
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', { exclude: ['sitemap.xml'] });
 
   app.use(cookieParser());
 

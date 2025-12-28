@@ -7,7 +7,7 @@
     "generate-sitemap": "node scripts/generate-sitemap.js",
     "predev": "node scripts/sync-assets.js",
     "dev": "vite",
-    "build": "npm run generate-sitemap && tsc -b && vite build",
+    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "prebuild": "node scripts/sync-assets.js",
