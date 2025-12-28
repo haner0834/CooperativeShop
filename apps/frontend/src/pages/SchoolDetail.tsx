@@ -25,64 +25,11 @@ import { transformDtoToShop } from "../types/shop";
 import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
 import faqData from "@shared/jsons/faq.json";
 
-const mockSchool: School = {
-  id: "123",
-  name: "港明高中",
-  abbreviation: "kmsh",
-  loginMethod: "credential",
-  websiteUrl: "http://www.kmsh.tn.edu.tw",
-  instagramAccount: "kmsa_116th",
-  shops: [
-    {
-      id: "shop1",
-      title: "商店",
-      description: "屁眼",
-      contactInfo: [],
-      schoolId: "123",
-      schoolAbbr: "kmsh",
-      images: [
-        {
-          fileUrl: "https://images.cooperativeshops.org/kmsh.gif",
-          thumbnailUrl: "https://images.cooperativeshops.org/kmsh.gif",
-        },
-      ],
-      thumbnailLink: "https://image.cooperativeshops.org/kmsh.gif",
-      isOpen: false,
-      discount: null,
-      address: "Fuck you <3",
-      longitude: 0,
-      latitude: 0,
-      workSchedules: [],
-    },
-    {
-      id: "shop1",
-      title: "商店",
-      description: "屁眼",
-      contactInfo: [],
-      schoolId: "123",
-      schoolAbbr: "kmsh",
-      images: [
-        {
-          fileUrl: "https://images.cooperativeshops.org/kmsh.gif",
-          thumbnailUrl: "https://images.cooperativeshops.org/kmsh.gif",
-        },
-      ],
-      thumbnailLink: "https://image.cooperativeshops.org/kmsh.gif",
-      isOpen: false,
-      discount: null,
-      address: "Fuck you <3",
-      longitude: 0,
-      latitude: 0,
-      workSchedules: [],
-    },
-  ],
-};
-
 const SchoolDetail = () => {
   const { abbr: schoolAbbrParam } = useParams();
   const [schoolAbbr, setSchoolAbbr] = useState(schoolAbbrParam);
   const { activeUserRef, restorePromise } = useAuth();
-  const [school, setSchool] = useState<School | null>(mockSchool);
+  const [school, setSchool] = useState<School | null>(null);
   const [showSidebar, setShowSidebar] = useState(false);
 
   const { showModal } = useModal();
@@ -102,6 +49,7 @@ const SchoolDetail = () => {
       setSchoolAbbr(activeUserRef.current?.schoolAbbr);
       return activeUserRef.current?.schoolAbbr;
     }
+    return schoolAbbrParam;
   };
 
   const fetchSchool = async (schoolAbbr: string | undefined) => {
