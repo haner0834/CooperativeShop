@@ -715,7 +715,7 @@ const Shops = () => {
           {isMobile &&
             isSearchFocused &&
             searchInput &&
-            (!true ? (
+            (!hasExceedLimit ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
