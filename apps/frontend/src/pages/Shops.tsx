@@ -126,7 +126,7 @@ const Shops = () => {
   const [hasMore, setHasMore] = useState(true);
   const [previewResults, setPreviewResults] = useState<Shop[]>([]);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
-  const [hasExceedLimit, setHasExceedLimit] = useState(true);
+  const [hasExceedLimit, setHasExceedLimit] = useState(false);
   const LIMIT = 12;
 
   const searchInputRef = useRef<HTMLInputElement>(null);
