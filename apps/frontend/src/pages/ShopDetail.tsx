@@ -40,6 +40,9 @@ import { path } from "../utils/path";
 import { useModal } from "../widgets/ModalContext";
 import { getErrorMessage } from "../utils/errors";
 import PageMeta, { routesMeta } from "../widgets/PageMeta";
+import { useInteraction } from "../contexts/InteractionProvider";
+import { useAuthFetch } from "../auth/useAuthFetch";
+import { useAuth } from "../auth/AuthContext";
 
 const getCurrentMinOfDay = () => {
   const now = new Date();
@@ -256,6 +259,37 @@ export const ShopDetailContent = ({
   const [isSaved, setIsSaved] = useState(false);
   const [isContactSheetOpen, setIsContactSheetOpen] = useState(false);
 
+  const { addInteraction } = useInteraction();
+  const { authedFetch } = useAuthFetch();
+  const { activeUserRef } = useAuth();
+
+  useEffect(() => {
+    if (!shop) return;
+
+    addInteraction(shop.id, "viewCount");
+
+    let startTime = Date.now();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        const duration = Math.floor((Date.now() - startTime) / 1000);
+        if (duration > 0) addInteraction(shop.id, "viewTimeSec", duration);
+      } else {
+        startTime = Date.now();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [shop?.id]);
+
+  const handleTap = () => {
+    addInteraction(shop!.id, "tapCount");
+  };
+
   // Status Logic
   const status: OperatingStatus = useMemo(() => {
     if (!shop) return "CLOSED";
@@ -291,16 +325,19 @@ export const ShopDetailContent = ({
   };
 
   const copyAddress = () => {
+    handleTap();
     copyText(shop?.address);
   };
 
   const copyLink = () => {
+    handleTap();
     const link = window.location.href;
     copyText(link);
   };
 
-  const handleSave = () => {
-    if (true) {
+  const toggleSave = async () => {
+    handleTap();
+    if (isPreview) {
       showToast({
         title: "預覽模式無法收藏",
         placement: "top",
@@ -308,20 +345,41 @@ export const ShopDetailContent = ({
       });
       return;
     }
-    //TODO: Add actual api
-    setIsSaved(!isSaved);
-    showToast({
-      title: isSaved ? "已取消收藏" : "已收藏",
-      icon: (
-        <Bookmark
-          size={16}
-          className={!isSaved ? "fill-primary text-primary" : ""}
-        />
-      ),
-    });
+
+    setIsSaved((prev) => !prev);
+    try {
+      if (!activeUserRef.current) {
+        throw new Error("LOGIN_FIRST");
+      }
+      if (!shop) throw new Error("SHOP_NOT_FOUND");
+      const {
+        success,
+        data,
+        error: _,
+      } = await authedFetch(path(`/api/shops/${shop.id}/save`), {
+        method: "POST",
+      });
+      if (!success) setIsSaved((prev) => !prev);
+      setIsSaved(data.saved);
+    } catch (err: any) {
+      setIsSaved((prev) => !prev);
+      const target = "/shops";
+      showToast({
+        title: "請先登入帳號",
+        replace: true,
+        buttons: [
+          {
+            label: "繼續",
+            variant: "btn-primary",
+            onClick: () => navigate(`/choose-school?to=${target})}`),
+          },
+        ],
+      });
+    }
   };
 
   const openContactInfoSheet = () => {
+    handleTap();
     setIsContactSheetOpen((prev) => !prev);
   };
 
@@ -460,7 +518,7 @@ export const ShopDetailContent = ({
         <div className="flex items-center gap-2">
           <ActionButton
             icon={Bookmark}
-            onClick={handleSave}
+            onClick={toggleSave}
             active={isSaved}
             variant="ghost"
           />
@@ -482,7 +540,10 @@ export const ShopDetailContent = ({
                 src={shop?.images[activeImgIndex].thumbnailUrl}
                 alt="Shop Cover"
                 className="w-full h-full object-cover lg:object-center transition-transform duration-700 hover:scale-105"
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  handleTap();
+                  setIsModalOpen(true);
+                }}
                 itemProp="image"
               />
 
@@ -534,7 +595,10 @@ export const ShopDetailContent = ({
 
               {/* View All Button */}
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  handleTap();
+                  setIsModalOpen(true);
+                }}
                 className="absolute bottom-4 right-4 bg-black/50 hover:bg-black/70 backdrop-blur-md text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
               >
                 <ImageOff className="w-3.5 h-3.5" />
@@ -649,14 +713,17 @@ export const ShopDetailContent = ({
           <div className="lg:hidden h-20" /> {/* Spacer */}
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-base-100/90 backdrop-blur-xl border-t border-base-200 z-30 lg:hidden flex gap-3 safe-area-bottom pwa:pb-[34pt]">
             <button
-              onClick={() => navigate("/shops/map")}
+              onClick={() => {
+                handleTap();
+                navigate("/shops/map");
+              }}
               className="btn btn-primary flex-1 rounded-xl shadow-lg shadow-primary/20"
             >
               地圖中開啟
             </button>
             <button
               className="btn btn-square btn-ghost rounded-xl bg-base-200/50"
-              onClick={handleSave}
+              onClick={toggleSave}
             >
               <Bookmark
                 className={isSaved ? "fill-current text-primary" : ""}

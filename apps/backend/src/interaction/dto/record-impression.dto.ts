@@ -8,3 +8,12 @@ export class RecordImpressionDto {
   @IsOptional()
   deviceId?: string;
 }
+
+export class BatchRecordImpressionDto {
+  @IsString({ each: true })
+  shopIds: string[];
+
+  @IsString()
+  @IsOptional()
+  deviceId?: string;
+}

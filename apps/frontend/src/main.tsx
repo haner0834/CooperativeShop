@@ -10,6 +10,7 @@ import { DeviceProvider } from "./widgets/DeviceContext.tsx";
 import { ModalProvider } from "./widgets/ModalContext.tsx";
 import { ToastProvider } from "./widgets/Toast/ToastProvider.tsx";
 import { PathHistoryProvider } from "./contexts/PathHistoryContext.tsx";
+import { InteractionProvider } from "./contexts/InteractionProvider.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -20,7 +21,9 @@ createRoot(document.getElementById("root")!).render(
             <ModalProvider>
               <NavbarButtonsProvider>
                 <ToastProvider defaultOptions={{ maxStack: 5 }}>
-                  <App />
+                  <InteractionProvider>
+                    <App />
+                  </InteractionProvider>
                 </ToastProvider>
               </NavbarButtonsProvider>
             </ModalProvider>
