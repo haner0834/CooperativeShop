@@ -10,19 +10,49 @@ import { InteractionService } from './interaction.service';
 import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
 import { BypassJwt } from 'src/common/decorators/bypass-jwt.decorator';
 import { IdentifierType } from '@prisma/client';
-import { RecordImpressionDto } from './dto/record-impression.dto';
+import {
+  BatchRecordImpressionDto,
+  RecordImpressionDto,
+} from './dto/record-impression.dto';
 import { RecordTapDto } from './dto/record-tap.dto';
 import { RecordViewTimeDto } from './dto/record-view-time.dto';
 import { RecordViewDto } from './dto/record-view.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { type UserPayload } from 'src/auth/types/auth.types';
 import { RateLimit } from 'src/rate-limit/rate-limit.decorator';
+import { BatchInteractionDto } from './dto/batch-interaction-batch';
 
 @Controller('interactions')
 @UseGuards(JwtAccessGuard)
 @BypassJwt()
 export class InteractionController {
   constructor(private interactionService: InteractionService) {}
+
+  @Post('batch')
+  @RateLimit({ uid: 100, did: 100 }) // 設定較寬鬆的額度給 batch
+  async recordBatch(
+    @CurrentUser() user: UserPayload | undefined,
+    @Body() dto: BatchInteractionDto,
+  ) {
+    const { identifier, identifierType } = this.getIdentifier(
+      user,
+      dto.deviceId,
+    );
+
+    await Promise.all(
+      dto.interactions.map((item) =>
+        this.interactionService.recordInteraction(
+          item.shopId,
+          identifier,
+          identifierType,
+          item.type,
+          item.value ?? 1,
+        ),
+      ),
+    );
+
+    return { recorded: true, count: dto.interactions.length };
+  }
 
   /**
    * POST /interactions/impressions

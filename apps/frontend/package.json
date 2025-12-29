@@ -29,6 +29,7 @@
     "qr-code-styling": "^1.9.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-intersection-observer": "^10.0.0",
     "react-lazy-load-image-component": "^1.6.3",
     "react-markdown": "^10.1.0",
     "react-qr-code": "^2.0.18",

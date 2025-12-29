@@ -72,7 +72,7 @@ const Hero = () => {
               <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
-              to="/schools"
+              to="/shops"
               className="btn btn-ghost rounded-full px-8 text-lg font-normal hover:bg-base-content/5 text-neutral/50"
             >
               查看合作店家
@@ -675,9 +675,9 @@ const Footer = () => {
             >
               合作校
             </Link>
-            {/* <Link to="/schools" className="hover:text-primary transition-colors">
+            <Link to="/shops" className="hover:text-primary transition-colors">
               合作商家
-            </Link> */}
+            </Link>
             <Link
               to="/qr-scanner"
               className="hover:text-primary transition-colors"

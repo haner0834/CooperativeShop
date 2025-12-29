@@ -5,12 +5,16 @@ import { path } from "../../utils/path";
 import { useEffect, useState } from "react";
 import { useAuthFetch } from "../../auth/useAuthFetch";
 import { useToast } from "../Toast/ToastProvider";
+import { useInView } from "react-intersection-observer";
+import { useInteraction } from "../../contexts/InteractionProvider";
 
 const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
   const [isSaved, setIsSaved] = useState(false);
   const { authedFetch } = useAuthFetch();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const { ref, inView } = useInView({ threshold: 0.5 });
+  const { addInteraction } = useInteraction();
 
   const toggleSave = async () => {
     setIsSaved((prev) => !prev);
@@ -45,8 +49,19 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
     setIsSaved(shop.isSaved ?? false);
   }, [shop.isSaved]);
 
+  useEffect(() => {
+    let timer: any;
+    if (inView) {
+      // 停留判定 300ms
+      timer = setTimeout(() => {
+        addInteraction(shop.id, "impressionCount");
+      }, 300);
+    }
+    return () => clearTimeout(timer);
+  }, [inView, shop.id]);
+
   return (
-    <Link to={`/shops/${shop.id}`} className="flex-none">
+    <Link to={`/shops/${shop.id}`} className="flex-none" ref={ref}>
       <article className="relative space-y-2 transition-transform ease-in-out duration-300 hover:scale-98">
         <img
           src={shop.thumbnailLink}
