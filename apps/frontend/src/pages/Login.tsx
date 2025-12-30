@@ -145,6 +145,10 @@ const CredentialLogin = () => {
     a();
   }, [searchParams]);
 
+  const handlePasswordChange = (password: string) => {
+    setPassword(password.replace(" ", "").trim());
+  };
+
   const select = (id: string) => {
     setSelectedSchool(id);
     searchParams.set("school", id);
@@ -230,7 +234,7 @@ const CredentialLogin = () => {
           <input
             type={isPasswordVisible ? "text" : "password"}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => handlePasswordChange(e.target.value)}
             minLength={mode === "register" ? 8 : 0}
             className="grow"
             placeholder="密碼"
