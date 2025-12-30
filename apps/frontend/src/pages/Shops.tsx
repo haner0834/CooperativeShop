@@ -123,7 +123,8 @@ const Shops = () => {
   const [shops, setShops] = useState<Shop[]>([]);
   const [recentShops, setRecentShops] = useState<Shop[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [offset, setOffset] = useState(0);
+  // const [offset, setOffset] = useState(0);
+  const offsetRef = useRef(0);
   const [hasMore, setHasMore] = useState(true);
   const [previewResults, setPreviewResults] = useState<Shop[]>([]);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
@@ -193,7 +194,7 @@ const Shops = () => {
         let endpoint = "/api/shops";
         let params: Record<string, any> = {
           limit: LIMIT,
-          offset: isLoadMore ? offset : 0,
+          offset: isLoadMore ? offsetRef.current : 0,
         };
 
         // 處理不同 Type 的 API 參數
@@ -272,7 +273,11 @@ const Shops = () => {
         }
 
         // Update Offset for next call
-        setOffset((prev) => (isLoadMore ? prev + LIMIT : LIMIT));
+        if (isLoadMore) {
+          offsetRef.current += LIMIT;
+        } else {
+          offsetRef.current = LIMIT;
+        }
 
         return fetchedShops; // Return for chaining
       } catch (err: any) {
@@ -290,7 +295,7 @@ const Shops = () => {
         setIsLoading(false);
       }
     },
-    [currentType, searchQuery, isOpenFilter, offset, isLoading]
+    [currentType, searchQuery, isOpenFilter, offsetRef.current, isLoading]
   );
 
   // --- Effects ---
@@ -298,7 +303,7 @@ const Shops = () => {
   // 1. Reset fetch when filters/type change
   useEffect(() => {
     // 當 URL 參數改變導致邏輯改變時，重置並重新抓取
-    setOffset(0);
+    offsetRef.current = 0;
     setHasMore(true);
     setShops([]); // Clear current list to show skeleton
 
@@ -434,7 +439,7 @@ const Shops = () => {
 
   useEffect(() => {
     setShops([]);
-    setOffset(0);
+    offsetRef.current = 0;
     setHasMore(true);
     fetchShops(false);
   }, [currentType, searchQuery, isOpenFilter]);

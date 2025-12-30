@@ -33,10 +33,10 @@ export class RateLimitService {
 
     if (userId) {
       targetKey = `rl:user:${userId}`;
-      targetLimit = limitConfig?.uid ?? 100;
+      targetLimit = limitConfig?.uid ?? 300;
     } else if (deviceId) {
       targetKey = `rl:did:${deviceId}`;
-      targetLimit = limitConfig?.did ?? 50;
+      targetLimit = limitConfig?.did ?? 150;
 
       // to prevent a ip appear with 1000 of fake device id
       const enumKey = `rl:enum:${ip}`;
@@ -46,7 +46,7 @@ export class RateLimitService {
       }
 
       const currentUniqueDevices = await this.redis.scard(enumKey);
-      if (currentUniqueDevices > 300) {
+      if (currentUniqueDevices > 100) {
         // 觸發防禦：封鎖此 IP
         await this.blockIp(ip, 60 * 60, 'Device ID Enumeration Attack');
         return false;
