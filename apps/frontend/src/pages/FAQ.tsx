@@ -181,7 +181,7 @@ const FAQPage: React.FC = () => {
             </div>
           </div>
           {/* Footer Info */}
-          <div className="mt-12 p-6 bg-base-300 rounded-2xl border border-base-300 flex items-start gap-4">
+          <div className="mt-12 p-6 bg-base-200 rounded-2xl border border-base-100 flex items-start gap-4">
             <AlertCircle className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
             <div>
               <h4 className="font-bold">關於每日配額</h4>
