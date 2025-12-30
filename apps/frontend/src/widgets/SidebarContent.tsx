@@ -13,11 +13,13 @@ import {
   Ellipsis,
   BadgeQuestionMark,
   MessageCircleWarning,
+  ShieldAlert,
 } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 import ThemeToggle from "./ThemeToggle";
 import { useToast } from "./Toast/ToastProvider";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 
 // ✅ 受控 icon map，只包含實際會用到的 icons
 export const ICONS = {
@@ -46,6 +48,7 @@ export type MenuItem = {
   icon?: IconName;
   color?: string;
   children?: MenuItem[];
+  requireAuth?: boolean;
 
   match?: (location: Location) => boolean;
 };
@@ -106,18 +109,16 @@ export const menu: MenuItem[] = [
     children: [
       { label: "個人 QR", icon: "QrCode", href: "/home" },
       { label: "帳號中心", icon: "UserRoundCog" },
-      { label: "QR 掃描", icon: "ScanLine" },
+      // { label: "QR 掃描", icon: "ScanLine" },
       { label: "學校", icon: "School", href: "/schools/me" },
     ],
+    requireAuth: true, // as the father node set `true`, children has it default `true` unless explictly set
   },
   {
     label: "其他",
     icon: "Ellipsis",
     color: "text-gray-400",
-    children: [
-      { label: "FAQ", icon: "BadgeQuestionMark", href: "/faq" },
-      { label: "問題回報", icon: "MessageCircleWarning" },
-    ],
+    children: [{ label: "FAQ", icon: "BadgeQuestionMark", href: "/faq" }],
   },
 ];
 
@@ -137,9 +138,11 @@ export const Icon = ({
 const SidebarItem = ({
   item,
   disabled = false,
+  requireAuth = false,
 }: {
   item: MenuItem;
   disabled: boolean;
+  requireAuth?: boolean;
 }) => {
   const { showToast } = useToast();
   const hintUserTheyreInPreviewMode = () => {
@@ -154,11 +157,35 @@ const SidebarItem = ({
       location.pathname ===
         new URL(item.href, window.location.origin).pathname);
 
+  const { activeUserRef } = useAuth();
+  const navigate = useNavigate();
+
+  const hintUserToLoginForProtectedLink = () => {
+    const target = "/shops";
+    const url = `/choose-school?to=${encodeURIComponent(target)}`;
+    showToast({
+      title: "登入以解鎖功能",
+      icon: <ShieldAlert className="text-warning" />,
+      buttons: [
+        {
+          label: "登入",
+          onClick: () => navigate(url),
+        },
+      ],
+      placement: "top-left",
+    });
+  };
+
   return (
     <>
       <li>
         {disabled ? (
           <button onClick={hintUserTheyreInPreviewMode}>
+            <Icon name={item.icon} color={item.color} />
+            {item.label}
+          </button>
+        ) : (item.requireAuth ?? requireAuth) && !activeUserRef.current ? (
+          <button onClick={hintUserToLoginForProtectedLink}>
             <Icon name={item.icon} color={item.color} />
             {item.label}
           </button>
@@ -180,7 +207,12 @@ const SidebarItem = ({
           <div className="self-stretch w-[1.5px] bg-neutral/10" />
           <ul className="w-full">
             {item.children.map((child, i) => (
-              <SidebarItem key={i} item={child} disabled={disabled} />
+              <SidebarItem
+                key={i}
+                item={child}
+                disabled={disabled}
+                requireAuth={item.requireAuth}
+              />
             ))}
           </ul>
         </div>

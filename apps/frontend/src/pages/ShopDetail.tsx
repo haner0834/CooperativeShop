@@ -527,7 +527,7 @@ export const ShopDetailContent = ({
       </nav>
 
       <Sidebar isOpen={false}>
-        <SidebarContent disabled={true} />
+        <SidebarContent disabled={isPreview} />
       </Sidebar>
 
       <div className="pt-16 lg:pl-64 min-h-screen flex flex-col lg:flex-row">

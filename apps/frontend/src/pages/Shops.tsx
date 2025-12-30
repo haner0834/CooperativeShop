@@ -166,7 +166,7 @@ const Shops = () => {
           }
         } catch (err: any) {
           const target = "/shops";
-          const url = `/choose-school?to=${encodeURI(target)}`;
+          const url = `/choose-school?to=${encodeURIComponent(target)}`;
           showModal({
             title: `請先登入帳號以查看${
               currentType === "nearby" ? "附近店家" : "收藏店家"
@@ -335,7 +335,7 @@ const Shops = () => {
       const isLoggedIn = localStorage.getItem("isLoggedIn");
       if (isLoggedIn) {
         const target = "/shops";
-        const url = `/choose-school?to=${encodeURI(target)}`;
+        const url = `/choose-school?to=${encodeURIComponent(target)}`;
         showToast({
           title: "登入失敗，請重新登入",
           icon: <AlertCircle className="text-error" />,
