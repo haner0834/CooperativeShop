@@ -84,6 +84,7 @@ export const menu: MenuItem[] = [
         match: (loc) =>
           loc.pathname === "/shops" &&
           new URLSearchParams(loc.search).get("type") === "saved",
+        requireAuth: true,
       },
       {
         label: "附近商家",
@@ -92,6 +93,7 @@ export const menu: MenuItem[] = [
         match: (loc) =>
           loc.pathname === "/shops" &&
           new URLSearchParams(loc.search).get("type") === "nearby",
+        requireAuth: true,
       },
       { label: "商家地圖", href: "/shops/map", icon: "Map" },
     ],

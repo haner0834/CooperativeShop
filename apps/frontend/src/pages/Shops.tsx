@@ -151,43 +151,57 @@ const Shops = () => {
     });
   };
 
+  // Helper to handle unauthorized access to expensive features
+  const handleAuthCheck = useCallback(
+    async (featureName: string) => {
+      try {
+        if (restorePromise) {
+          const result = await restorePromise;
+          if (!result.ok) throw new Error("");
+          return true; // Auth restored successfully
+        } else {
+          throw new Error("");
+        }
+      } catch (err: any) {
+        const target = "/shops";
+        const url = `/choose-school?to=${encodeURIComponent(target)}`;
+        showToast({
+          title: `請先登入帳號以${featureName}`,
+          buttons: [
+            {
+              label: "繼續",
+              variant: "btn-primary",
+              onClick: () => navigate(url),
+            },
+          ],
+        });
+        return false; // Auth failed
+      }
+    },
+    [restorePromise, goBack, navigate, showModal]
+  );
+
   const fetchShops = useCallback(
     async (isLoadMore = false) => {
       if (isLoading) return;
-      if (
-        (currentType === "saved" || currentType === "nearby") &&
-        !activeUserRef.current
-      ) {
-        try {
-          if (restorePromise) {
-            const result = await restorePromise;
-            if (!result.ok) throw new Error("");
-          } else {
-            throw new Error("");
-          }
-        } catch (err: any) {
-          const target = "/shops";
-          const url = `/choose-school?to=${encodeURIComponent(target)}`;
-          showModal({
-            title: `請先登入帳號以查看${
-              currentType === "nearby" ? "附近店家" : "收藏店家"
-            }`,
-            buttons: [
-              {
-                label: "返回",
-                onClick: () => goBack(),
-              },
-              {
-                label: "繼續",
-                role: "primary",
-                style: "btn-primary",
-                onClick: () => navigate(url),
-              },
-            ],
-          });
-          return;
-        }
+
+      // --- Security / Expensive API Check ---
+      const isExpensiveView =
+        currentType === "saved" || currentType === "nearby";
+      const isExpensiveFilter = !!searchQuery || isOpenFilter;
+
+      if ((isExpensiveView || isExpensiveFilter) && !activeUserRef.current) {
+        let featureName = "查看內容";
+        if (currentType === "nearby") featureName = "查看附近店家";
+        if (currentType === "saved") featureName = "查看收藏店家";
+        if (searchQuery) featureName = "使用搜尋功能";
+        if (isOpenFilter) featureName = "使用篩選功能";
+
+        const isAuthRestored = await handleAuthCheck(featureName);
+        if (!isAuthRestored) return; // Stop execution if auth failed/not present
       }
+      // --------------------------------------
+
       setIsLoading(true);
 
       try {
@@ -295,7 +309,14 @@ const Shops = () => {
         setIsLoading(false);
       }
     },
-    [currentType, searchQuery, isOpenFilter, offsetRef.current, isLoading]
+    [
+      currentType,
+      searchQuery,
+      isOpenFilter,
+      offsetRef.current,
+      isLoading,
+      handleAuthCheck,
+    ]
   );
 
   // --- Effects ---
@@ -358,6 +379,13 @@ const Shops = () => {
   // 處理按下 Enter
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Auth Check for Search Action
+    if (!activeUserRef.current) {
+      handleAuthCheck("使用搜尋功能");
+      return;
+    }
+
     updateQuery({ q: searchInput });
 
     // 在 Mobile 上，我們希望 Enter 後鍵盤收起但搜尋欄不消失
@@ -405,6 +433,14 @@ const Shops = () => {
         setPreviewResults([]);
         return;
       }
+
+      // Expensive API check for live preview: if not logged in, don't fetch preview
+      if (!activeUserRef.current) {
+        // We don't show modal here to avoid annoying popups while typing.
+        // The modal will appear when they try to "Submit" the search.
+        return;
+      }
+
       if (hasExceedLimit) return;
 
       setIsPreviewLoading(true);
@@ -414,15 +450,8 @@ const Shops = () => {
           limit: 10,
         };
 
-        let resData = undefined;
         const apiRoute = `${path("/api/shops")}?${new URLSearchParams(params)}`;
-        if (activeUserRef.current) {
-          resData = await authedFetch(apiRoute);
-        } else {
-          const res = await fetch(apiRoute);
-          const data = await res.json();
-          resData = data;
-        }
+        const resData = await authedFetch(apiRoute);
         if (resData.success) {
           setPreviewResults(resData.data.map(transformDtoToShop));
         }
@@ -513,9 +542,16 @@ const Shops = () => {
                         setTimeout(() => setIsSearchFocused(false), 300);
                       }}
                       onChange={(e) => setSearchInput(e.target.value)}
-                      onKeyDown={(e) =>
-                        e.key === "Enter" && updateQuery({ q: searchInput })
-                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          if (!activeUserRef.current) {
+                            e.preventDefault();
+                            handleAuthCheck("使用搜尋功能");
+                            return;
+                          }
+                          updateQuery({ q: searchInput });
+                        }
+                      }}
                       placeholder="搜尋"
                     />
                     <kbd className="kbd kbd-sm rounded-sm opacity-50">⌘ K</kbd>
@@ -545,6 +581,10 @@ const Shops = () => {
                               onClick={() => navigate(`/shops/${shop.id}`)}
                             />
                           ))
+                        ) : !activeUserRef.current ? (
+                          <div className="p-4 text-center opacity-50 text-sm">
+                            登入後即可即時搜尋
+                          </div>
                         ) : (
                           <div className="p-4 text-center opacity-50 text-sm">
                             沒有結果
@@ -639,12 +679,17 @@ const Shops = () => {
               <li>
                 <a
                   className="flex justify-between items-center"
-                  onClick={
-                    () =>
-                      isOpenFilter
-                        ? updateQuery({ isOpen: null }) // 取消 filter
-                        : updateQuery({ isOpen: "true" }) // 開啟 filter
-                  }
+                  onClick={() => {
+                    // Auth Check for Filter
+                    if (!activeUserRef.current) {
+                      handleAuthCheck("使用篩選功能");
+                      return;
+                    }
+
+                    isOpenFilter
+                      ? updateQuery({ isOpen: null }) // 取消 filter
+                      : updateQuery({ isOpen: "true" }); // 開啟 filter
+                  }}
                 >
                   <span className="flex items-center gap-1">
                     <Clock size={16} /> 營業中
@@ -733,6 +778,16 @@ const Shops = () => {
                   {isPreviewLoading ? (
                     <div className="flex justify-center p-10">
                       <span className="loading loading-dots"></span>
+                    </div>
+                  ) : !activeUserRef.current ? (
+                    <div className="p-4 flex flex-col items-center gap-2 mt-4 opacity-50">
+                      <span>請登入以使用即時搜尋</span>
+                      <button
+                        className="btn btn-sm btn-outline"
+                        onClick={() => handleAuthCheck("使用搜尋功能")}
+                      >
+                        登入
+                      </button>
                     </div>
                   ) : (
                     previewResults.map((shop, i) => (
