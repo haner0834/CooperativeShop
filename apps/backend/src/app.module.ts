@@ -20,6 +20,7 @@ import { RateLimitGuard } from './rate-limit/rate-limit.guard';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { env } from './common/utils/env.utils';
 import { SitemapModule } from './site-map/site-map.module';
+import { DeviceCookieInterceptor } from './rate-limit/device-cookie.interceptor';
 
 @Module({
   imports: [
@@ -46,6 +47,10 @@ import { SitemapModule } from './site-map/site-map.module';
     {
       provide: APP_GUARD,
       useClass: RateLimitGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: DeviceCookieInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,
