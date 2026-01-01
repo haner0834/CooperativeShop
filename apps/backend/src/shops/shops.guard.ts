@@ -13,6 +13,7 @@ export class SchoolRateLimitGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
+    const response = context.switchToHttp().getResponse();
     const query = request.query;
 
     const isExpensive = !!(
@@ -24,6 +25,8 @@ export class SchoolRateLimitGuard implements CanActivate {
     );
 
     if (!isExpensive) return true;
+
+    response.header('X-Expensive-Query', '1');
 
     let schoolAbbr: string | null = request.user?.schoolAbbr || null;
     let isLimited: boolean | null = request.user?.isSchoolLimited || null;
@@ -45,12 +48,15 @@ export class SchoolRateLimitGuard implements CanActivate {
 
     if (isLimited) return true;
 
-    const isAllowed = await this.rateLimitService.checkSchoolQuota(
+    const { allowed, remaining } = await this.rateLimitService.checkSchoolQuota(
       schoolAbbr,
       Number(env('SCHOOL_FUNC_SHOPS_LIMIT')),
     );
 
-    if (!isAllowed) {
+    response.header('X-School-Quota-Checked', '1');
+    response.header('X-School-Quota-Remaining', String(remaining));
+
+    if (!allowed) {
       throw new TooManyRequestsError(
         60,
         'SCHOOL_QUOTA_EXCEEDED',

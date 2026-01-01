@@ -105,22 +105,25 @@ export class RateLimitService {
   async checkSchoolQuota(
     schoolAbbr: string,
     dailyLimit: number = 150,
-  ): Promise<boolean> {
-    const today = new Date().toISOString().split('T')[0]; // 格式: 2023-10-27
+  ): Promise<{
+    allowed: boolean;
+    remaining: number;
+  }> {
+    const today = new Date().toISOString().split('T')[0];
     const key = `rl:school:${schoolAbbr}:${today}`;
 
     const current = await this.redis.incr(key);
 
     if (current === 1) {
-      // 第一次點擊時設定過期時間 (24小時)
       await this.redis.expire(key, 24 * 60 * 60);
     }
 
-    if (current > dailyLimit) {
-      return false;
-    }
+    const remaining = Math.max(dailyLimit - current, 0);
 
-    return true;
+    return {
+      allowed: current <= dailyLimit,
+      remaining,
+    };
   }
 
   private async blockIp(ip: string, ttl: number, reason: string) {
