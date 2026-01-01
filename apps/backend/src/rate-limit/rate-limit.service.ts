@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Redis } from 'ioredis';
 import { InjectRedis } from '@nestjs-modules/ioredis';
+import { env } from 'src/common/utils/env.utils';
+import * as crypto from 'crypto';
 
 /**
  * @default uid 100
@@ -11,12 +13,27 @@ export interface RateLimitConfig {
   uid?: number;
   did?: number;
   global?: number;
+  isolateScope?: string; // Add this
+}
+
+export enum TrustLevel {
+  UNTRUSTED = 0, // No ID
+  DEVICE_HEADER = 1, // Header only (Unverified)
+  DEVICE_COOKIE = 2, // Cookie Verified
+  AUTHENTICATED = 3, // User Logged in
 }
 
 @Injectable()
 export class RateLimitService {
   private readonly logger = new Logger(RateLimitService.name);
+  private readonly HMAC_SECRET = env('DEVICE_ID_HMAC_SECRET');
   constructor(@InjectRedis() private readonly redis: Redis) {}
+
+  signDeviceId(deviceId: string): string {
+    const hmac = crypto.createHmac('sha256', this.HMAC_SECRET);
+    hmac.update(deviceId);
+    return `${deviceId}.${hmac.digest('hex')}`;
+  }
 
   async checkAccess(
     ip: string,
