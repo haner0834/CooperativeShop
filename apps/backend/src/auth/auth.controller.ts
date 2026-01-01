@@ -211,7 +211,7 @@ export class AuthController {
     await this.handleAuthSuccess(res, user, deviceId);
 
     // 重定向到前端
-    const frontendUrl = env('FRONTEND_URL', '/home');
+    const frontendUrl = env('FRONTEND_URL', '/shops');
 
     return res.redirect(redirectUrl ? redirectUrl : frontendUrl);
   }

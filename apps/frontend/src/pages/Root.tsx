@@ -12,7 +12,7 @@ const Root = () => {
   });
 
   if (isLoggedIn) {
-    return <Navigate to={lastOpen ?? "/home"} replace />;
+    return <Navigate to={lastOpen ?? "/shops"} replace />;
   } else {
     return <Navigate to="/intro" replace />;
   }
