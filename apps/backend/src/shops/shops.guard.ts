@@ -46,7 +46,7 @@ export class SchoolRateLimitGuard implements CanActivate {
       }
     }
 
-    if (isLimited) return true;
+    if (!isLimited) return true;
 
     const { allowed, remaining } = await this.rateLimitService.checkSchoolQuota(
       schoolAbbr,
