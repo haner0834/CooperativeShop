@@ -41,7 +41,7 @@ const httpOnlyCookieOptions = {
 } as const;
 
 @Controller('auth')
-@RateLimit({ uid: 20, did: 20, global: 150 })
+@RateLimit({ uid: 20, did: 20, global: 150, isolateScope: 'auth' })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -58,7 +58,7 @@ export class AuthController {
   }
 
   @Post('register')
-  @RateLimit({ uid: 5, did: 5, global: 100 })
+  @RateLimit({ uid: 5, did: 5, global: 100, isolateScope: 'auth:register' })
   @HttpCode(HttpStatus.CREATED)
   async register(
     @Body() registerDto: RegisterDto,
@@ -72,7 +72,7 @@ export class AuthController {
   }
 
   @Post('login')
-  @RateLimit({ uid: 5, did: 5, global: 100 })
+  @RateLimit({ uid: 5, did: 5, global: 100, isolateScope: 'auth:login' })
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() loginDto: LoginDto,
@@ -87,7 +87,7 @@ export class AuthController {
 
   @Post('logout')
   @UseGuards(JwtRefreshGuard)
-  @RateLimit({ uid: 5, did: 0, global: 20 })
+  @RateLimit({ uid: 5, did: 0, global: 20, isolateScope: 'auth:logout' })
   @HttpCode(HttpStatus.OK)
   async logout(
     @Req() req: express.Request,
@@ -110,7 +110,7 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @RateLimit({ uid: 30, did: 30, global: 200 })
+  @RateLimit({ uid: 30, did: 30, global: 200, isolateScope: 'auth:refresh' })
   async refreshToken(
     @Req() req: express.Request,
     @Headers('x-device-id') deviceId: string,
@@ -133,7 +133,7 @@ export class AuthController {
 
   @Post('restore')
   @HttpCode(HttpStatus.OK)
-  @RateLimit({ uid: 30, did: 30, global: 200 })
+  @RateLimit({ uid: 30, did: 30, global: 200, isolateScope: 'auth:restore' })
   @Log({ prefix: 'AuthController.restoreSession', logReturn: false })
   async restoreSession(
     @Req() req: express.Request,
@@ -154,7 +154,7 @@ export class AuthController {
 
   @Post('switch-account')
   @UseGuards(JwtAccessGuard)
-  @RateLimit({ uid: 15, did: 0, global: 100 })
+  @RateLimit({ uid: 15, did: 0, global: 100, isolateScope: 'auth:switch-acc' })
   @HttpCode(HttpStatus.OK)
   async switchAccount(
     @Body() switchAccountDto: SwitchAccountDto,
@@ -189,7 +189,12 @@ export class AuthController {
   }
 
   @Get('google/callback')
-  @RateLimit({ uid: 10, did: 10, global: 80 })
+  @RateLimit({
+    uid: 10,
+    did: 10,
+    global: 80,
+    isolateScope: 'auth:ggl-callback',
+  })
   @UseGuards(GoogleRedirectGuard)
   async googleCallback(
     @Req() req: express.Request,
