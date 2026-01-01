@@ -33,26 +33,29 @@ export class SchoolRateLimitGuard implements CanActivate {
       if (authHeader?.startsWith('Bearer ')) {
         const token = authHeader.split(' ')[1];
         const decoded = this.tokenService.verifyAccessToken(token);
-        schoolAbbr = decoded?.schoolAbbr || null;
-        isLimited = decoded?.isSchoolLimited ?? true;
+        if (!decoded)
+          throw new AuthError('AUTH_REQUIRED', 'Login to access limited api');
+        schoolAbbr = decoded.schoolAbbr;
+        isLimited = decoded.isSchoolLimited;
+        request.user = decoded;
+      } else {
+        throw new AuthError('AUTH_REQUIRED', 'Login to access limited api');
       }
     }
 
-    if (schoolAbbr && isLimited !== null) {
-      const isAllowed = await this.rateLimitService.checkSchoolQuota(
-        schoolAbbr,
-        Number(env('SCHOOL_FUNC_SHOPS_LIMIT')),
-      );
+    if (isLimited) return true;
 
-      if (!isAllowed) {
-        throw new TooManyRequestsError(
-          60,
-          'SCHOOL_QUOTA_EXCEEDED',
-          '該學校今日的進階搜尋配額（150次）已用罄，請明日再試或使用基礎瀏覽功能。',
-        );
-      }
-    } else {
-      throw new AuthError('AUTH_REQUIRED', 'Login to access limited api');
+    const isAllowed = await this.rateLimitService.checkSchoolQuota(
+      schoolAbbr,
+      Number(env('SCHOOL_FUNC_SHOPS_LIMIT')),
+    );
+
+    if (!isAllowed) {
+      throw new TooManyRequestsError(
+        60,
+        'SCHOOL_QUOTA_EXCEEDED',
+        '該學校今日的進階搜尋配額（150次）已用罄，請明日再試或使用基礎瀏覽功能。',
+      );
     }
 
     return true;
