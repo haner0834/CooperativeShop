@@ -48,19 +48,31 @@ export const validateInstagram = (input: string): string => {
 export const formatFacebook = (input: string): string => {
   if (!input) return "";
   let value = input.trim();
+  // https://www.facebook.com/share/:id/?mibextid=<XXX>
 
-  // Handle full URLs
-  value = value
-    .replace(/^https?:\/\/(www\.)?facebook\.com\//i, "")
-    .replace(/\/$/, "");
+  try {
+    // 1. 處理完整的 URL，移除網域部分
+    // 使用正則表達式相容性更高，移除 https://www.facebook.com/ 等
+    value = value.replace(/^https?:\/\/(www\.)?facebook\.com\//i, "");
 
-  // Remove query params like ?id=...
-  value = value.split("?")[0];
+    // 2. 移除查詢參數 (例如 ?mibextid=...)
+    value = value.split("?")[0];
 
-  // Keep valid ID characters
-  value = value.replace(/[^a-zA-Z0-9._]/g, "");
+    // 3. 針對分享連結格式 /share/:id/ 進行提取
+    // 如果路徑包含 share/，則取出它後面的那一段
+    const shareMatch = value.match(/share\/([a-zA-Z0-9._]+)/i);
+    if (shareMatch && shareMatch[1]) {
+      return shareMatch[1];
+    }
 
-  return value;
+    // 4. 處理一般路徑或剩餘部分 (例如直接傳入 username 或 profile.php)
+    // 移除結尾的斜線並過濾不合法字元
+    value = value.replace(/\/$/, "").replace(/[^a-zA-Z0-9._]/g, "");
+
+    return value;
+  } catch (e) {
+    return "";
+  }
 };
 
 export const validateFacebook = (input: string): string =>
@@ -288,7 +300,7 @@ export const hrefBuilders: Record<ContactCategory, (value: string) => string> =
   {
     "phone-number": (v) => `tel:${v}`,
     instagram: (v) => `https://www.instagram.com/${v}`,
-    facebook: (v) => `https://www.facebook.com/${v}`,
+    facebook: (v) => `https://www.facebook.com/share/${v}`,
     line: (v) => `https://line.me/R/ti/p/@${v}`,
     website: (v) => `https://${v}`,
     other: otherHrefBuilder,
