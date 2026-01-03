@@ -5,7 +5,7 @@ import {
 } from "../widgets/NavbarButtonsContext";
 import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
 import Logo from "@shared/app-icons/logo.jpg";
-import { Instagram, Github } from "@icons";
+import { Instagram, Github, Frog } from "@icons";
 import Marquee from "../widgets/Marquee";
 import {
   motion,
@@ -708,6 +708,18 @@ const Footer = () => {
             >
               <Github className="w-5 h-5" />
             </a>
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full bg-base-300 px-8 py-12">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
+          <div className="flex items-center gap-2 opacity-80">
+            <Frog className="w-12 h-12 rounded-2xl border border-black/20" />
+            <div className="flex flex-col">
+              <span className="text-xs opacity-70">created by</span>
+              <p className="text-lg font-bold">嘎嘎嘎</p>
+            </div>
           </div>
         </div>
       </div>
