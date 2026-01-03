@@ -724,13 +724,13 @@ const Footer = () => {
 
           <div className="flex items-center gap-2 opacity-80">
             <div className="w-12 h-12 rounded-2xl bg-base-100 border  border-black/20">
-              <p className="flex items-center justify-center text-2xl h-full">
+              <p className="flex items-center justify-center text-2xl h-full animate-ping">
                 🍔
               </p>
             </div>
             <div className="flex flex-col">
               <span className="text-xs opacity-70">supported by</span>
-              <p className="text-lg font-bold">蕭言翰</p>
+              <p className="text-lg font-bold animate-spin">蕭言翰</p>
             </div>
           </div>
         </div>
