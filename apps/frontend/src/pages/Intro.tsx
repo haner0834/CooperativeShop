@@ -5,7 +5,7 @@ import {
 } from "../widgets/NavbarButtonsContext";
 import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
 import Logo from "@shared/app-icons/logo.jpg";
-import { Instagram, Github, Frog } from "@icons";
+import { Instagram, Github, Frog, MidFinger } from "@icons";
 import Marquee from "../widgets/Marquee";
 import {
   motion,
@@ -863,6 +863,81 @@ const Footer = () => {
           </div>
 
           <BrokenSponsor />
+
+          <div
+            className="
+    group relative flex items-center gap-2 opacity-80
+    hover:scale-[3] hover:animate-spin transition-transform
+  "
+          >
+            <div
+              className="
+          absolute -inset-6 rounded-3xl
+          bg-gradient-to-r from-blue-500 via-cyan-500 to-red-600
+          blur-2xl
+          animate-pulse
+          group-hover:[animation-play-state:paused]
+        "
+            />
+            {/* Midfinger 容器 */}
+            <div
+              className="
+      relative
+      w-12 h-12
+      rounded-2xl
+      border border-black/20
+      overflow-hidden
+      animate-frog-breathe
+      group-hover:animate-frog-chaos
+    "
+            >
+              {/* 主圖片 */}
+              <MidFinger
+                className="
+        w-full h-full object-cover
+        animate-spin
+      "
+                // @ts-ignore
+                // style={{ "animation-direction": "reverse" }}
+              />
+
+              {/* 邊緣撕裂殘影 */}
+              <MidFinger
+                className="
+        absolute inset-0
+        w-full h-full object-cover
+        opacity-30
+        mix-blend-difference
+        animate-glitch
+        pointer-events-none
+      "
+              />
+            </div>
+
+            {/* 文字區 */}
+            <div className="flex flex-col">
+              <span
+                className="
+        text-xs opacity-70
+        animate-wiggle
+        group-hover:animate-text-lag-strong
+      "
+              >
+                supported by
+              </span>
+              <p
+                className="
+        text-lg font-bold
+        animate-text-lag-strong
+        group-hover:animate-text-wobble-strong
+        bg-gradient-to-r from-fuchsia-400 to-violet-500
+        bg-clip-text text-transparent
+      "
+              >
+                王譽甯
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
