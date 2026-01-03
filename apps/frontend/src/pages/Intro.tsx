@@ -5,7 +5,7 @@ import {
 } from "../widgets/NavbarButtonsContext";
 import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
 import Logo from "@shared/app-icons/logo.jpg";
-import { Instagram, Github } from "@icons";
+import { Instagram, Github, Frog } from "@icons";
 import Marquee from "../widgets/Marquee";
 import {
   motion,
@@ -646,6 +646,134 @@ const CTA = () => {
   );
 };
 
+function BrokenSponsor() {
+  useEffect(() => {
+    let last = performance.now();
+    let frames = 0;
+
+    function loop(now: number) {
+      frames++;
+      if (now - last >= 500) {
+        const fps = Math.round((frames * 1000) / (now - last));
+        document.documentElement.style.setProperty(
+          "--jitter",
+          String(Math.min(8, Math.max(1, 120 / fps)))
+        );
+        frames = 0;
+        last = now;
+      }
+      requestAnimationFrame(loop);
+    }
+
+    requestAnimationFrame(loop);
+  }, []);
+
+  return (
+    <div
+      className="
+        group relative flex items-center gap-4
+        animate-float
+        hover:[animation-play-state:paused]
+      "
+    >
+      {/* 光暈 */}
+      <div
+        className="
+          absolute -inset-6 rounded-3xl
+          bg-gradient-to-r from-pink-500/40 via-purple-500/40 to-cyan-500/40
+          blur-3xl
+          animate-pulse
+          group-hover:[animation-play-state:paused]
+        "
+      />
+
+      {/* 爆炸粒子 */}
+      {[...Array(12)].map((_, i) => (
+        <span
+          key={i}
+          className="
+      particle
+      absolute left-6 top-6
+      w-3 h-3 rounded-full
+      opacity-0
+      group-hover:opacity-100
+      group-hover:animate-particle
+    "
+          style={{
+            // @ts-ignore
+            "--angle": `${i * 30}deg`,
+            "--delay": `${i * 0.08}s`,
+          }}
+        >
+          💩
+        </span>
+      ))}
+
+      {/* icon */}
+      <div
+        className="
+          relative w-12 h-12 rounded-2xl
+          bg-base-100 border border-black/20
+          shadow-xl
+          animate-wiggle
+          group-hover:[animation-play-state:paused]
+        "
+      >
+        {/* 拖尾殘影 */}
+        {[...Array(4)].map((_, i) => (
+          <p
+            key={i}
+            className="
+              absolute inset-0 flex items-center justify-center
+              text-2xl opacity-20 blur-sm
+              animate-spin
+            "
+            style={{ animationDelay: `${i * 80}ms` }}
+          >
+            💩
+          </p>
+        ))}
+
+        <p
+          className="
+            relative flex items-center justify-center h-full
+            text-2xl
+            animate-ping
+            drop-shadow-[0_0_12px_rgba(0,0,0,0.6)]
+          "
+        >
+          💩
+        </p>
+      </div>
+
+      {/* 文字 */}
+      <div className="relative flex flex-col">
+        <span
+          className="
+            text-xs opacity-70 tracking-widest
+            animate-fade
+            group-hover:[animation-play-state:paused]
+          "
+        >
+          supported by
+        </span>
+
+        <p
+          className="
+            text-lg font-black
+            bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500
+            bg-clip-text text-transparent
+            animate-glitch
+            drop-shadow-[0_0_10px_rgba(255,0,0,0.7)]
+          "
+        >
+          吃大便不揪（楊心玥）
+        </p>
+      </div>
+    </div>
+  );
+}
+
 const Footer = () => {
   return (
     <footer className="bg-base-100 border-t border-base-200">
@@ -709,6 +837,32 @@ const Footer = () => {
               <Github className="w-5 h-5" />
             </a>
           </div>
+        </div>
+      </div>
+
+      <div className="w-full bg-base-200 px-8 py-12">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
+          <div className="flex items-center gap-2 opacity-80">
+            <Frog className="w-12 h-12 rounded-2xl border border-black/20" />
+            <div className="flex flex-col">
+              <span className="text-xs opacity-70">created by</span>
+              <p className="text-lg font-bold">嘎嘎嘎</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 opacity-80">
+            <div className="w-12 h-12 rounded-2xl bg-base-100 border  border-black/20">
+              <p className="flex items-center justify-center text-2xl h-full animate-ping">
+                🍔
+              </p>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs opacity-70">supported by</span>
+              <p className="text-lg font-bold animate-spin">蕭言翰</p>
+            </div>
+          </div>
+
+          <BrokenSponsor />
         </div>
       </div>
     </footer>
