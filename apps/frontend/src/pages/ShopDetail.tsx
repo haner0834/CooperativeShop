@@ -617,10 +617,15 @@ export const ShopDetailContent = ({
         <div className="flex-1 px-5 py-8 lg:px-10 lg:py-12 max-w-4xl mx-auto w-full">
           {/* Breadcrumbs / School Tag */}
           <div className="flex items-center gap-2 mb-4">
-            <span className="badge badge-neutral badge-soft">
-              <School className="w-3.5 h-3.5" />
-              {shop?.schoolAbbr || "Unknown"}
-            </span>
+            {shop && (
+              <Link
+                to={`/schools/${shop.schoolAbbr}`}
+                className="badge badge-neutral badge-soft"
+              >
+                <School className="w-3.5 h-3.5" />
+                {shop.schoolAbbr || "Unknown"}
+              </Link>
+            )}
 
             <span
               className="badge badge-info badge-soft cursor-pointer"
