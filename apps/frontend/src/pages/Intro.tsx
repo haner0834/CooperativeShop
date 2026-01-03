@@ -5,7 +5,7 @@ import {
 } from "../widgets/NavbarButtonsContext";
 import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
 import Logo from "@shared/app-icons/logo.jpg";
-import { Instagram, Github, Frog, MidFinger } from "@icons";
+import { Instagram, Github, Frog, WangAvatar } from "@icons";
 import Marquee from "../widgets/Marquee";
 import {
   motion,
@@ -892,17 +892,16 @@ const Footer = () => {
     "
             >
               {/* 主圖片 */}
-              <MidFinger
+              <WangAvatar
                 className="
         w-full h-full object-cover
-        animate-spin
+        animate-frog-glitch
+        group-hover:animate-spin
       "
-                // @ts-ignore
-                // style={{ "animation-direction": "reverse" }}
               />
 
               {/* 邊緣撕裂殘影 */}
-              <MidFinger
+              <WangAvatar
                 className="
         absolute inset-0
         w-full h-full object-cover
