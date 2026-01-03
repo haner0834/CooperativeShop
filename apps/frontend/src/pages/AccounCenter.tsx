@@ -55,7 +55,7 @@ interface Session {
 
 const UserAccountCenter = () => {
   const [showSidebar, setShowSidebar] = useState(false);
-  const [user, setUser] = useState<UserProfile | null>({
+  const [user] = useState<UserProfile | null>({
     id: "cuid_user_123",
     name: "王小明",
     email: "ming@example.com",
@@ -71,7 +71,7 @@ const UserAccountCenter = () => {
   const { showToast } = useToast();
   const { switchableAccounts, activeUser, switchAccount } = useAuth();
 
-  const [sessions, setSessions] = useState<Session[]>([
+  const [sessions] = useState<Session[]>([
     {
       id: "sess_1",
       deviceId: "abc_def",
