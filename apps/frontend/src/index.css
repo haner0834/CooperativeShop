@@ -72,3 +72,90 @@
 }
 
 @custom-variant pwa (@media (display-mode: standalone));
+
+@import "tailwindcss";
+
+@theme {
+  /* 定義 Keyframes */
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(-2deg);
+    }
+    50% {
+      transform: rotate(2deg);
+    }
+  }
+
+  @keyframes fade {
+    0%,
+    100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes glitch {
+    0% {
+      transform: translate(0);
+    }
+    20% {
+      transform: translate(-2px, 1px);
+    }
+    40% {
+      transform: translate(2px, -1px);
+    }
+    60% {
+      transform: translate(-3px, 0);
+    }
+    80% {
+      transform: translate(3px, 1px);
+    }
+    100% {
+      transform: translate(0);
+    }
+  }
+
+  /* 定義粒子動畫 Keyframes */
+  @keyframes particle {
+    0% {
+      transform: rotate(var(--angle)) translateX(0);
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(var(--angle)) translateX(42px);
+      opacity: 0;
+    }
+  }
+
+  /* 註冊為 Tailwind Animation Utility */
+  /* 這會自動生成 `animate-particle` class */
+  --animate-particle: particle 0.8s ease-out infinite;
+
+  /* 綁定動畫名稱 */
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-wiggle: wiggle calc(var(--jitter) * 0.15s) ease-in-out infinite;
+  --animate-fade: fade 2s ease-in-out infinite;
+  --animate-glitch: glitch calc(var(--jitter) * 0.12s) linear infinite;
+  /* --animate-particle: particle 0.6s ease-out forwards; */
+}
+
+/* 處理自定義變數與延遲 */
+@layer utilities {
+  /* 為了讓 HTML 乾淨，你可以保留這個 class 或是直接用任意值 class */
+  .particle-delay {
+    animation-delay: var(--delay);
+  }
+}
