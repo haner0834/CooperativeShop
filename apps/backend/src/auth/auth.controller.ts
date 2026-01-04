@@ -117,10 +117,12 @@ export class AuthController {
     @Res({ passthrough: true }) res: express.Response,
   ) {
     const refreshToken = req.cookies?.refreshToken;
+    const ipAddress = req.ip;
 
     const result = await this.authService.rotateRefreshToken(
       refreshToken,
       deviceId,
+      ipAddress,
     );
 
     res.cookie('refreshToken', result.refreshToken, {
@@ -157,14 +159,17 @@ export class AuthController {
   @RateLimit({ uid: 15, did: 0, global: 100, isolateScope: 'auth:switch-acc' })
   @HttpCode(HttpStatus.OK)
   async switchAccount(
+    @Req() req: express.Request,
     @Body() switchAccountDto: SwitchAccountDto,
     @Headers('x-device-id') deviceId: string,
     @Res({ passthrough: true }) res: express.Response,
     @CurrentUser() currentUser: UserPayload,
   ) {
+    const ipAddress = req.ip;
     const result = await this.authService.switchAccount(
       switchAccountDto.targetUserId,
       deviceId,
+      ipAddress,
     );
 
     res.cookie('refreshToken', result.refreshToken, {

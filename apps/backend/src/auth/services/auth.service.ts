@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { School, type User } from '@prisma/client';
+import { DeviceType, School, type User } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { validateStudentId } from '../../validators/studentId.validator';
 import { validateEmailAndStudentId } from '../../validators/email.validator';
@@ -14,11 +14,17 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { env } from 'src/common/utils/env.utils';
 import { TokenService } from './token.service';
 import { UserPayload } from '../types/auth.types';
+import { UAParser } from 'ua-parser-js';
 
 export interface GoogleProfile {
   id: string;
   displayName: string;
   email: string;
+}
+
+export interface AuthMeta {
+  ip?: string;
+  userAgent?: string;
 }
 
 @Injectable()
@@ -30,7 +36,7 @@ export class AuthService {
 
   private readonly SALT_ROUNDS = 10;
 
-  async authSuccess(user: User, deviceId: string) {
+  async authSuccess(user: User, deviceId: string, meta?: AuthMeta) {
     if (!deviceId) {
       throw new BadRequestError(
         'MISSING_DEVICE_ID',
@@ -67,11 +73,25 @@ export class AuthService {
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =
       await this.tokenService.generateTokens(payload);
 
+    const expiresAt = new Date(Date.now() + cookieMaxAge);
+
     // 建立或更新此設備的會話
     await this.prisma.authSession.upsert({
       where: { deviceId_accountId: { deviceId, accountId: account.id } },
-      create: { deviceId, accountId: account.id, hashedRefreshToken },
-      update: { hashedRefreshToken },
+      create: {
+        deviceId,
+        accountId: account.id,
+        hashedRefreshToken,
+        ipAddress: meta?.ip,
+        userAgent: meta?.userAgent,
+        ...this.parseUA(meta?.userAgent),
+        expiresAt,
+      },
+      update: {
+        hashedRefreshToken,
+        ipAddress: meta?.ip,
+        expiresAt,
+      },
     });
 
     // 取得此設備上所有已登入的帳號資訊
@@ -258,7 +278,11 @@ export class AuthService {
     }
   }
 
-  async rotateRefreshToken(tokenFromCookie: string, deviceId: string) {
+  async rotateRefreshToken(
+    tokenFromCookie: string,
+    deviceId: string,
+    ipAddress?: string,
+  ) {
     if (!tokenFromCookie)
       throw new UnauthorizedError('No refresh token provided.');
     if (!deviceId)
@@ -326,16 +350,22 @@ export class AuthService {
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =
       await this.tokenService.generateTokens(payload);
 
+    const expiresAt = new Date(Date.now() + cookieMaxAge);
+
     // 4. 更新資料庫
     await this.prisma.authSession.update({
       where: { id: session.id },
-      data: { hashedRefreshToken },
+      data: { hashedRefreshToken, expiresAt, ipAddress },
     });
 
     return { accessToken, refreshToken, cookieMaxAge };
   }
 
-  async switchAccount(targetUserId: string, deviceId: string) {
+  async switchAccount(
+    targetUserId: string,
+    deviceId: string,
+    ipAddress?: string,
+  ) {
     if (!targetUserId)
       throw new BadRequestError(
         'MISSING_TARGET_UID',
@@ -391,7 +421,7 @@ export class AuthService {
 
     await this.prisma.authSession.update({
       where: { id: targetSession.id },
-      data: { hashedRefreshToken },
+      data: { hashedRefreshToken, ipAddress },
     });
 
     return { accessToken, refreshToken, cookieMaxAge, user: payload };
@@ -446,5 +476,36 @@ export class AuthService {
     }
 
     return session.account.user;
+  }
+
+  private parseUA(uaString?: string) {
+    const parser = new UAParser(uaString);
+    return {
+      deviceType: this.parseDeviceType(parser),
+      browser: this.parseBrowserName(parser),
+    };
+  }
+
+  private parseDeviceType(parser: UAParser): DeviceType {
+    const device = parser.getDevice();
+    const os = parser.getOS().name;
+
+    if (os === 'iOS') {
+      if (device.model === 'iPad' || device.type === 'tablet') {
+        return 'IPAD';
+      }
+      return 'IPHONE';
+    }
+
+    if (os === 'Android') return 'ANDROID';
+    if (os === 'Windows') return 'WINDOWS';
+    if (os === 'Mac OS') return 'MAC';
+
+    return 'OTHER';
+  }
+
+  private parseBrowserName(parser: UAParser): string {
+    const browser = parser.getBrowser();
+    return browser.name ?? 'Unknown';
   }
 }
