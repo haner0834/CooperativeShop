@@ -249,6 +249,10 @@ const UserAccountCenter = () => {
       if (!res.success) {
         throw new Error(res.error.code);
       }
+      showToast({
+        title: "登出成功",
+        icon: <ShieldCheck className="text-success" />,
+      });
     } catch (e: any) {
       showModal({
         title: "無法登出該裝置",
