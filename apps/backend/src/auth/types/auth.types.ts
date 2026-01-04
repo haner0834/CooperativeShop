@@ -6,7 +6,12 @@ export interface UserPayload {
   name: string;
   schoolId: string;
   schoolAbbr: string;
+  schoolName: string;
   isSchoolLimited: boolean;
+  studentId?: string;
+  email?: string;
+  provider: 'google' | 'credentials';
+  joinAt: string;
 }
 
 export interface AuthRequest extends Request {

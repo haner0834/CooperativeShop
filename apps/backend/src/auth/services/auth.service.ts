@@ -46,11 +46,12 @@ export class AuthService {
 
     const account = await this.prisma.account.findFirst({
       where: { userId: user.id },
-      select: {
-        id: true,
+      include: {
         user: {
           include: {
-            school: { select: { abbreviation: true, isLimited: true } },
+            school: {
+              select: { abbreviation: true, isLimited: true, name: true },
+            },
           },
         },
       },
@@ -67,7 +68,12 @@ export class AuthService {
       name: user.name,
       schoolId: user.schoolId,
       schoolAbbr: account.user.school.abbreviation,
+      schoolName: account.user.school.name,
       isSchoolLimited: account.user.school.isLimited,
+      studentId: account.user.studentId ?? undefined,
+      email: account.user.email ?? undefined,
+      provider: account.provider as any,
+      joinAt: account.user.createAt.toISOString(),
     };
 
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =
@@ -306,17 +312,11 @@ export class AuthService {
         account: {
           select: {
             id: true,
+            providerAccountId: true,
+            provider: true,
             user: {
-              select: {
-                id: true,
-                name: true,
-                school: {
-                  select: {
-                    id: true,
-                    abbreviation: true,
-                    isLimited: true,
-                  },
-                },
+              include: {
+                school: true,
               },
             },
           },
@@ -345,7 +345,12 @@ export class AuthService {
       name: session.account.user.name,
       schoolId: session.account.user.school.id,
       schoolAbbr: session.account.user.school.abbreviation,
+      schoolName: session.account.user.school.name,
       isSchoolLimited: session.account.user.school.isLimited,
+      studentId: session.account.user.studentId ?? undefined,
+      email: session.account.user.email ?? undefined,
+      provider: session.account.provider as any,
+      joinAt: session.account.user.createAt.toISOString(),
     };
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =
       await this.tokenService.generateTokens(payload);
@@ -382,13 +387,13 @@ export class AuthService {
         account: {
           select: {
             id: true,
+            provider: true,
+            providerAccountId: true,
             user: {
-              select: {
-                id: true,
-                name: true,
-                schoolId: true,
+              include: {
                 school: {
                   select: {
+                    name: true,
                     abbreviation: true,
                     isLimited: true,
                   },
@@ -413,7 +418,12 @@ export class AuthService {
       name: user.name,
       schoolId: user.schoolId,
       schoolAbbr: user.school.abbreviation,
+      schoolName: user.school.name,
       isSchoolLimited: user.school.isLimited,
+      studentId: targetSession.account.user.studentId ?? undefined,
+      email: targetSession.account.user.email ?? undefined,
+      provider: targetSession.account.provider as any,
+      joinAt: targetSession.account.user.createAt.toISOString(),
     };
     // 這裡我們進行一次完整的輪換
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =
