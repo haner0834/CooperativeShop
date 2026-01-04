@@ -1,9 +1,8 @@
 // src/lib/http-interceptor.ts
 import axios from "axios";
 import { getDeviceId } from "../utils/device";
-import { path } from "../utils/path";
 
-const TARGET_ORIGIN = path("");
+const TARGET_ORIGIN = window.location.origin;
 const TARGET_PATH = "/api";
 
 /**
