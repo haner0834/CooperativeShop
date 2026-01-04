@@ -22,6 +22,8 @@ import { env } from './common/utils/env.utils';
 import { SitemapModule } from './site-map/site-map.module';
 import { DeviceCookieInterceptor } from './rate-limit/device-cookie.interceptor';
 import { AccountModule } from './account/account.module';
+import { DeviceIdGuard } from './device-id/device-id.guard';
+import { DeviceIdService } from './device-id/device-id.service';
 
 @Module({
   imports: [
@@ -46,6 +48,11 @@ import { AccountModule } from './account/account.module';
   providers: [
     AppService,
     RateLimitService,
+    DeviceIdService,
+    {
+      provide: APP_GUARD,
+      useClass: DeviceIdGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: RateLimitGuard,
