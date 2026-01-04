@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   User as UserIcon,
   School,
@@ -22,6 +22,7 @@ import {
   MonitorX,
   Contact,
   IdCard,
+  ShieldCheck,
 } from "lucide-react";
 import { SidebarContent } from "../widgets/SidebarContent";
 import Sidebar from "../widgets/Sidebar";
@@ -160,36 +161,7 @@ const UserAccountCenter = () => {
 
   const { authedFetch } = useAuthFetch();
 
-  const [sessions] = useState<Session[]>([
-    {
-      id: "sess_1",
-      deviceId: "abc_def",
-      deviceType: "iPhone",
-      updatedAt: "2023-12-28T12:00:00Z",
-      isCurrent: true,
-      ipAddress: "1.1.1.1",
-      browser: "Safari",
-      createdAt: new Date().toISOString(),
-      expiresAt: new Date().toISOString(),
-      userAgent: "Fuck You",
-      country: "Taiwan",
-      city: "Tainan",
-    },
-    {
-      id: "sess_2",
-      deviceId: "ghi_jkl",
-      deviceType: "Mac",
-      updatedAt: "2023-12-25T08:30:00Z",
-      isCurrent: false,
-      ipAddress: null,
-      browser: null,
-      createdAt: "",
-      expiresAt: null,
-      userAgent: null,
-      country: null,
-      city: null,
-    },
-  ]);
+  const [sessions, setSessions] = useState<Session[]>([]);
 
   const copyText = async (textToCopy: string | null | undefined) => {
     try {
@@ -205,6 +177,11 @@ const UserAccountCenter = () => {
         icon: <CircleX className="text-error" />,
       });
     }
+  };
+
+  const getSessions = async () => {
+    const res = await authedFetch(path("/api/account/sessions"));
+    setSessions(res.data);
   };
 
   const handleLogout = () => {
@@ -246,7 +223,7 @@ const UserAccountCenter = () => {
       );
       // res should be nothing
       // let's fuck it
-      if (!res.success) {
+      if (res.error) {
         throw new Error(res.error.code);
       }
       showToast({
@@ -267,6 +244,10 @@ const UserAccountCenter = () => {
       await switchAccount(id);
     }
   };
+
+  useEffect(() => {
+    getSessions();
+  }, []);
 
   return (
     <div className="min-h-screen bg-base-300 flex flex-col items-center pt-18">
