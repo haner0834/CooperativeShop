@@ -1,5 +1,5 @@
 import { Transform, Type } from 'class-transformer';
-import { IsString, IsDate } from 'class-validator';
+import { IsString, IsDate, IsBoolean } from 'class-validator';
 
 export class ResponseSessionDto {
   @IsString()
@@ -41,4 +41,7 @@ export class ResponseSessionDto {
 
   @IsString()
   userAgent: string | null;
+
+  @IsBoolean()
+  isCurrent: boolean;
 }

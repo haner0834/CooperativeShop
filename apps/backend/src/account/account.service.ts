@@ -17,7 +17,15 @@ export class AccountService {
 
   async updateMe() {}
 
-  async getSessions(userId: string): Promise<ResponseSessionDto[]> {
+  async getSessions(
+    userId: string,
+    deviceId: string,
+  ): Promise<ResponseSessionDto[]> {
+    const currentSession = await this.prisma.authSession.findFirst({
+      where: { deviceId, account: { userId: userId } },
+      select: { id: true },
+    });
+
     const sessions = await this.prisma.authSession.findMany({
       where: { account: { userId } },
     });
@@ -32,6 +40,7 @@ export class AccountService {
       createdAt: session.createdAt,
       updatedAt: session.updatedAt,
       expiresAt: session.expiresAt,
+      isCurrent: session.id === currentSession?.id,
     }));
   }
 
