@@ -21,6 +21,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
 import { env } from './common/utils/env.utils';
 import { SitemapModule } from './site-map/site-map.module';
 import { DeviceCookieInterceptor } from './rate-limit/device-cookie.interceptor';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { DeviceCookieInterceptor } from './rate-limit/device-cookie.interceptor'
       type: 'single',
     }),
     SitemapModule,
+    AccountModule,
   ],
   controllers: [AppController],
   providers: [
