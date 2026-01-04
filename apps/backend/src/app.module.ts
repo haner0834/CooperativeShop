@@ -24,6 +24,7 @@ import { DeviceCookieInterceptor } from './rate-limit/device-cookie.interceptor'
 import { AccountModule } from './account/account.module';
 import { DeviceIdGuard } from './device-id/device-id.guard';
 import { DeviceIdService } from './device-id/device-id.service';
+import { CloudflareContextInterceptor } from './common/interceptors/cloudflare-context.interceptor';
 
 @Module({
   imports: [
@@ -50,6 +51,10 @@ import { DeviceIdService } from './device-id/device-id.service';
     RateLimitService,
     DeviceIdService,
     {
+      provide: APP_INTERCEPTOR,
+      useClass: CloudflareContextInterceptor,
+    },
+    {
       provide: APP_GUARD,
       useClass: DeviceIdGuard,
     },
@@ -73,7 +78,6 @@ import { DeviceIdService } from './device-id/device-id.service';
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
     },
-    RateLimitService,
   ],
 })
 export class AppModule {}
