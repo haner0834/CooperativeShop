@@ -98,6 +98,7 @@ export class AuthService {
         hashedRefreshToken,
         ipAddress: meta?.ip,
         expiresAt,
+        userAgent: meta?.userAgent,
         city: meta?.city,
         country: meta?.country,
       },
@@ -291,6 +292,7 @@ export class AuthService {
     tokenFromCookie: string,
     deviceId: string,
     ipAddress?: string,
+    userAgent?: string,
     cf?: CloudflareContext,
   ) {
     if (!tokenFromCookie)
@@ -368,6 +370,7 @@ export class AuthService {
         hashedRefreshToken,
         expiresAt,
         ipAddress,
+        userAgent,
         country: cf?.country,
         city: cf?.city,
       },
@@ -380,6 +383,7 @@ export class AuthService {
     targetUserId: string,
     deviceId: string,
     ipAddress?: string,
+    userAgent?: string,
     cf?: CloudflareContext,
   ) {
     if (!targetUserId)
@@ -445,6 +449,7 @@ export class AuthService {
       data: {
         hashedRefreshToken,
         ipAddress,
+        userAgent,
         country: cf?.country,
         city: cf?.city,
       },

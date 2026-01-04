@@ -135,6 +135,7 @@ export class AuthController {
     @Req() req: express.Request,
     @Headers('x-device-id') deviceId: string,
     @Res({ passthrough: true }) res: express.Response,
+    @Headers('user-agent') userAgent: string,
   ) {
     const refreshToken = req.cookies?.refreshToken;
     const ipAddress = req.ip;
@@ -143,6 +144,8 @@ export class AuthController {
       refreshToken,
       deviceId,
       ipAddress,
+      userAgent,
+      (req as any).cf,
     );
 
     res.cookie('refreshToken', result.refreshToken, {
@@ -190,12 +193,15 @@ export class AuthController {
     @Headers('x-device-id') deviceId: string,
     @Res({ passthrough: true }) res: express.Response,
     @CurrentUser() currentUser: UserPayload,
+    @Headers('user-agent') userAgent: string,
   ) {
     const ipAddress = req.ip;
     const result = await this.authService.switchAccount(
       switchAccountDto.targetUserId,
       deviceId,
       ipAddress,
+      userAgent,
+      (req as any).cf,
     );
 
     res.cookie('refreshToken', result.refreshToken, {
