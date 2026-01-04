@@ -61,7 +61,9 @@ function App() {
 
       <Route path="faq" element={<FAQPage />} />
 
-      <Route path="account-center" element={<UserAccountCenter />} />
+      <Route element={<ProtectedGate />}>
+        <Route path="account-center" element={<UserAccountCenter />} />
+      </Route>
 
       <Route path="shops/map" element={<ShopMap />} />
 
