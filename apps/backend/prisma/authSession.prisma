@@ -11,6 +11,8 @@ model AuthSession {
     browser            String?
     expiresAt          DateTime?
     userAgent          String?
+    country            String?
+    city               String?
 
     @@unique([deviceId, accountId]) // 確保一個設備對一個帳號只有一個會話
 }
