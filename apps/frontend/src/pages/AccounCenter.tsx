@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import {
   User as UserIcon,
   School,
@@ -29,6 +29,10 @@ import { useToast } from "../widgets/Toast/ToastProvider";
 import { useAuth } from "../auth/AuthContext";
 import type { LoginMethod } from "../types/school";
 import { Avator } from "./Home";
+import { useModal } from "../widgets/ModalContext";
+import { useAuthFetch } from "../auth/useAuthFetch";
+import { path } from "../utils/path";
+import { getErrorMessage } from "../utils/errors";
 
 type DeviceType = "iPhone" | "iPad" | "Mac" | "Windows" | "Android" | "Other";
 
@@ -42,14 +46,119 @@ interface Session {
   updatedAt: string;
   expiresAt: string | null;
   userAgent: string | null;
+  country: string | null;
+  city: string | null;
   isCurrent: boolean;
 }
+
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString("zh-TW", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+const renderDevice = (deviceType: DeviceType, size = 30) => {
+  switch (deviceType) {
+    case "iPhone":
+      return <Smartphone size={size} />;
+    case "iPad":
+      return <Tablet size={size} />;
+    case "Mac":
+      return <Monitor size={size} />;
+    case "Windows":
+      return <LaptopMinimal size={size} />;
+    case "Android":
+      return <TabletSmartphone size={size} />;
+    case "Other":
+      return <MonitorX size={size} />;
+  }
+};
+
+const SessionDetailModal = ({
+  session,
+  revokeSession,
+}: {
+  session: Session;
+  revokeSession: () => Promise<void>;
+}) => {
+  const { showModal } = useModal();
+  const showRevokeModal = () => {
+    showModal({
+      title: `確認登出 ${session.deviceType} ？`,
+      description: "注意：此操作無法返回",
+      showDismissButton: true,
+      buttons: [
+        {
+          label: `登出 ${session.deviceType}`,
+          role: "error",
+          style: "btn-error",
+          onClick: revokeSession,
+        },
+      ],
+    });
+  };
+
+  const sessionFields = [
+    { label: "瀏覽器", value: session.browser ?? "Unknown" },
+    {
+      label: "地點",
+      value: `${session.country ?? "Unknown"}, ${session.city ?? "Unknown"}`,
+    },
+    { label: "首次使用", value: formatDate(session.createdAt) },
+    { label: "最後使用", value: formatDate(session.updatedAt) },
+  ];
+
+  return (
+    <dialog id="session_modal" className="modal">
+      <div className="modal-box flex flex-col gap-4 p-4">
+        <h3 className="text-center font-semibold">裝置詳情</h3>
+
+        <div className="border border-base-300 rounded-field p-4 flex flex-col gap-3">
+          <div className="w-full items-center flex flex-col">
+            {renderDevice(session.deviceType as any, 40)}
+
+            <p className="font-bold">{session.deviceType}</p>
+          </div>
+          {sessionFields.map((field, idx) => (
+            <Fragment key={idx}>
+              <div className="h-[1px] bg-base-300" />
+              <div className="flex justify-between">
+                <span>{field.label}</span>
+                <span>{field.value}</span>
+              </div>
+            </Fragment>
+          ))}
+        </div>
+
+        <form method="dialog" className="flex gap-2">
+          <div tabIndex={0} autoFocus className="sr-only" />
+          {!session.isCurrent && (
+            <button className="btn btn-error flex-1" onClick={showRevokeModal}>
+              登出該裝置
+            </button>
+          )}
+          <button className="btn flex-1">關閉</button>
+        </form>
+      </div>
+      <form method="dialog" className="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+  );
+};
 
 const UserAccountCenter = () => {
   const [showSidebar, setShowSidebar] = useState(false);
 
   const { showToast } = useToast();
+  const { showModal } = useModal();
   const { switchableAccounts, activeUser, switchAccount } = useAuth();
+
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+
+  const { authedFetch } = useAuthFetch();
 
   const [sessions] = useState<Session[]>([
     {
@@ -58,11 +167,13 @@ const UserAccountCenter = () => {
       deviceType: "iPhone",
       updatedAt: "2023-12-28T12:00:00Z",
       isCurrent: true,
-      ipAddress: null,
-      browser: null,
-      createdAt: "",
-      expiresAt: null,
-      userAgent: null,
+      ipAddress: "1.1.1.1",
+      browser: "Safari",
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date().toISOString(),
+      userAgent: "Fuck You",
+      country: "Taiwan",
+      city: "Tainan",
     },
     {
       id: "sess_2",
@@ -75,6 +186,8 @@ const UserAccountCenter = () => {
       createdAt: "",
       expiresAt: null,
       userAgent: null,
+      country: null,
+      city: null,
     },
   ]);
 
@@ -98,40 +211,68 @@ const UserAccountCenter = () => {
     alert("正在登出...");
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("zh-TW", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+  const showRevokeModal = () => {
+    showModal({
+      title: `確認登出 ${selectedSession?.deviceType} ？`,
+      description: "注意：此操作無法返回",
+      showDismissButton: true,
+      buttons: [
+        {
+          label: `登出 ${selectedSession?.deviceType}`,
+          role: "error",
+          style: "btn-error",
+          onClick: handleRevoke,
+        },
+      ],
     });
   };
 
-  const renderDevice = (deviceType: DeviceType) => {
-    switch (deviceType) {
-      case "iPhone":
-        return <Smartphone size={30} />;
-      case "iPad":
-        return <Tablet size={30} />;
-      case "Mac":
-        return <Monitor size={30} />;
-      case "Windows":
-        return <LaptopMinimal size={30} />;
-      case "Android":
-        return <TabletSmartphone size={30} />;
-      case "Other":
-        return <MonitorX size={30} />;
+  const openModal = () => {
+    const modal = document.getElementById(
+      "session_modal"
+    ) as HTMLDialogElement | null;
+    modal?.showModal();
+  };
+
+  const openSessionDetailModal = (session: Session) => {
+    setSelectedSession(session);
+    openModal();
+  };
+
+  const handleRevoke = async () => {
+    if (!selectedSession) return;
+    try {
+      const res = await authedFetch(
+        path(`/api/accounts/${selectedSession.id}/revoke`)
+      );
+      // res should be nothing
+      // let's fuck it
+      if (!res.success) {
+        throw new Error(res.error.code);
+      }
+    } catch (e: any) {
+      showModal({
+        title: "無法登出該裝置",
+        description: getErrorMessage(e.message),
+        showDismissButton: true,
+      });
     }
   };
 
   const handleSwitch = async (id: string) => {
     if (activeUser?.id !== id) {
       await switchAccount(id);
-    } else {
     }
   };
 
   return (
     <div className="min-h-screen bg-base-300 flex flex-col items-center pt-18">
+      {selectedSession && (
+        <SessionDetailModal
+          session={selectedSession}
+          revokeSession={handleRevoke}
+        />
+      )}
       <nav className="navbar bg-base-100 fixed top-0 z-50 shadow-xs">
         <div className="navbar-start space-x-4">
           <button
@@ -162,7 +303,7 @@ const UserAccountCenter = () => {
               <User size={30} />
             </div>
             <div className="flex-1">
-              <h2 className="card-title text-2xl">{activeUser?.name}</h2>
+              <h2 className="card-title text-xl">{activeUser?.name}</h2>
               <p className="text-base-content/60 text-sm mt-1">
                 加入於 {activeUser && formatDate(activeUser.joinAt)}
               </p>
@@ -297,7 +438,8 @@ const UserAccountCenter = () => {
               {sessions.map((session) => (
                 <div
                   key={session.id}
-                  className="relative border border-base-300 rounded-field p-4 flex flex-row items-center gap-4"
+                  onClick={() => openSessionDetailModal(session)}
+                  className="relative border border-base-300 rounded-field p-4 flex flex-row items-center gap-4 cursor-pointer"
                 >
                   <div className="absolute top-2 right-2">
                     {session.isCurrent ? (
@@ -305,7 +447,15 @@ const UserAccountCenter = () => {
                         當前裝置
                       </div>
                     ) : (
-                      <button className="btn btn-ghost btn-xs text-error">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedSession(selectedSession);
+                          showRevokeModal();
+                        }}
+                        className="btn btn-ghost btn-xs text-error"
+                      >
                         登出此裝置
                       </button>
                     )}
@@ -319,7 +469,10 @@ const UserAccountCenter = () => {
                       {session.deviceType}
                     </span>
                     <div className="flex justify-between text-sm text-base-content/70">
-                      <span>最後開啟</span>
+                      <span>
+                        {session.country ?? "Unknown"},{" "}
+                        {session.city ?? "Unknown"}
+                      </span>
                       <span>{formatDate(session.updatedAt)}</span>
                     </div>
                   </div>
