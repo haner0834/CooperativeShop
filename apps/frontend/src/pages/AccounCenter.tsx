@@ -94,17 +94,17 @@ const UserAccountCenter = () => {
   const renderDevice = (deviceType: DeviceType) => {
     switch (deviceType) {
       case "iPhone":
-        return <Smartphone />;
+        return <Smartphone size={30} />;
       case "iPad":
-        return <Tablet />;
+        return <Tablet size={30} />;
       case "Mac":
-        return <Monitor />;
+        return <Monitor size={30} />;
       case "Windows":
-        return <LaptopMinimal />;
+        return <LaptopMinimal size={30} />;
       case "Android":
-        return <TabletSmartphone />;
+        return <TabletSmartphone size={30} />;
       case "Other":
-        return <MonitorX />;
+        return <MonitorX size={30} />;
     }
   };
 
