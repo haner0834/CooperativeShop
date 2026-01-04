@@ -2,7 +2,7 @@
 import axios from "axios";
 import { getDeviceId } from "../utils/device";
 
-const TARGET_ORIGIN = window.location.origin; // 或是你的 API Domain 'https://example.com'
+const TARGET_ORIGIN = window.location.origin;
 const TARGET_PATH = "/api";
 
 /**
@@ -34,6 +34,7 @@ axios.interceptors.request.use((config) => {
 
   if (shouldIntercept(config.url)) {
     config.headers.set("X-Device-ID", getDeviceId());
+    config.withCredentials = true;
   }
   return config;
 });
@@ -51,6 +52,7 @@ window.fetch = async (...args) => {
     const headers = new Headers(config.headers);
     headers.set("X-Device-ID", getDeviceId());
     config.headers = headers;
+    config.credentials = "include";
 
     // 如果 resource 是 Request 物件，需要重新建立以套用新 header
     if (resource instanceof Request) {

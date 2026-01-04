@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { School, type User } from '@prisma/client';
+import { DeviceType, School, type User } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { validateStudentId } from '../../validators/studentId.validator';
 import { validateEmailAndStudentId } from '../../validators/email.validator';
@@ -14,11 +14,18 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { env } from 'src/common/utils/env.utils';
 import { TokenService } from './token.service';
 import { UserPayload } from '../types/auth.types';
+import { UAParser } from 'ua-parser-js';
+import { CloudflareContext } from 'src/common/interceptors/cloudflare-context.interceptor';
 
 export interface GoogleProfile {
   id: string;
   displayName: string;
   email: string;
+}
+
+export interface AuthMeta extends CloudflareContext {
+  ip?: string;
+  userAgent?: string;
 }
 
 @Injectable()
@@ -30,7 +37,7 @@ export class AuthService {
 
   private readonly SALT_ROUNDS = 10;
 
-  async authSuccess(user: User, deviceId: string) {
+  async authSuccess(user: User, deviceId: string, meta?: AuthMeta) {
     if (!deviceId) {
       throw new BadRequestError(
         'MISSING_DEVICE_ID',
@@ -40,11 +47,12 @@ export class AuthService {
 
     const account = await this.prisma.account.findFirst({
       where: { userId: user.id },
-      select: {
-        id: true,
+      include: {
         user: {
           include: {
-            school: { select: { abbreviation: true, isLimited: true } },
+            school: {
+              select: { abbreviation: true, isLimited: true, name: true },
+            },
           },
         },
       },
@@ -61,17 +69,40 @@ export class AuthService {
       name: user.name,
       schoolId: user.schoolId,
       schoolAbbr: account.user.school.abbreviation,
+      schoolName: account.user.school.name,
       isSchoolLimited: account.user.school.isLimited,
+      studentId: account.user.studentId ?? undefined,
+      email: account.user.email ?? undefined,
+      provider: account.provider as any,
+      joinAt: account.user.createAt.toISOString(),
     };
 
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =
       await this.tokenService.generateTokens(payload);
 
+    const expiresAt = new Date(Date.now() + cookieMaxAge);
+
     // 建立或更新此設備的會話
     await this.prisma.authSession.upsert({
       where: { deviceId_accountId: { deviceId, accountId: account.id } },
-      create: { deviceId, accountId: account.id, hashedRefreshToken },
-      update: { hashedRefreshToken },
+      create: {
+        deviceId,
+        accountId: account.id,
+        hashedRefreshToken,
+        ipAddress: meta?.ip,
+        userAgent: meta?.userAgent,
+        ...this.parseUA(meta?.userAgent),
+        expiresAt,
+      },
+      update: {
+        hashedRefreshToken,
+        ipAddress: meta?.ip,
+        expiresAt,
+        userAgent: meta?.userAgent,
+        ...this.parseUA(meta?.userAgent),
+        city: meta?.city,
+        country: meta?.country,
+      },
     });
 
     // 取得此設備上所有已登入的帳號資訊
@@ -258,7 +289,13 @@ export class AuthService {
     }
   }
 
-  async rotateRefreshToken(tokenFromCookie: string, deviceId: string) {
+  async rotateRefreshToken(
+    tokenFromCookie: string,
+    deviceId: string,
+    ipAddress?: string,
+    userAgent?: string,
+    cf?: CloudflareContext,
+  ) {
     if (!tokenFromCookie)
       throw new UnauthorizedError('No refresh token provided.');
     if (!deviceId)
@@ -282,17 +319,11 @@ export class AuthService {
         account: {
           select: {
             id: true,
+            providerAccountId: true,
+            provider: true,
             user: {
-              select: {
-                id: true,
-                name: true,
-                school: {
-                  select: {
-                    id: true,
-                    abbreviation: true,
-                    isLimited: true,
-                  },
-                },
+              include: {
+                school: true,
               },
             },
           },
@@ -321,21 +352,41 @@ export class AuthService {
       name: session.account.user.name,
       schoolId: session.account.user.school.id,
       schoolAbbr: session.account.user.school.abbreviation,
+      schoolName: session.account.user.school.name,
       isSchoolLimited: session.account.user.school.isLimited,
+      studentId: session.account.user.studentId ?? undefined,
+      email: session.account.user.email ?? undefined,
+      provider: session.account.provider as any,
+      joinAt: session.account.user.createAt.toISOString(),
     };
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =
       await this.tokenService.generateTokens(payload);
 
+    const expiresAt = new Date(Date.now() + cookieMaxAge);
+
     // 4. 更新資料庫
     await this.prisma.authSession.update({
       where: { id: session.id },
-      data: { hashedRefreshToken },
+      data: {
+        hashedRefreshToken,
+        expiresAt,
+        ipAddress,
+        userAgent,
+        country: cf?.country,
+        city: cf?.city,
+      },
     });
 
     return { accessToken, refreshToken, cookieMaxAge };
   }
 
-  async switchAccount(targetUserId: string, deviceId: string) {
+  async switchAccount(
+    targetUserId: string,
+    deviceId: string,
+    ipAddress?: string,
+    userAgent?: string,
+    cf?: CloudflareContext,
+  ) {
     if (!targetUserId)
       throw new BadRequestError(
         'MISSING_TARGET_UID',
@@ -352,13 +403,13 @@ export class AuthService {
         account: {
           select: {
             id: true,
+            provider: true,
+            providerAccountId: true,
             user: {
-              select: {
-                id: true,
-                name: true,
-                schoolId: true,
+              include: {
                 school: {
                   select: {
+                    name: true,
                     abbreviation: true,
                     isLimited: true,
                   },
@@ -383,7 +434,12 @@ export class AuthService {
       name: user.name,
       schoolId: user.schoolId,
       schoolAbbr: user.school.abbreviation,
+      schoolName: user.school.name,
       isSchoolLimited: user.school.isLimited,
+      studentId: targetSession.account.user.studentId ?? undefined,
+      email: targetSession.account.user.email ?? undefined,
+      provider: targetSession.account.provider as any,
+      joinAt: targetSession.account.user.createAt.toISOString(),
     };
     // 這裡我們進行一次完整的輪換
     const { accessToken, refreshToken, hashedRefreshToken, cookieMaxAge } =
@@ -391,7 +447,13 @@ export class AuthService {
 
     await this.prisma.authSession.update({
       where: { id: targetSession.id },
-      data: { hashedRefreshToken },
+      data: {
+        hashedRefreshToken,
+        ipAddress,
+        userAgent,
+        country: cf?.country,
+        city: cf?.city,
+      },
     });
 
     return { accessToken, refreshToken, cookieMaxAge, user: payload };
@@ -446,5 +508,36 @@ export class AuthService {
     }
 
     return session.account.user;
+  }
+
+  private parseUA(uaString?: string) {
+    const parser = new UAParser(uaString);
+    return {
+      deviceType: this.parseDeviceType(parser),
+      browser: this.parseBrowserName(parser),
+    };
+  }
+
+  private parseDeviceType(parser: UAParser): DeviceType {
+    const device = parser.getDevice();
+    const os = parser.getOS().name;
+
+    if (os === 'iOS') {
+      if (device.model === 'iPad' || device.type === 'tablet') {
+        return 'IPAD';
+      }
+      return 'IPHONE';
+    }
+
+    if (os === 'Android') return 'ANDROID';
+    if (os === 'Windows') return 'WINDOWS';
+    if (os === 'Mac OS') return 'MAC';
+
+    return 'OTHER';
+  }
+
+  private parseBrowserName(parser: UAParser): string {
+    const browser = parser.getBrowser();
+    return browser.name ?? 'Unknown';
   }
 }

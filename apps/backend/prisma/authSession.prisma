@@ -1,11 +1,27 @@
 model AuthSession {
-    id                 String   @id @default(cuid())
+    id                 String      @id @default(cuid())
     hashedRefreshToken String
     deviceId           String // 前端產生的設備唯一標識符
-    account            Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+    account            Account     @relation(fields: [accountId], references: [id], onDelete: Cascade)
     accountId          String
-    createdAt          DateTime @default(now())
-    updatedAt          DateTime @updatedAt
+    createdAt          DateTime    @default(now())
+    updatedAt          DateTime    @updatedAt
+    deviceType         DeviceType?
+    ipAddress          String?
+    browser            String?
+    expiresAt          DateTime?
+    userAgent          String?
+    country            String?
+    city               String?
 
     @@unique([deviceId, accountId]) // 確保一個設備對一個帳號只有一個會話
+}
+
+enum DeviceType {
+    IPHONE
+    MAC
+    IPAD
+    ANDROID
+    WINDOWS
+    OTHER
 }

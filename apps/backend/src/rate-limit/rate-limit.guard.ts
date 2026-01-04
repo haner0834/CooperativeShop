@@ -4,6 +4,7 @@ import { RateLimitService, TrustLevel } from './rate-limit.service';
 import { TooManyRequestsError } from 'src/types/error.types';
 import { RateLimitOptions, RATE_LIMIT_KEY } from './rate-limit.decorator';
 import { TokenService } from 'src/auth/services/token.service';
+import { DeviceIdService } from 'src/device-id/device-id.service';
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
@@ -11,6 +12,7 @@ export class RateLimitGuard implements CanActivate {
     private readonly rateLimitService: RateLimitService,
     private readonly reflector: Reflector,
     private readonly tokenService: TokenService,
+    private readonly deviceIdService: DeviceIdService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -47,7 +49,7 @@ export class RateLimitGuard implements CanActivate {
     // 需安裝 cookie-parser middleware 才能用 request.cookies
     const signedCookie = request.cookies?.['d_id'];
     if (signedCookie) {
-      const verifiedId = this.rateLimitService.verifyDeviceId(signedCookie);
+      const verifiedId = this.deviceIdService.verifyDeviceId(signedCookie);
       if (verifiedId) {
         deviceId = verifiedId;
         trustLevel = TrustLevel.DEVICE_COOKIE;

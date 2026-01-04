@@ -32,6 +32,7 @@ const LoginHint = () => {
     return (
       <Navigate
         to={getLoginPath(searchParams.get("method") ?? "credential")}
+        replace
       ></Navigate>
     );
   }

@@ -14,12 +14,19 @@ import { ensureAuth } from "./authCoordinator";
 // --- 1. 定義新的型別 ---
 
 // 後端回傳的使用者基本資料 (StudentPayload)
-type UserPayload = {
+export interface UserPayload {
   id: string;
+  accountId: string;
   name: string;
   schoolId: string;
   schoolAbbr: string;
-};
+  schoolName: string;
+  isSchoolLimited: boolean;
+  studentId?: string;
+  email?: string;
+  provider: "google" | "credentials";
+  joinAt: string;
+}
 
 // 後端回傳的可切換帳號資料
 export type SwitchableAccount = {

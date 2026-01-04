@@ -21,6 +21,10 @@ import { RedisModule } from '@nestjs-modules/ioredis';
 import { env } from './common/utils/env.utils';
 import { SitemapModule } from './site-map/site-map.module';
 import { DeviceCookieInterceptor } from './rate-limit/device-cookie.interceptor';
+import { AccountModule } from './account/account.module';
+import { DeviceIdGuard } from './device-id/device-id.guard';
+import { DeviceIdService } from './device-id/device-id.service';
+import { CloudflareContextInterceptor } from './common/interceptors/cloudflare-context.interceptor';
 
 @Module({
   imports: [
@@ -39,17 +43,27 @@ import { DeviceCookieInterceptor } from './rate-limit/device-cookie.interceptor'
       type: 'single',
     }),
     SitemapModule,
+    AccountModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     RateLimitService,
+    DeviceIdService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CloudflareContextInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: DeviceIdGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: RateLimitGuard,
     },
     {
-      provide: APP_GUARD,
+      provide: APP_INTERCEPTOR,
       useClass: DeviceCookieInterceptor,
     },
     {
@@ -64,7 +78,6 @@ import { DeviceCookieInterceptor } from './rate-limit/device-cookie.interceptor'
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
     },
-    RateLimitService,
   ],
 })
 export class AppModule {}

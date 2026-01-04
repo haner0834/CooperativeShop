@@ -121,7 +121,9 @@ const SchoolDetail = () => {
           <Logo className="h-9 w-auto hidden md:block" />
         </div>
         <div className="navbar-center space-x-2">
-          <h3 className="font-semibold">我的學校</h3>
+          <h3 className="font-semibold">
+            {schoolAbbrParam === "me" ? "我的學校" : school?.name}
+          </h3>
         </div>
         <div className="navbar-end space-x-2"></div>
       </nav>

@@ -13,7 +13,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import express from 'express';
-import { AuthService } from './services/auth.service';
+import { AuthMeta, AuthService } from './services/auth.service';
 import { Log } from 'src/common/decorators/logger.decorator';
 import { JwtAccessGuard } from './guards/jwt-access.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
@@ -45,10 +45,16 @@ const httpOnlyCookieOptions = {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  async handleAuthSuccess(res: express.Response, user: User, deviceId: string) {
+  async handleAuthSuccess(
+    res: express.Response,
+    user: User,
+    deviceId: string,
+    meta: AuthMeta,
+  ) {
     const { cookieMaxAge, ...data } = await this.authService.authSuccess(
       user,
       deviceId,
+      meta,
     );
     res.cookie('refreshToken', data.refreshToken, {
       ...httpOnlyCookieOptions,
@@ -64,9 +70,16 @@ export class AuthController {
     @Body() registerDto: RegisterDto,
     @Headers('x-device-id') deviceId: string,
     @Res({ passthrough: true }) res: express.Response,
+    @Req() req: any, // NOTE: Use express.d.ts to tell compiler, rather than this shi
+    @Headers('user-agent') userAgent: string,
   ) {
     const user = await this.authService.registerWithStudentId(registerDto);
-    const data = await this.handleAuthSuccess(res, user, deviceId);
+    const meta: AuthMeta = {
+      ...req.cf,
+      ip: req.ip,
+      userAgent: userAgent,
+    };
+    const data = await this.handleAuthSuccess(res, user, deviceId, meta);
 
     return data;
   }
@@ -78,9 +91,16 @@ export class AuthController {
     @Body() loginDto: LoginDto,
     @Headers('x-device-id') deviceId: string,
     @Res({ passthrough: true }) res: express.Response,
+    @Req() req: any, // NOTE: Use express.d.ts to tell compiler, rather than this shi
+    @Headers('user-agent') userAgent: string,
   ) {
     const user = await this.authService.loginWithStudentId(loginDto);
-    const data = await this.handleAuthSuccess(res, user, deviceId);
+    const meta: AuthMeta = {
+      ...req.cf,
+      ip: req.ip,
+      userAgent: userAgent,
+    };
+    const data = await this.handleAuthSuccess(res, user, deviceId, meta);
 
     return data;
   }
@@ -115,12 +135,17 @@ export class AuthController {
     @Req() req: express.Request,
     @Headers('x-device-id') deviceId: string,
     @Res({ passthrough: true }) res: express.Response,
+    @Headers('user-agent') userAgent: string,
   ) {
     const refreshToken = req.cookies?.refreshToken;
+    const ipAddress = req.ip;
 
     const result = await this.authService.rotateRefreshToken(
       refreshToken,
       deviceId,
+      ipAddress,
+      userAgent,
+      (req as any).cf,
     );
 
     res.cookie('refreshToken', result.refreshToken, {
@@ -139,6 +164,7 @@ export class AuthController {
     @Req() req: express.Request,
     @Headers('x-device-id') deviceId: string,
     @Res({ passthrough: true }) res: express.Response,
+    @Headers('user-agent') userAgent: string,
   ) {
     const refreshToken = req.cookies?.refreshToken;
     if (!deviceId)
@@ -147,7 +173,12 @@ export class AuthController {
     const user = await this.authService.restoreSession(refreshToken, deviceId);
 
     if (user) {
-      const data = this.handleAuthSuccess(res, user, deviceId);
+      const meta: AuthMeta = {
+        ...(req as any).cf,
+        ip: req.ip,
+        userAgent: userAgent,
+      };
+      const data = this.handleAuthSuccess(res, user, deviceId, meta);
       return data;
     }
   }
@@ -157,14 +188,20 @@ export class AuthController {
   @RateLimit({ uid: 15, did: 0, global: 100, isolateScope: 'auth:switch-acc' })
   @HttpCode(HttpStatus.OK)
   async switchAccount(
+    @Req() req: express.Request,
     @Body() switchAccountDto: SwitchAccountDto,
     @Headers('x-device-id') deviceId: string,
     @Res({ passthrough: true }) res: express.Response,
     @CurrentUser() currentUser: UserPayload,
+    @Headers('user-agent') userAgent: string,
   ) {
+    const ipAddress = req.ip;
     const result = await this.authService.switchAccount(
       switchAccountDto.targetUserId,
       deviceId,
+      ipAddress,
+      userAgent,
+      (req as any).cf,
     );
 
     res.cookie('refreshToken', result.refreshToken, {
@@ -199,6 +236,7 @@ export class AuthController {
   async googleCallback(
     @Req() req: express.Request,
     @Res() res: express.Response,
+    @Headers('user-agent') userAgent: string,
   ) {
     const user = req.user as any;
     const deviceId = user.deviceId;
@@ -208,7 +246,12 @@ export class AuthController {
       redirectUrl = env('FRONTEND_URL_ROOT', '') + decodeURIComponent(to);
     }
 
-    await this.handleAuthSuccess(res, user, deviceId);
+    const meta: AuthMeta = {
+      ...(req as any).cf,
+      ip: req.ip,
+      userAgent: userAgent,
+    };
+    await this.handleAuthSuccess(res, user, deviceId, meta);
 
     // 重定向到前端
     const frontendUrl = env('FRONTEND_URL', '/shops');

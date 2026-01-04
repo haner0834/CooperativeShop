@@ -11,7 +11,8 @@ const ProtectedGate = () => {
   useEffect(() => {
     if (hasAttemptedRestore && !activeUser) {
       showModal({
-        title: "登入已過期",
+        title: "請重新登入",
+        description: "登入已過期，重新登入以進行下一步操作",
         buttons: [
           {
             label: "繼續",

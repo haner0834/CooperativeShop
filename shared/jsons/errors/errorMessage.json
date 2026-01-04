@@ -66,5 +66,9 @@
   "SCHOOL_QUOTA_EXCEEDED": {
     "message": "貴校於搜索、篩選等功能於此日已達到上限。如有疑問，請向貴校學生會詢問詳情。",
     "devNote": "該學校今日的進階搜尋配額（150次）已用罄，請明日再試或使用基礎瀏覽功能。"
+  },
+  "AUTH_SESSION_NOT_FOUND": {
+    "message": "找不到該裝置的紀錄",
+    "devNote": "Cannot find session with given id"
   }
 }
