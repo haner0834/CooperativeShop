@@ -223,22 +223,6 @@ const UserAccountCenter = () => {
     });
   };
 
-  const showRevokeModal = () => {
-    showModal({
-      title: `確認登出 ${selectedSession?.deviceType} ？`,
-      description: "注意：此操作無法返回",
-      showDismissButton: true,
-      buttons: [
-        {
-          label: `登出 ${selectedSession?.deviceType}`,
-          role: "error",
-          style: "btn-error",
-          onClick: handleRevoke,
-        },
-      ],
-    });
-  };
-
   const openModal = () => {
     const modal = document.getElementById(
       "session_modal"
@@ -454,22 +438,10 @@ const UserAccountCenter = () => {
                   className="relative border border-base-300 rounded-field p-4 flex flex-row items-center gap-4 cursor-pointer"
                 >
                   <div className="absolute top-2 right-2">
-                    {session.isCurrent ? (
+                    {session.isCurrent && (
                       <div className="badge badge-success badge-soft badge-sm gap-1">
                         當前裝置
                       </div>
-                    ) : (
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setSelectedSession(selectedSession);
-                          showRevokeModal();
-                        }}
-                        className="btn btn-ghost btn-xs text-error"
-                      >
-                        登出此裝置
-                      </button>
                     )}
                   </div>
 
