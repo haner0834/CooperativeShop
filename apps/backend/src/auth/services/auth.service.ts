@@ -15,6 +15,7 @@ import { env } from 'src/common/utils/env.utils';
 import { TokenService } from './token.service';
 import { UserPayload } from '../types/auth.types';
 import { UAParser } from 'ua-parser-js';
+import { CloudflareContext } from 'src/common/interceptors/cloudflare-context.interceptor';
 
 export interface GoogleProfile {
   id: string;
@@ -22,7 +23,7 @@ export interface GoogleProfile {
   email: string;
 }
 
-export interface AuthMeta {
+export interface AuthMeta extends CloudflareContext {
   ip?: string;
   userAgent?: string;
 }
@@ -97,6 +98,8 @@ export class AuthService {
         hashedRefreshToken,
         ipAddress: meta?.ip,
         expiresAt,
+        city: meta?.city,
+        country: meta?.country,
       },
     });
 
@@ -288,6 +291,7 @@ export class AuthService {
     tokenFromCookie: string,
     deviceId: string,
     ipAddress?: string,
+    cf?: CloudflareContext,
   ) {
     if (!tokenFromCookie)
       throw new UnauthorizedError('No refresh token provided.');
@@ -360,7 +364,13 @@ export class AuthService {
     // 4. 更新資料庫
     await this.prisma.authSession.update({
       where: { id: session.id },
-      data: { hashedRefreshToken, expiresAt, ipAddress },
+      data: {
+        hashedRefreshToken,
+        expiresAt,
+        ipAddress,
+        country: cf?.country,
+        city: cf?.city,
+      },
     });
 
     return { accessToken, refreshToken, cookieMaxAge };
@@ -370,6 +380,7 @@ export class AuthService {
     targetUserId: string,
     deviceId: string,
     ipAddress?: string,
+    cf?: CloudflareContext,
   ) {
     if (!targetUserId)
       throw new BadRequestError(
@@ -431,7 +442,12 @@ export class AuthService {
 
     await this.prisma.authSession.update({
       where: { id: targetSession.id },
-      data: { hashedRefreshToken, ipAddress },
+      data: {
+        hashedRefreshToken,
+        ipAddress,
+        country: cf?.country,
+        city: cf?.city,
+      },
     });
 
     return { accessToken, refreshToken, cookieMaxAge, user: payload };
