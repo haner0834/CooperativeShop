@@ -154,7 +154,7 @@ const UserAccountCenter = () => {
 
   const { showToast } = useToast();
   const { showModal } = useModal();
-  const { switchableAccounts, activeUser, switchAccount } = useAuth();
+  const { switchableAccounts, activeUser, switchAccount, logout } = useAuth();
 
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
 
@@ -208,7 +208,19 @@ const UserAccountCenter = () => {
   };
 
   const handleLogout = () => {
-    alert("正在登出...");
+    showModal({
+      title: "確認登出？",
+      description: "此操作無法回復",
+      showDismissButton: true,
+      buttons: [
+        {
+          label: "登出",
+          role: "error",
+          style: "btn-error",
+          onClick: logout,
+        },
+      ],
+    });
   };
 
   const showRevokeModal = () => {
