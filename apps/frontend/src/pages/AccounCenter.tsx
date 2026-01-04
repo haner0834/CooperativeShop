@@ -299,9 +299,6 @@ const UserAccountCenter = () => {
             <h3 className="card-title text-lg flex items-center gap-2">
               <MonitorSmartphone size={24} />
               登入裝置
-              <span className="text-xs font-normal text-base-content/50 ml-2">
-                管理您的活躍工作階段
-              </span>
             </h3>
 
             <div className="flex flex-col gap-4">
@@ -344,9 +341,6 @@ const UserAccountCenter = () => {
             <h3 className="card-title text-lg flex items-center gap-2">
               <Contact size={24} />
               此裝置上的帳號
-              <span className="text-xs font-normal text-base-content/50 ml-2">
-                屁眼
-              </span>
             </h3>
 
             <ul className="space-y-4">
