@@ -99,6 +99,7 @@ export class AuthService {
         ipAddress: meta?.ip,
         expiresAt,
         userAgent: meta?.userAgent,
+        ...this.parseUA(meta?.userAgent),
         city: meta?.city,
         country: meta?.country,
       },
