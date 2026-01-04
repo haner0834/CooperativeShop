@@ -30,19 +30,6 @@ import { useAuth } from "../auth/AuthContext";
 import type { LoginMethod } from "../types/school";
 import { Avator } from "./Home";
 
-interface UserProfile {
-  id: string;
-  name: string;
-  email: string | null;
-  studentId: string | null;
-  school: {
-    name: string;
-    abbreviation: string;
-  };
-  createdAt: string;
-  provider: "google" | "credentials";
-}
-
 type DeviceType = "iPhone" | "iPad" | "Mac" | "Windows" | "Android" | "Other";
 
 interface Session {
@@ -55,18 +42,6 @@ interface Session {
 
 const UserAccountCenter = () => {
   const [showSidebar, setShowSidebar] = useState(false);
-  const [user] = useState<UserProfile | null>({
-    id: "cuid_user_123",
-    name: "王小明",
-    email: "ming@example.com",
-    studentId: "B1105001",
-    school: {
-      name: "港明高中",
-      abbreviation: "kmsh",
-    },
-    createdAt: "2023-09-01T10:00:00Z",
-    provider: "credentials",
-  });
 
   const { showToast } = useToast();
   const { switchableAccounts, activeUser, switchAccount } = useAuth();
@@ -172,15 +147,15 @@ const UserAccountCenter = () => {
               <User size={30} />
             </div>
             <div className="flex-1">
-              <h2 className="card-title text-2xl">{user?.name}</h2>
+              <h2 className="card-title text-2xl">{activeUser?.name}</h2>
               <p className="text-base-content/60 text-sm mt-1">
-                加入於 {user && formatDate(user.createdAt)}
+                加入於 {activeUser && formatDate(activeUser.joinAt)}
               </p>
             </div>
-            {user?.school && (
+            {activeUser?.schoolAbbr && (
               <div className="badge badge-soft ml-2 gap-1">
                 <School size={14} />
-                {user.school.abbreviation}
+                {activeUser.schoolAbbr}
               </div>
             )}
           </div>
@@ -210,9 +185,7 @@ const UserAccountCenter = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-base">學校資訊</h3>
-                <p className="text-xs text-base-content/60">
-                  查看 {user?.school.name} 詳情
-                </p>
+                <p className="text-xs text-base-content/60">查看我的學校</p>
               </div>
               <ChevronRight className="ml-auto text-base-content/30" />
             </div>
@@ -237,14 +210,16 @@ const UserAccountCenter = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => copyText(user?.id)}
+                  onClick={() => copyText(activeUser?.id)}
                   className="btn btn-xs"
                 >
-                  <span className="font-mono">{user?.id || "未設定"}</span>
+                  <span className="font-mono">
+                    {activeUser?.id || "未設定"}
+                  </span>
                 </button>
               </div>
 
-              {user?.provider === "credentials" ? (
+              {activeUser?.provider === "credentials" ? (
                 <div className="flex items-center justify-between py-2 border-b border-base-200">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-base-200 flex items-center justify-center">
@@ -255,11 +230,11 @@ const UserAccountCenter = () => {
                     </div>
                   </div>
                   <button
-                    onClick={() => copyText(user?.studentId)}
+                    onClick={() => copyText(activeUser.studentId)}
                     className="btn btn-xs"
                   >
                     <span className="font-mono">
-                      {user?.studentId || "未設定"}
+                      {activeUser?.studentId || "未設定"}
                     </span>
                   </button>
                 </div>
@@ -273,7 +248,7 @@ const UserAccountCenter = () => {
                       <p className="font-medium text-base">電子郵件</p>
                     </div>
                   </div>
-                  <span className="">{user?.email || "未綁定"}</span>
+                  <span className="">{activeUser?.email || "未綁定"}</span>
                 </div>
               )}
 
@@ -287,7 +262,9 @@ const UserAccountCenter = () => {
                   </div>
                 </div>
                 <span className="badge badge-info badge-soft">
-                  {user?.provider === "google" ? "Google 帳號" : "學號/密碼"}
+                  {activeUser?.provider === "google"
+                    ? "Google 帳號"
+                    : "學號/密碼"}
                 </span>
               </div>
             </div>
