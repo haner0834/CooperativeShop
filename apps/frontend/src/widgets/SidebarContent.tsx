@@ -110,7 +110,7 @@ export const menu: MenuItem[] = [
     color: "text-blue-500",
     children: [
       { label: "個人 QR", icon: "QrCode", href: "/home" },
-      { label: "帳號中心", icon: "UserRoundCog" },
+      { label: "帳號中心", icon: "UserRoundCog", href: "/account-center" },
       // { label: "QR 掃描", icon: "ScanLine" },
       { label: "學校", icon: "School", href: "/schools/me" },
     ],
