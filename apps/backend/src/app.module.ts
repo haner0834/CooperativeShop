@@ -51,7 +51,7 @@ import { AccountModule } from './account/account.module';
       useClass: RateLimitGuard,
     },
     {
-      provide: APP_GUARD,
+      provide: APP_INTERCEPTOR,
       useClass: DeviceCookieInterceptor,
     },
     {
