@@ -40,6 +40,8 @@ export class AccountService {
       createdAt: session.createdAt,
       updatedAt: session.updatedAt,
       expiresAt: session.expiresAt,
+      country: session.country,
+      city: session.city,
       isCurrent: session.id === currentSession?.id,
     }));
   }

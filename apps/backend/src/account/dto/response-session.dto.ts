@@ -42,6 +42,12 @@ export class ResponseSessionDto {
   @IsString()
   userAgent: string | null;
 
+  @IsString()
+  country: string | null;
+
+  @IsString()
+  city: string | null;
+
   @IsBoolean()
   isCurrent: boolean;
 }
