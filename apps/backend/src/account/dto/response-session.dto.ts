@@ -15,7 +15,7 @@ export class ResponseSessionDto {
       IPAD: 'iPad',
       ANDROID: 'Android',
       WINDOWS: 'Windows',
-      OTHER: 'other',
+      OTHER: 'Other',
     };
     return value ? map[value] : 'other';
   })
