@@ -239,7 +239,10 @@ const UserAccountCenter = () => {
     if (!selectedSession) return;
     try {
       const res = await authedFetch(
-        path(`/api/accounts/sessions/${selectedSession.id}/revoke`)
+        path(`/api/account/sessions/${selectedSession.id}/revoke`),
+        {
+          method: "POST",
+        }
       );
       // res should be nothing
       // let's fuck it
