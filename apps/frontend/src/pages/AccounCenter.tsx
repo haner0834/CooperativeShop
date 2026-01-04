@@ -34,9 +34,14 @@ type DeviceType = "iPhone" | "iPad" | "Mac" | "Windows" | "Android" | "Other";
 
 interface Session {
   id: string;
-  deviceId?: string;
-  deviceType?: DeviceType;
+  deviceId: string;
+  deviceType: string | null;
+  ipAddress: string | null;
+  browser: string | null;
+  createdAt: string;
   updatedAt: string;
+  expiresAt: string | null;
+  userAgent: string | null;
   isCurrent: boolean;
 }
 
@@ -53,6 +58,11 @@ const UserAccountCenter = () => {
       deviceType: "iPhone",
       updatedAt: "2023-12-28T12:00:00Z",
       isCurrent: true,
+      ipAddress: null,
+      browser: null,
+      createdAt: "",
+      expiresAt: null,
+      userAgent: null,
     },
     {
       id: "sess_2",
@@ -60,6 +70,11 @@ const UserAccountCenter = () => {
       deviceType: "Mac",
       updatedAt: "2023-12-25T08:30:00Z",
       isCurrent: false,
+      ipAddress: null,
+      browser: null,
+      createdAt: "",
+      expiresAt: null,
+      userAgent: null,
     },
   ]);
 
@@ -296,7 +311,8 @@ const UserAccountCenter = () => {
                     )}
                   </div>
 
-                  {session.deviceType && renderDevice(session.deviceType)}
+                  {session.deviceType &&
+                    renderDevice(session.deviceType as DeviceType)}
 
                   <div className="w-full">
                     <span className="text-base font-semibold">
