@@ -33,7 +33,7 @@ export class AccountService {
     return sessions.map((session) => ({
       id: session.id,
       deviceId: session.deviceId,
-      deviceType: session.deviceType,
+      deviceType: this.transformDeviceType(session.deviceType),
       browser: session.browser,
       ipAddress: session.ipAddress,
       userAgent: session.userAgent,
@@ -68,5 +68,17 @@ export class AccountService {
     await this.prisma.authSession.delete({
       where: { id: sessionId },
     });
+  }
+
+  private transformDeviceType(value: string | null) {
+    const map = {
+      IPHONE: 'iPhone',
+      MAC: 'Mac',
+      IPAD: 'iPad',
+      ANDROID: 'Android',
+      WINDOWS: 'Windows',
+      OTHER: 'Other',
+    };
+    return value ? map[value] : 'other';
   }
 }

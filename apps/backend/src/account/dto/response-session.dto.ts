@@ -8,17 +8,6 @@ export class ResponseSessionDto {
   @IsString()
   deviceId: string;
 
-  @Transform(({ value }) => {
-    const map = {
-      IPHONE: 'iPhone',
-      MAC: 'Mac',
-      IPAD: 'iPad',
-      ANDROID: 'Android',
-      WINDOWS: 'Windows',
-      OTHER: 'Other',
-    };
-    return value ? map[value] : 'other';
-  })
   deviceType: string | null;
 
   @IsString()

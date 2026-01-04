@@ -178,7 +178,7 @@ export class AuthController {
         ip: req.ip,
         userAgent: userAgent,
       };
-      const data = this.handleAuthSuccess(res, user, deviceId, meta);
+      const data = await this.handleAuthSuccess(res, user, deviceId, meta);
       return data;
     }
   }

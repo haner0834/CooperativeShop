@@ -519,19 +519,17 @@ export class AuthService {
   }
 
   private parseDeviceType(parser: UAParser): DeviceType {
+    const os = parser.getOS().name || '';
     const device = parser.getDevice();
-    const os = parser.getOS().name;
-
-    if (os === 'iOS') {
-      if (device.model === 'iPad' || device.type === 'tablet') {
-        return 'IPAD';
-      }
-      return 'IPHONE';
+    if (os === 'iOS' || /iPad|iPhone|iPod/.test(os)) {
+      return device.model === 'iPad' || device.type === 'tablet'
+        ? 'IPAD'
+        : 'IPHONE';
     }
 
-    if (os === 'Android') return 'ANDROID';
-    if (os === 'Windows') return 'WINDOWS';
-    if (os === 'Mac OS') return 'MAC';
+    if (os === 'macOS') return 'MAC';
+    if (os.includes('Android')) return 'ANDROID';
+    if (os.includes('Windows')) return 'WINDOWS';
 
     return 'OTHER';
   }
