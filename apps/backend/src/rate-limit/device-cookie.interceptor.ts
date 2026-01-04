@@ -8,10 +8,14 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { RateLimitService } from './rate-limit.service';
 import { Response } from 'express';
+import { DeviceIdService } from 'src/device-id/device-id.service';
 
 @Injectable()
 export class DeviceCookieInterceptor implements NestInterceptor {
-  constructor(private readonly rateLimitService: RateLimitService) {}
+  constructor(
+    private readonly rateLimitService: RateLimitService,
+    private readonly deviceIdService: DeviceIdService,
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
@@ -23,7 +27,7 @@ export class DeviceCookieInterceptor implements NestInterceptor {
         const { deviceId, shouldSetCookie } = req['rateLimitContext'] || {};
 
         if (shouldSetCookie && deviceId) {
-          const signedValue = this.rateLimitService.signDeviceId(deviceId);
+          const signedValue = this.deviceIdService.signDeviceId(deviceId);
 
           res.cookie('d_id', signedValue, {
             httpOnly: true,

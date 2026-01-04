@@ -26,31 +26,7 @@ export enum TrustLevel {
 @Injectable()
 export class RateLimitService {
   private readonly logger = new Logger(RateLimitService.name);
-  private readonly HMAC_SECRET = env('DEVICE_ID_HMAC_SECRET');
   constructor(@InjectRedis() private readonly redis: Redis) {}
-
-  signDeviceId(deviceId: string): string {
-    const hmac = crypto.createHmac('sha256', this.HMAC_SECRET);
-    hmac.update(deviceId);
-    return `${deviceId}.${hmac.digest('hex')}`;
-  }
-
-  verifyDeviceId(signedValue: string): string | null {
-    if (!signedValue || !signedValue.includes('.')) return null;
-    const [deviceId, signature] = signedValue.split('.');
-
-    const hmac = crypto.createHmac('sha256', this.HMAC_SECRET);
-    hmac.update(deviceId);
-    const expectedSignature = hmac.digest('hex');
-
-    const a = Buffer.from(signature);
-    const b = Buffer.from(expectedSignature);
-
-    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
-      return null;
-    }
-    return deviceId;
-  }
 
   async checkAccess(
     ip: string,
