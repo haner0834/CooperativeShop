@@ -19,7 +19,7 @@ export class CloudflareContextInterceptor implements NestInterceptor {
 
     req.cf = {
       country: header(h, 'cf-ipcountry'),
-      city: header(h, 'cf-city'),
+      city: header(h, 'cf-ipcity'),
     };
 
     return next.handle();
