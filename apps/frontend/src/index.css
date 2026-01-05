@@ -259,3 +259,9 @@
   --animate-text-wobble: wobble 3s ease-in-out infinite;
   --animate-text-wobble-strong: wobble 0.6s ease-in-out infinite;
 }
+
+@layer utilities {
+  .pb-pwa {
+    padding-bottom: 34pt;
+  }
+}
