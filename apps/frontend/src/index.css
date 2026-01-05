@@ -73,8 +73,6 @@
 
 @custom-variant pwa (@media (display-mode: standalone));
 
-@import "tailwindcss";
-
 @theme {
   /* 定義 Keyframes */
   @keyframes float {
@@ -159,8 +157,6 @@
     animation-delay: var(--delay);
   }
 }
-
-@import "tailwindcss";
 
 @theme {
   /* --- Keyframes 區塊 --- */
