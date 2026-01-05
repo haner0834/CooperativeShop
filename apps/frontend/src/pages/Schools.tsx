@@ -16,7 +16,7 @@ const Schools = () => {
     <>
       <PageMeta {...routesMeta.schools} />
 
-      <div className="pt-18 flex flex-col items-center min-h-screen bg-base-300">
+      <div className="pt-18 flex flex-col items-center min-h-screen bg-base-300 pwa:pb-pwa">
         <ul className="mx-auto max-w-lg w-full grid grid-cols-2 lg:grid-cols-3 p-4 gap-4">
           {schoolJson.map((school) => (
             <li key={school.abbreviation}>

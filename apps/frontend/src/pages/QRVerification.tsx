@@ -51,7 +51,7 @@ const ResultCard = ({ status, data, error, timestamp }: ResultCardProps) => {
   const isError = status === "error";
 
   return (
-    <div className="relative w-full max-w-[400px] aspect-[1.58/1] mx-auto">
+    <div className="relative w-full max-w-[400px] aspect-[1.58/1] mx-auto pwa:pb-pwa">
       <PageMeta {...routesMeta.qrVerification} />
       <div
         className={`w-full h-full rounded-box border shadow-xl flex flex-col p-6 justify-between overflow-hidden relative bg-base-100 ${
