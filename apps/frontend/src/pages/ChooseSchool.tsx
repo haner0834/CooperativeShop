@@ -145,7 +145,7 @@ const ChooseSchool = () => {
     <>
       <PageMeta {...routesMeta.chooseSchool} />
 
-      <div className="min-h-screen bg-base-200 pt-22 flex flex-col p-4">
+      <div className="min-h-screen bg-base-200 pt-22 flex flex-col p-4 pwa:pb-pwa">
         <div className="max-w-2xl mx-auto w-full flex flex-col flex-1">
           <label className="input w-full">
             <svg

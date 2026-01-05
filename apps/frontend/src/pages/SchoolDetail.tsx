@@ -106,7 +106,7 @@ const SchoolDetail = () => {
     a();
   }, [schoolAbbrParam]);
   return (
-    <div className="min-h-screen bg-base-300 flex flex-col items-center pt-18">
+    <div className="min-h-screen bg-base-300 flex flex-col items-center pt-18 pwa:pb-pwa">
       {school?.name && <PageMeta {...routesMeta.schoolDetail(school.name)} />}
 
       <nav className="navbar fixed z-50 bg-base-100 top-0 shadow-xs">

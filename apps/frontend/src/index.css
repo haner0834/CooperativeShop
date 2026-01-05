@@ -73,8 +73,6 @@
 
 @custom-variant pwa (@media (display-mode: standalone));
 
-@import "tailwindcss";
-
 @theme {
   /* 定義 Keyframes */
   @keyframes float {
@@ -159,8 +157,6 @@
     animation-delay: var(--delay);
   }
 }
-
-@import "tailwindcss";
 
 @theme {
   /* --- Keyframes 區塊 --- */
@@ -262,4 +258,8 @@
   --animate-text-lag-strong: lag 0.8s ease-in-out infinite;
   --animate-text-wobble: wobble 3s ease-in-out infinite;
   --animate-text-wobble-strong: wobble 0.6s ease-in-out infinite;
+}
+
+@utility pb-pwa {
+  padding-bottom: 34pt;
 }
