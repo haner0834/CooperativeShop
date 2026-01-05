@@ -716,7 +716,7 @@ export const ShopDetailContent = ({
           </section>
           {/* Mobile Bottom Action Bar (Fixed) */}
           <div className="lg:hidden h-20" /> {/* Spacer */}
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-base-100/90 backdrop-blur-xl border-t border-base-200 z-30 lg:hidden flex gap-3 safe-area-bottom pwa:pb-[34pt]">
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-base-100/90 backdrop-blur-xl border-t border-base-200 z-30 lg:hidden flex gap-3 safe-area-bottom pwa:pb-pwa">
             <button
               onClick={() => {
                 handleTap();
