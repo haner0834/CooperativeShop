@@ -251,7 +251,7 @@ const ShopRegisterForm = () => {
       schoolId: activeUser.schoolId,
       images: imageDtos,
       thumbnailKey,
-      address: address,
+      address: selectedPoint.title,
       longitude: selectedPoint.lng,
       latitude: selectedPoint.lat,
       schedules,
