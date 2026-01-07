@@ -263,3 +263,17 @@
 @utility pb-pwa {
   padding-bottom: 34pt;
 }
+
+@utility pb-safe-area {
+  /* 底部安全區域：保留原有的 padding 並累加安全距離 */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility pt-safe-area {
+  /* 頂部安全區域：保留原有的 padding 並累加安全距離 */
+  padding-top: env(safe-area-inset-top);
+}
+
+@utility -pt-safe-area {
+  padding-top: env(safe-area-inset-top) * -1;
+}

@@ -240,7 +240,7 @@ const ShopRegisterForm = () => {
     const thumbnailKey = images[0].uploadInfo?.thumbnailKey;
     if (!thumbnailKey) return;
 
-    const schedules = toBackendSchedules(workSchedules)
+    const schedules = toBackendSchedules(workSchedules);
     if (schedules.length === 0) return;
 
     const shopDto: CreateShopDto = {
@@ -251,7 +251,7 @@ const ShopRegisterForm = () => {
       schoolId: activeUser.schoolId,
       images: imageDtos,
       thumbnailKey,
-      address: selectedPoint.title,
+      address: address,
       longitude: selectedPoint.lng,
       latitude: selectedPoint.lat,
       schedules,
