@@ -222,7 +222,7 @@ const ShopRegisterForm = () => {
   };
 
   const submit = async () => {
-    if (!selectedPoint || !activeUser) return;
+    if (!selectedPoint || !activeUser || !address) return;
     if (images.length === 0 || images.length > 10) return;
 
     const contactInfoDto = contactInfo.map((c) => ({
@@ -240,7 +240,7 @@ const ShopRegisterForm = () => {
     const thumbnailKey = images[0].uploadInfo?.thumbnailKey;
     if (!thumbnailKey) return;
 
-    const schedules = toBackendSchedules(workSchedules)
+    const schedules = toBackendSchedules(workSchedules);
     if (schedules.length === 0) return;
 
     const shopDto: CreateShopDto = {
@@ -251,7 +251,7 @@ const ShopRegisterForm = () => {
       schoolId: activeUser.schoolId,
       images: imageDtos,
       thumbnailKey,
-      address: selectedPoint.title,
+      address: address,
       longitude: selectedPoint.lng,
       latitude: selectedPoint.lat,
       schedules,
