@@ -264,7 +264,7 @@ const ShopsMap = () => {
     mapRef.current = map;
     setMapInstance(map);
 
-    map.addImage("pin-saved", createMarkerImage("#10B981")); // Green
+    map.addImage("pin-saved", createMarkerImage("#2b7fff")); // Blue
     map.addImage("pin-default", createMarkerImage("#f59e0b")); // Orange
 
     map.addSource(SHOP_SOURCE_ID, { type: "geojson", data: shopsGeoJson });
