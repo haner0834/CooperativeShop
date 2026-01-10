@@ -307,7 +307,7 @@ const ShopsMap = () => {
       },
     });
 
-    const layerIds = ["shops-circle", "shops-text"];
+    const layerIds = ["shops-icons", "shops-text"];
 
     layerIds.forEach((layerId) => {
       map.on("click", layerId, (e) => {
