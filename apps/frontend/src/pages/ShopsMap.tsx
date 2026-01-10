@@ -8,6 +8,7 @@ import {
   Clock,
   Bookmark,
   ChevronRight,
+  CornerUpRight,
 } from "lucide-react";
 import Sidebar from "../widgets/Sidebar";
 import { SidebarContent } from "../widgets/SidebarContent";
@@ -94,7 +95,6 @@ const ShopsMap = () => {
 
   const shopsCacheRef = useRef<Map<string, Shop>>(new Map());
   const [dataVersion, setDataVersion] = useState(0);
-  const [savedIds, setSavedIds] = useState<string[]>([]);
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -116,11 +116,11 @@ const ShopsMap = () => {
     const features = allShops
       .filter((shop) => {
         if (filters.isOpen && !shop.isOpen) return false;
-        if (filters.isSaved && !savedIds.includes(shop.id)) return false;
+        if (filters.isSaved && !shop.isSaved) return false;
         return true;
       })
       .map((shop) => {
-        const isSaved = savedIds.includes(shop.id);
+        const isSaved = shop.isSaved;
         const priority = (isSaved ? 10000 : 0) + (shop.hotScore || 0);
 
         return {
@@ -144,7 +144,7 @@ const ShopsMap = () => {
       type: "FeatureCollection",
       features,
     } as GeoJSON.FeatureCollection;
-  }, [filters, savedIds, dataVersion]);
+  }, [filters, dataVersion]);
 
   const fetchShopsInBounds = useCallback(
     async (currentMap: mapboxgl.Map) => {
@@ -195,14 +195,6 @@ const ShopsMap = () => {
           });
 
           if (hasNewData) setDataVersion((prev) => prev + 1);
-        }
-
-        // Fetch Saved IDs if logged in
-        if (activeUserRef.current) {
-          const savedRes = await authedFetch(path("/api/shops/saved-ids"));
-          if (savedRes?.success) {
-            setSavedIds(savedRes.data);
-          }
         }
       } catch (error) {
         console.error("Failed to fetch shops in bounds", error);
@@ -681,7 +673,7 @@ const ShopsMap = () => {
                 rel="noreferrer"
                 className="btn"
               >
-                <Navigation size={18} />
+                <CornerUpRight size={18} />
                 導航
               </a>
 
