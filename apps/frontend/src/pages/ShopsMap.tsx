@@ -13,7 +13,7 @@ import Sidebar from "../widgets/Sidebar";
 import { SidebarContent } from "../widgets/SidebarContent";
 import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import mapboxgl from "mapbox-gl";
+import mapboxgl, { type ExpressionSpecification } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import { useDevice } from "../widgets/DeviceContext";
@@ -267,19 +267,27 @@ const ShopsMap = () => {
 
     map.addSource(SHOP_SOURCE_ID, { type: "geojson", data: shopsGeoJson });
 
+    const SORT_EXPRESSION: ExpressionSpecification = [
+      "case",
+      ["get", "isSaved"],
+      ["-", 0, ["get", "hotScore"]], // 已收藏：優先度最高，hotScore 越高越優先 (變負數)
+      ["-", 10000, ["get", "hotScore"]], // 未收藏：優先度較低，基準值設大一點
+    ] as const;
+
     map.addLayer({
       id: "shops-icons",
       type: "symbol",
       source: SHOP_SOURCE_ID,
       layout: {
         "icon-image": ["case", ["get", "isSaved"], "pin-saved", "pin-default"],
-        "icon-size": 0.5, // Adjust based on your preference
+        "icon-size": 0.5,
         "icon-allow-overlap": false,
-        "icon-anchor": "bottom", // Important: points the tip of the pin to the coordinate
+        "icon-anchor": "bottom",
+        "symbol-sort-key": SORT_EXPRESSION, // 關鍵：決定誰先顯示
       },
     });
 
-    // 文字標籤與碰撞處理
+    // 文字標籤圖層
     map.addLayer({
       id: "shops-text",
       type: "symbol",
@@ -288,9 +296,9 @@ const ShopsMap = () => {
         "text-field": ["get", "title"],
         "text-size": 12,
         "text-anchor": "top",
-        "text-offset": [0, 0.5], // Offset so it doesn't cover the pin
-        "symbol-sort-key": ["get", "hotScore"], // Use your hotScore to decide which labels show first
+        "text-offset": [0, 0.5],
         "text-allow-overlap": false,
+        "symbol-sort-key": SORT_EXPRESSION, // 關鍵：文字與圖示的隱藏邏輯同步
       },
       paint: {
         "text-color": "#333",
