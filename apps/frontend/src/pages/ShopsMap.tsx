@@ -27,12 +27,10 @@ import { useToast } from "../widgets/Toast/ToastProvider";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
 import clsx from "clsx";
 
-// --- Types ---
 interface PureMapProps {
   onMapLoad: (map: mapboxgl.Map) => void;
 }
 
-// --- Constants ---
 const SHOP_SOURCE_ID = "shops-source";
 
 const PureMap = ({ onMapLoad }: PureMapProps) => {
@@ -85,47 +83,39 @@ const ShopsMap = () => {
   const { activeUserRef } = useAuth();
   const { showToast } = useToast();
 
-  // --- State ---
-  const mapRef = useRef<mapboxgl.Map | null>(null); // 用於回調函數獲取最新實例
+  const mapRef = useRef<mapboxgl.Map | null>(null);
   const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
   const [showSidebar, setShowSidebar] = useState(false);
 
-  // Search State
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [previewResults, setPreviewResults] = useState<Shop[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  // Data & Filters
-  const shopsRef = useRef<Shop[]>([]);
+  const shopsCacheRef = useRef<Map<string, Shop>>(new Map());
+  const [dataVersion, setDataVersion] = useState(0);
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  const setShopsRef = (newValue: Shop[]) => {
-    shopsRef.current = newValue;
-  };
+  const userLocationMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
   const [filters, setFilters] = useState({
     isOpen: false,
     isSaved: false,
   });
 
-  // --- Map Logic ---
-
-  // 1. Convert Shops to GeoJSON FeatureCollection
   const shopsGeoJson = useMemo(() => {
-    const features = shopsRef.current
+    const allShops = Array.from(shopsCacheRef.current.values());
+
+    const features = allShops
       .filter((shop) => {
-        // Client-side filtering if needed, though API handles bounds
         if (filters.isOpen && !shop.isOpen) return false;
         if (filters.isSaved && !savedIds.includes(shop.id)) return false;
         return true;
       })
       .map((shop) => {
         const isSaved = savedIds.includes(shop.id);
-        // Calculate priority: Saved > Hot Score.
-        // symbol-sort-key: Features with higher sort key are placed before lower.
         const priority = (isSaved ? 10000 : 0) + (shop.hotScore || 0);
 
         return {
@@ -140,7 +130,7 @@ const ShopsMap = () => {
             isOpen: shop.isOpen,
             isSaved: isSaved,
             sortKey: priority,
-            icon: isSaved ? "marker-saved" : "marker-default", // Can distinguish colors
+            icon: isSaved ? "marker-saved" : "marker-default",
           },
         };
       });
@@ -149,31 +139,33 @@ const ShopsMap = () => {
       type: "FeatureCollection",
       features,
     } as GeoJSON.FeatureCollection;
-  }, [filters, savedIds]);
+  }, [filters, savedIds, dataVersion]);
 
-  // 2. Fetch Shops based on Bounds
   const fetchShopsInBounds = useCallback(
     async (currentMap: mapboxgl.Map) => {
-      if (!currentMap) {
-        console.log("No map instance");
-        return;
-      }
+      if (!currentMap) return;
 
       const bounds = currentMap.getBounds();
-      if (!bounds) {
-        console.log("No bounds");
-        return;
-      }
+      if (!bounds) return;
+
+      const south = bounds.getSouth();
+      const north = bounds.getNorth();
+      const west = bounds.getWest();
+      const east = bounds.getEast();
+
+      const latSpan = north - south;
+      const lngSpan = east - west;
+      const BUFFER_RATIO = 0.25;
+
       const params = new URLSearchParams({
-        minLat: bounds.getSouth().toString(),
-        maxLat: bounds.getNorth().toString(),
-        minLng: bounds.getWest().toString(),
-        maxLng: bounds.getEast().toString(),
-        limit: "300", // As per requirement, limit shouldn't be an issue
+        minLat: (south - latSpan * BUFFER_RATIO).toString(),
+        maxLat: (north + latSpan * BUFFER_RATIO).toString(),
+        minLng: (west - lngSpan * BUFFER_RATIO).toString(),
+        maxLng: (east + lngSpan * BUFFER_RATIO).toString(),
+        limit: "300",
       });
 
       try {
-        // Fetch Shops
         const route = path(`/api/shops?${params.toString()}`);
         let resData;
 
@@ -186,7 +178,19 @@ const ShopsMap = () => {
 
         if (resData.success && Array.isArray(resData.data)) {
           const fetchedShops = resData.data.map(transformDtoToShop);
-          setShopsRef(fetchedShops);
+
+          let hasNewData = false;
+          fetchedShops.forEach((shop: Shop) => {
+            if (!shopsCacheRef.current.has(shop.id)) {
+              shopsCacheRef.current.set(shop.id, shop);
+              hasNewData = true;
+            } else {
+              shopsCacheRef.current.set(shop.id, shop);
+            }
+          });
+          console.log("Fuck");
+
+          if (hasNewData) setDataVersion((prev) => prev + 1);
         }
 
         // Fetch Saved IDs if logged in
@@ -203,7 +207,6 @@ const ShopsMap = () => {
     [activeUserRef, authedFetch]
   );
 
-  // Function to create a custom SVG marker programmatically
   const createMarkerImage = (color: string) => {
     const size = 72;
     const canvas = document.createElement("canvas");
@@ -257,7 +260,6 @@ const ShopsMap = () => {
     return ctx.getImageData(0, 0, size, size);
   };
 
-  // 3. Initialize Map Layers & Events
   const handleMapLoad = (map: mapboxgl.Map) => {
     mapRef.current = map;
     setMapInstance(map);
@@ -270,8 +272,8 @@ const ShopsMap = () => {
     const SORT_EXPRESSION: ExpressionSpecification = [
       "case",
       ["get", "isSaved"],
-      ["-", 0, ["get", "hotScore"]], // 已收藏：優先度最高，hotScore 越高越優先 (變負數)
-      ["-", 10000, ["get", "hotScore"]], // 未收藏：優先度較低，基準值設大一點
+      ["-", 0, ["get", "hotScore"]],
+      ["-", 10000, ["get", "hotScore"]],
     ] as const;
 
     map.addLayer({
@@ -283,11 +285,10 @@ const ShopsMap = () => {
         "icon-size": 0.5,
         "icon-allow-overlap": false,
         "icon-anchor": "bottom",
-        "symbol-sort-key": SORT_EXPRESSION, // 關鍵：決定誰先顯示
+        "symbol-sort-key": SORT_EXPRESSION,
       },
     });
 
-    // 文字標籤圖層
     map.addLayer({
       id: "shops-text",
       type: "symbol",
@@ -298,7 +299,7 @@ const ShopsMap = () => {
         "text-anchor": "top",
         "text-offset": [0, 0.5],
         "text-allow-overlap": false,
-        "symbol-sort-key": SORT_EXPRESSION, // 關鍵：文字與圖示的隱藏邏輯同步
+        "symbol-sort-key": SORT_EXPRESSION,
       },
       paint: {
         "text-color": "#333",
@@ -321,7 +322,7 @@ const ShopsMap = () => {
         console.log(shopId);
 
         // Find full shop data
-        const clickedShop = shopsRef.current.find((s) => s.id === shopId);
+        const clickedShop = shopsCacheRef.current.get(shopId);
         if (clickedShop) {
           setSelectedShop(clickedShop);
           setIsSheetOpen(true);
@@ -336,7 +337,7 @@ const ShopsMap = () => {
           console.log("No fucking data");
         }
       });
-      // Change cursor
+
       map.on("mouseenter", layerId, () => {
         map.getCanvas().style.cursor = "pointer";
       });
@@ -344,16 +345,12 @@ const ShopsMap = () => {
         map.getCanvas().style.cursor = "";
       });
     });
-    // Interactions
+
     map.on("moveend", () => fetchShopsInBounds(map));
 
-    // Click on shop
-
-    // Initial Fetch
     fetchShopsInBounds(map);
   };
 
-  // 4. Update Source Data when shops/filters change
   useEffect(() => {
     if (!mapRef.current) return;
     const source = mapRef.current.getSource(
@@ -363,8 +360,6 @@ const ShopsMap = () => {
       source.setData(shopsGeoJson);
     }
   }, [shopsGeoJson, mapRef.current]);
-
-  // --- Handlers ---
 
   const handleLocateMe = () => {
     if (!navigator.geolocation) {
@@ -383,16 +378,27 @@ const ShopsMap = () => {
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        const { longitude, latitude } = pos.coords;
         if (mapInstance) {
           mapInstance.flyTo({
-            center: [pos.coords.longitude, pos.coords.latitude],
+            center: [longitude, latitude],
             zoom: 15,
             essential: true,
           });
-          // Also render a user marker? (Optional, mapbox-gl-geolocate-control usually does this)
-          new mapboxgl.Marker({ color: "#3b82f6" })
-            .setLngLat([pos.coords.longitude, pos.coords.latitude])
-            .addTo(mapInstance);
+
+          if (userLocationMarkerRef.current) {
+            userLocationMarkerRef.current.setLngLat([longitude, latitude]);
+          } else {
+            const el = document.createElement("div");
+            el.className =
+              "w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg";
+
+            userLocationMarkerRef.current = new mapboxgl.Marker({
+              color: "#3b82f6",
+            })
+              .setLngLat([longitude, latitude])
+              .addTo(mapInstance);
+          }
         }
       },
       (err) => {
