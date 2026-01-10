@@ -8,7 +8,6 @@ import {
   Clock,
   Bookmark,
   ChevronRight,
-  ExternalLink,
 } from "lucide-react";
 import Sidebar from "../widgets/Sidebar";
 import { SidebarContent } from "../widgets/SidebarContent";
@@ -20,14 +19,13 @@ import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import { useDevice } from "../widgets/DeviceContext";
 import { transformDtoToShop, type Shop } from "../types/shop";
 import { SearchResultItem } from "./Shops"; // Reuse from Shops
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuthFetch } from "../auth/useAuthFetch";
 import { useAuth } from "../auth/AuthContext";
 import { path } from "../utils/path";
 import { useToast } from "../widgets/Toast/ToastProvider";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
 import clsx from "clsx";
-import { AnimatePresence, motion } from "framer-motion";
 
 // --- Types ---
 interface PureMapProps {
@@ -36,22 +34,6 @@ interface PureMapProps {
 
 // --- Constants ---
 const SHOP_SOURCE_ID = "shops-source";
-const SHOP_LAYER_ID = "shops-layer";
-const SHOP_TEXT_LAYER_ID = "shops-text-layer";
-
-// 生成一個簡單的 SVG 圓形圖標作為地圖標記
-const generateMarkerIcon = (color: string) => {
-  const size = 24;
-  const radius = size / 2;
-  const svg = `
-    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="${radius}" cy="${radius}" r="${
-    radius - 2
-  }" fill="${color}" stroke="white" stroke-width="3"/>
-    </svg>
-  `;
-  return (new Image(size, size).src = "data:image/svg+xml;base64," + btoa(svg));
-};
 
 const PureMap = ({ onMapLoad }: PureMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -98,7 +80,6 @@ const PureMap = ({ onMapLoad }: PureMapProps) => {
 };
 
 const ShopsMap = () => {
-  const navigate = useNavigate();
   const { isDesktop, isMobile } = useDevice();
   const { authedFetch } = useAuthFetch();
   const { activeUserRef } = useAuth();
