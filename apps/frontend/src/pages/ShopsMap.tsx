@@ -106,7 +106,12 @@ const ShopsMap = () => {
   });
 
   const shopsGeoJson = useMemo(() => {
-    const allShops = Array.from(shopsCacheRef.current.values());
+    let allShops = Array.from(shopsCacheRef.current.values());
+
+    if (searchInput.trim() !== "" && previewResults.length > 0) {
+      const resultIds = new Set(previewResults.map((s) => s.id));
+      allShops = allShops.filter((shop) => resultIds.has(shop.id));
+    }
 
     const features = allShops
       .filter((shop) => {
@@ -188,7 +193,6 @@ const ShopsMap = () => {
               shopsCacheRef.current.set(shop.id, shop);
             }
           });
-          console.log("Fuck");
 
           if (hasNewData) setDataVersion((prev) => prev + 1);
         }
@@ -411,9 +415,13 @@ const ShopsMap = () => {
     );
   };
 
-  // Search Logic
   useEffect(() => {
     const doSearch = async () => {
+      console.log("Hello", searchInput, mapRef.current);
+      if (!searchInput && mapRef.current) {
+        fetchShopsInBounds(mapRef.current);
+        return;
+      }
       if (!searchInput.trim() || !activeUserRef.current) {
         setPreviewResults([]);
         return;
@@ -421,10 +429,30 @@ const ShopsMap = () => {
       setIsSearching(true);
       try {
         const { success, data } = await authedFetch(
-          path(`/api/shops?q=${searchInput}&limit=5`)
+          path(`/api/shops?q=${searchInput}&limit=20`)
         );
         if (success) {
-          setPreviewResults(data.map(transformDtoToShop));
+          const searchedShops = data.map(transformDtoToShop);
+          setPreviewResults(searchedShops);
+
+          if (searchedShops.length > 0 && mapInstance) {
+            searchedShops.forEach((s: Shop) =>
+              shopsCacheRef.current.set(s.id, s)
+            );
+            setDataVersion((v) => v + 1);
+
+            // Calculate LngLatBounds
+            const bounds = new mapboxgl.LngLatBounds();
+            searchedShops.forEach((s: Shop) => {
+              bounds.extend([s.longitude, s.latitude]);
+            });
+
+            mapInstance.fitBounds(bounds, {
+              padding: isMobile ? 80 : 150,
+              maxZoom: 16,
+              duration: 1000,
+            });
+          }
         }
       } catch (e) {
         console.error(e);
@@ -432,9 +460,10 @@ const ShopsMap = () => {
         setIsSearching(false);
       }
     };
-    const t = setTimeout(doSearch, 300);
+
+    const t = setTimeout(doSearch, 500);
     return () => clearTimeout(t);
-  }, [searchInput]);
+  }, [searchInput, mapInstance]);
 
   return (
     <div className="fixed w-full h-full touch-none bg-base-100">
