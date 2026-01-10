@@ -533,9 +533,7 @@ const ShopsMap = () => {
                   <Filter
                     size={20}
                     className={clsx(
-                      filters.isOpen || filters.isSaved
-                        ? "text-primary fill-current"
-                        : ""
+                      filters.isOpen || filters.isSaved ? "fill-current" : ""
                     )}
                   />
                 </div>
