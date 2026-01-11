@@ -575,7 +575,17 @@ const ShopsMap = () => {
         <div className="relative flex items-center m-4 gap-3 pointer-events-auto">
           {/* A. Search Mode */}
           {!isAvailable ? (
-            <></>
+            <button
+              onClick={() =>
+                setShowSidebar((prev) => (isDesktop ? prev : !prev))
+              }
+              className={`btn ${
+                showSidebar || isDesktop ? "rounded-full" : "btn-circle"
+              } shadow-md z-50 transition-all flex gap-4`}
+            >
+              <Menu size={20} />
+              {(showSidebar || isDesktop) && <Logo className="h-7 w-auto" />}
+            </button>
           ) : isSearchFocused ? (
             <div className="flex-1 flex relative">
               <div className="flex-1"></div>
