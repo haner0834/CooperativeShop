@@ -78,6 +78,9 @@ const PureMap = ({ onMapLoad }: PureMapProps) => {
   );
 };
 
+const TILE_SIZE = 0.01; // 0.01 ~= 1.1 km
+const THRESHOLD = 0.3; // 缺失比例閾值
+
 const ShopsMap = () => {
   const { isDesktop, isMobile } = useDevice();
   const { authedFetch } = useAuthFetch();
@@ -97,6 +100,9 @@ const ShopsMap = () => {
   const [dataVersion, setDataVersion] = useState(0);
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  const fetchedTilesRef = useRef<Set<string>>(new Set());
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const userLocationMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
@@ -148,53 +154,77 @@ const ShopsMap = () => {
 
   const fetchShopsInBounds = useCallback(
     async (currentMap: mapboxgl.Map) => {
-      if (!currentMap) return;
-
+      console.log("called");
+      if (!currentMap || !activeUserRef.current) return;
       const bounds = currentMap.getBounds();
       if (!bounds) return;
-
       const south = bounds.getSouth();
       const north = bounds.getNorth();
       const west = bounds.getWest();
       const east = bounds.getEast();
-
       const latSpan = north - south;
       const lngSpan = east - west;
       const BUFFER_RATIO = 0.25;
-
-      const params = new URLSearchParams({
-        minLat: (south - latSpan * BUFFER_RATIO).toString(),
-        maxLat: (north + latSpan * BUFFER_RATIO).toString(),
-        minLng: (west - lngSpan * BUFFER_RATIO).toString(),
-        maxLng: (east + lngSpan * BUFFER_RATIO).toString(),
-        limit: "300",
-      });
-
+      const pad = {
+        minLat: south - latSpan * BUFFER_RATIO,
+        maxLat: north + latSpan * BUFFER_RATIO,
+        minLng: west - lngSpan * BUFFER_RATIO,
+        maxLng: east + lngSpan * BUFFER_RATIO,
+      };
+      const cellsInView: string[] = [];
+      const missingCells: string[] = [];
+      for (
+        let lat = Math.floor(pad.minLat / TILE_SIZE);
+        lat <= Math.floor(pad.maxLat / TILE_SIZE);
+        lat++
+      ) {
+        for (
+          let lng = Math.floor(pad.minLng / TILE_SIZE);
+          lng <= Math.floor(pad.maxLng / TILE_SIZE);
+          lng++
+        ) {
+          const cellId = `${lat}_${lng}`;
+          cellsInView.push(cellId);
+          if (!fetchedTilesRef.current.has(cellId)) {
+            missingCells.push(cellId);
+          }
+        }
+      }
+      const missingRatio = missingCells.length / cellsInView.length;
+      if (missingRatio < THRESHOLD) {
+        console.log(
+          `[Map] Skip fetch. Missing ratio: ${(missingRatio * 100).toFixed(1)}%`
+        );
+        return;
+      }
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+      abortControllerRef.current = new AbortController();
       try {
+        const params = new URLSearchParams({
+          minLat: pad.minLat.toString(),
+          maxLat: pad.maxLat.toString(),
+          minLng: pad.minLng.toString(),
+          maxLng: pad.maxLng.toString(),
+          limit: "500",
+        });
         const route = path(`/api/shops?${params.toString()}`);
         let resData;
-
-        if (activeUserRef.current) {
-          resData = await authedFetch(route);
-        } else {
-          const res = await fetch(route);
-          resData = await res.json();
-        }
-
+        resData = await authedFetch(route, {
+          signal: abortControllerRef.current.signal,
+        });
         if (resData.success && Array.isArray(resData.data)) {
-          const fetchedShops = resData.data.map(transformDtoToShop);
-
-          let hasNewData = false;
-          fetchedShops.forEach((shop: Shop) => {
-            if (!shopsCacheRef.current.has(shop.id)) {
+          let hasNew = false;
+          resData.data.forEach((dto: any) => {
+            if (!shopsCacheRef.current.has(dto.id)) {
+              const shop = transformDtoToShop(dto);
               shopsCacheRef.current.set(shop.id, shop);
-              hasNewData = true;
-            } else {
-              shopsCacheRef.current.set(shop.id, shop);
+              hasNew = true;
             }
           });
-
-          if (hasNewData) setDataVersion((prev) => prev + 1);
+          if (hasNew) {
+            missingCells.forEach((id) => fetchedTilesRef.current.add(id));
+            requestAnimationFrame(() => setDataVersion((v) => v + 1));
+          }
         }
       } catch (error) {
         console.error("Failed to fetch shops in bounds", error);
