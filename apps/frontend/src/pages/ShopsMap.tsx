@@ -557,7 +557,9 @@ const ShopsMap = () => {
             <h1 className="text-9xl font-black z-10">Shops Map</h1>
             <p className="mt-5 p-2 text-sm z-10">
               這裡，你可以看到最方便的地圖服務，完美整合我們的商店服務。
+              <br />
               極速體驗、終極享受、流程優化，想得到的功能都在這裡。
+              <br />
               現在加入我們，開始享受吧！
             </p>
 
