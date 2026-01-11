@@ -348,8 +348,8 @@ const ShopsMap = () => {
         "text-anchor": "top",
         "text-offset": [0, 0.5],
 
-        "icon-allow-overlap": false,
-        "text-allow-overlap": false,
+        "icon-allow-overlap": true,
+        "text-allow-overlap": true,
 
         "symbol-sort-key": SORT_EXPRESSION,
       },
