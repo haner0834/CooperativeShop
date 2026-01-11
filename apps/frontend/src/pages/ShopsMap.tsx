@@ -863,7 +863,7 @@ const ShopsMap = () => {
         title="商家資訊"
       >
         {selectedShop && (
-          <div className="flex flex-col gap-4 pb-pwa">
+          <div className="flex flex-col gap-4">
             {/* Header Image */}
             <div className="relative h-40 w-full rounded-2xl overflow-hidden bg-base-200">
               {selectedShop.thumbnailLink ? (
