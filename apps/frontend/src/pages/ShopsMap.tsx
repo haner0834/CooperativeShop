@@ -680,7 +680,7 @@ const ShopsMap = () => {
       )}
 
       {/* 2. Top UI (Search & Controls) */}
-      <div className="absolute inset-0 flex flex-col w-full pt-safe-area pointer-events-none">
+      <div className="absolute inset-0 flex flex-col w-full pointer-events-none">
         {/* Top Bar Container */}
         <div className="relative flex items-center m-4 gap-3 pointer-events-auto">
           {/* A. Search Mode */}
@@ -863,7 +863,7 @@ const ShopsMap = () => {
         title="商家資訊"
       >
         {selectedShop && (
-          <div className="flex flex-col gap-4 pb-safe-area">
+          <div className="flex flex-col gap-4 pb-pwa">
             {/* Header Image */}
             <div className="relative h-40 w-full rounded-2xl overflow-hidden bg-base-200">
               {selectedShop.thumbnailLink ? (
