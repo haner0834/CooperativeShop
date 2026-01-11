@@ -349,7 +349,7 @@ const ShopsMap = () => {
         "text-offset": [0, 0.5],
 
         "icon-allow-overlap": true,
-        "text-allow-overlap": true,
+        "text-allow-overlap": false,
 
         "symbol-sort-key": SORT_EXPRESSION,
       },
