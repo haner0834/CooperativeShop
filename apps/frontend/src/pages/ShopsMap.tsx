@@ -342,14 +342,15 @@ const ShopsMap = () => {
         "icon-image": ["case", ["get", "isSaved"], "pin-saved", "pin-default"],
         "icon-size": 0.5,
         "icon-anchor": "bottom",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": false,
 
         "text-field": ["get", "title"],
         "text-size": 12,
         "text-anchor": "top",
         "text-offset": [0, 0.5],
-
-        "icon-allow-overlap": true,
         "text-allow-overlap": false,
+        "text-optional": true,
 
         "symbol-sort-key": SORT_EXPRESSION,
       },
