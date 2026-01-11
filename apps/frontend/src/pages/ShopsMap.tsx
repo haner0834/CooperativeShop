@@ -297,7 +297,7 @@ const ShopsMap = () => {
       },
     });
 
-    map.on("click", SHOP_SOURCE_ID, (e) => {
+    map.on("click", "shops", (e) => {
       console.log("Click");
       if (!e.features || e.features.length === 0) {
         console.log(" wtf is this shi");
@@ -324,10 +324,10 @@ const ShopsMap = () => {
       }
     });
 
-    map.on("mouseenter", SHOP_SOURCE_ID, () => {
+    map.on("mouseenter", "shops", () => {
       map.getCanvas().style.cursor = "pointer";
     });
-    map.on("mouseleave", SHOP_SOURCE_ID, () => {
+    map.on("mouseleave", "shops", () => {
       map.getCanvas().style.cursor = "";
     });
 
