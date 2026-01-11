@@ -267,7 +267,7 @@ const ShopsMap = () => {
 
     const SORT_EXPRESSION: ExpressionSpecification = [
       "+",
-      ["*", ["to-number", ["get", "isSaved"]], -100000],
+      ["*", ["to-number", ["get", "isSaved"]], 100000],
       ["get", "hotScore"],
     ];
 
