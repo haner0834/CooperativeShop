@@ -215,7 +215,7 @@ const ShopsMap = () => {
     const cx = size / 2;
     const cy = 28;
     const outerR = 26;
-    const innerR = 16;
+    const innerR = 12;
     const bottomY = 70;
     const tipRadius = 6; // 控制底部尖角的圓潤程度
 
@@ -234,8 +234,8 @@ const ShopsMap = () => {
 
     // 2. 連接到右下角 (直線銜接)
     // arcTo 會在當前點與目標點之間畫出圓弧
-    ctx.lineTo(cx + 8, bottomY - 6); // 靠近底部的點
-    ctx.arcTo(cx, bottomY, cx - 8, bottomY - 6, tipRadius); // 底部圓角
+    ctx.lineTo(cx + 6, bottomY - 6); // 靠近底部的點
+    ctx.arcTo(cx, bottomY, cx - 6, bottomY - 6, tipRadius); // 底部圓角
 
     // 3. 連接回左側圓弧起點 (直線銜接)
     ctx.lineTo(
@@ -261,40 +261,33 @@ const ShopsMap = () => {
     setMapInstance(map);
 
     map.addImage("pin-saved", createMarkerImage("#2b7fff")); // Blue
-    map.addImage("pin-default", createMarkerImage("#f59e0b")); // Orange
+    map.addImage("pin-default", createMarkerImage("#f45353")); // Orange
 
     map.addSource(SHOP_SOURCE_ID, { type: "geojson", data: shopsGeoJson });
 
     const SORT_EXPRESSION: ExpressionSpecification = [
-      "case",
-      ["get", "isSaved"],
-      ["-", 0, ["get", "hotScore"]],
-      ["-", 10000, ["get", "hotScore"]],
-    ] as const;
+      "+",
+      ["*", ["to-number", ["get", "isSaved"]], -100000],
+      ["get", "hotScore"],
+    ];
 
     map.addLayer({
-      id: "shops-icons",
+      id: "shops",
       type: "symbol",
       source: SHOP_SOURCE_ID,
       layout: {
         "icon-image": ["case", ["get", "isSaved"], "pin-saved", "pin-default"],
         "icon-size": 0.5,
-        "icon-allow-overlap": false,
         "icon-anchor": "bottom",
-        "symbol-sort-key": SORT_EXPRESSION,
-      },
-    });
 
-    map.addLayer({
-      id: "shops-text",
-      type: "symbol",
-      source: SHOP_SOURCE_ID,
-      layout: {
         "text-field": ["get", "title"],
         "text-size": 12,
         "text-anchor": "top",
         "text-offset": [0, 0.5],
+
+        "icon-allow-overlap": false,
         "text-allow-overlap": false,
+
         "symbol-sort-key": SORT_EXPRESSION,
       },
       paint: {
@@ -304,42 +297,38 @@ const ShopsMap = () => {
       },
     });
 
-    const layerIds = ["shops-icons", "shops-text"];
+    map.on("click", SHOP_SOURCE_ID, (e) => {
+      console.log("Click");
+      if (!e.features || e.features.length === 0) {
+        console.log(" wtf is this shi");
+        return;
+      }
+      const feature = e.features[0];
+      const shopId = feature.properties?.id;
+      console.log(shopId);
 
-    layerIds.forEach((layerId) => {
-      map.on("click", layerId, (e) => {
-        console.log("Click");
-        if (!e.features || e.features.length === 0) {
-          console.log(" wtf is this shi");
-          return;
-        }
-        const feature = e.features[0];
-        const shopId = feature.properties?.id;
-        console.log(shopId);
+      // Find full shop data
+      const clickedShop = shopsCacheRef.current.get(shopId);
+      if (clickedShop) {
+        setSelectedShop(clickedShop);
+        setIsSheetOpen(true);
 
-        // Find full shop data
-        const clickedShop = shopsCacheRef.current.get(shopId);
-        if (clickedShop) {
-          setSelectedShop(clickedShop);
-          setIsSheetOpen(true);
+        map.flyTo({
+          center: [clickedShop.longitude, clickedShop.latitude],
+          zoom: 16,
+          offset: [0, isMobile ? -100 : 0],
+          essential: true,
+        });
+      } else {
+        console.log("No fucking data");
+      }
+    });
 
-          map.flyTo({
-            center: [clickedShop.longitude, clickedShop.latitude],
-            zoom: 16,
-            offset: [0, isMobile ? -100 : 0],
-            essential: true,
-          });
-        } else {
-          console.log("No fucking data");
-        }
-      });
-
-      map.on("mouseenter", layerId, () => {
-        map.getCanvas().style.cursor = "pointer";
-      });
-      map.on("mouseleave", layerId, () => {
-        map.getCanvas().style.cursor = "";
-      });
+    map.on("mouseenter", SHOP_SOURCE_ID, () => {
+      map.getCanvas().style.cursor = "pointer";
+    });
+    map.on("mouseleave", SHOP_SOURCE_ID, () => {
+      map.getCanvas().style.cursor = "";
     });
 
     map.on("moveend", () => fetchShopsInBounds(map));
