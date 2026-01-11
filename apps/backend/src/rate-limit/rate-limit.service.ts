@@ -154,7 +154,7 @@ export class RateLimitService {
     remaining: number;
   }> {
     const today = new Date().toISOString().split('T')[0];
-    const key = `rl:school:${schoolAbbr}:${today}`;
+    const key = `rl:school:${schoolAbbr}:shop:${today}`;
 
     const current = await this.redis.incr(key);
 
