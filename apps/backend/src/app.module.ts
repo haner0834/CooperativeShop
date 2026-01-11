@@ -25,6 +25,7 @@ import { AccountModule } from './account/account.module';
 import { DeviceIdGuard } from './device-id/device-id.guard';
 import { DeviceIdService } from './device-id/device-id.service';
 import { CloudflareContextInterceptor } from './common/interceptors/cloudflare-context.interceptor';
+import { MapModule } from './map/map.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { CloudflareContextInterceptor } from './common/interceptors/cloudflare-c
     }),
     SitemapModule,
     AccountModule,
+    MapModule,
   ],
   controllers: [AppController],
   providers: [
