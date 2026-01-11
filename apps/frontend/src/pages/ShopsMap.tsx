@@ -9,6 +9,7 @@ import {
   Bookmark,
   ChevronRight,
   CornerUpRight,
+  ChevronDown,
 } from "lucide-react";
 import Sidebar from "../widgets/Sidebar";
 import { SidebarContent } from "../widgets/SidebarContent";
@@ -29,6 +30,8 @@ import ResponsiveSheet from "../widgets/ResponsiveSheet";
 import clsx from "clsx";
 import { useModal } from "../widgets/ModalContext";
 import { usePathHistory } from "../contexts/PathHistoryContext";
+import { StringParam, useQueryParam } from "use-query-params";
+import { Apple, Google } from "@icons";
 
 interface PureMapProps {
   onMapLoad: (map: mapboxgl.Map) => void;
@@ -94,6 +97,64 @@ const getTileSize = (zoom: number) => {
   return { size, zLayer };
 };
 
+const STORAGE_KEY_MAP_TYPE = "preferred_map_type";
+
+/**
+ * 定義地圖類型
+ */
+type MapType = "apple_map" | "google_map";
+
+/**
+ * 定義選填參數介面
+ */
+interface MapOptions {
+  placeName?: string;
+  lat?: number;
+  lng?: number;
+}
+
+/**
+ * 產生地圖跳轉連結 (Universal Links)
+ * 適用於 PWA 跳轉至原生 App 或網頁版地圖
+ *
+ * @param mapType - 選擇 "apple_map" 或 "google_map"
+ * @param options - 包含地點名稱、緯度、經度
+ * @returns string 格式化後的通用連結 URL
+ */
+function getMapLink(mapType: MapType, options: MapOptions = {}): string {
+  const { placeName, lat, lng } = options;
+  const encodedName = placeName ? encodeURIComponent(placeName) : "";
+  const hasCoords = lat !== undefined && lng !== undefined;
+
+  if (mapType === "apple_map") {
+    const baseUrl = "maps.apple.com";
+    const params = new URLSearchParams();
+
+    if (placeName) params.append("q", placeName);
+    if (hasCoords) params.append("ll", `${lat},${lng}`);
+
+    const queryString = params.toString();
+    return queryString ? `https://${baseUrl}?${queryString}` : baseUrl;
+  }
+
+  if (mapType === "google_map") {
+    const baseUrl = "https://www.google.com/maps/search/?api=1";
+    let query = "";
+
+    if (placeName && hasCoords) {
+      query = `&query=${encodedName}&query_place_id=${lat},${lng}`;
+    } else if (hasCoords) {
+      query = `&query=${lat},${lng}`;
+    } else if (placeName) {
+      query = `&query=${encodedName}`;
+    }
+
+    return `${baseUrl}${query}`;
+  }
+
+  return "";
+}
+
 const ShopsMap = () => {
   const navigate = useNavigate();
   const { isDesktop, isMobile } = useDevice();
@@ -111,6 +172,12 @@ const ShopsMap = () => {
     !(activeUserRef.current?.isSchoolLimited ?? true)
   );
 
+  const [preferredMap, setPreferredMap] = useState<MapType>(() => {
+    return (
+      (localStorage.getItem(STORAGE_KEY_MAP_TYPE) as MapType) || "google_map"
+    );
+  });
+
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [previewResults, setPreviewResults] = useState<Shop[]>([]);
@@ -118,7 +185,7 @@ const ShopsMap = () => {
 
   const shopsCacheRef = useRef<Map<string, Shop>>(new Map());
   const [dataVersion, setDataVersion] = useState(0);
-  const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
+  const [selectedShopId, setSelectedShopId] = useQueryParam("id", StringParam);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const fetchedTilesRef = useRef<Set<string>>(new Set());
@@ -130,6 +197,16 @@ const ShopsMap = () => {
     isOpen: false,
     isSaved: false,
   });
+
+  const selectedShop = useMemo(() => {
+    if (!selectedShopId) return null;
+    return shopsCacheRef.current.get(selectedShopId) ?? null;
+  }, [selectedShopId, dataVersion]);
+
+  const handleMapPreferenceChange = (type: MapType) => {
+    setPreferredMap(type);
+    localStorage.setItem(STORAGE_KEY_MAP_TYPE, type);
+  };
 
   const shopsGeoJson = useMemo(() => {
     let allShops = Array.from(shopsCacheRef.current.values());
@@ -364,7 +441,6 @@ const ShopsMap = () => {
     map.on("click", "shops", (e) => {
       console.log("Click");
       if (!e.features || e.features.length === 0) {
-        console.log(" wtf is this shi");
         return;
       }
       const feature = e.features[0];
@@ -374,7 +450,8 @@ const ShopsMap = () => {
       // Find full shop data
       const clickedShop = shopsCacheRef.current.get(shopId);
       if (clickedShop) {
-        setSelectedShop(clickedShop);
+        setSelectedShopId(shopId);
+
         setIsSheetOpen(true);
 
         map.flyTo({
@@ -545,6 +622,36 @@ const ShopsMap = () => {
     return () => clearTimeout(t);
   }, [searchInput, mapInstance]);
 
+  useEffect(() => {
+    const fetchInitialShop = async () => {
+      if (!selectedShopId || !activeUserRef.current) return;
+
+      try {
+        const resData = await authedFetch(path(`/api/shops/${selectedShopId}`));
+        if (resData.success && resData.data) {
+          const shop = transformDtoToShop(resData.data);
+
+          shopsCacheRef.current.set(shop.id, shop);
+          setDataVersion((v) => v + 1);
+          setIsSheetOpen(true);
+
+          if (mapInstance) {
+            mapInstance.flyTo({
+              center: [shop.longitude, shop.latitude],
+              zoom: 16,
+              essential: true,
+            });
+          }
+        }
+      } catch (error) {
+        showToast({ title: "找不到該店家資訊", type: "error" });
+        setSelectedShopId(undefined);
+      }
+    };
+
+    fetchInitialShop();
+  }, [selectedShopId, mapInstance, activeUserRef.current]);
+
   return (
     <div className="fixed w-full h-full touch-none bg-base-100">
       {/* 1. The Map */}
@@ -636,7 +743,7 @@ const ShopsMap = () => {
                             center: [shop.longitude, shop.latitude],
                             zoom: 17,
                           });
-                          setSelectedShop(shop);
+                          setSelectedShopId(shop.id);
                           setIsSheetOpen(true);
                           setIsSearchFocused(false);
                           setSearchInput("");
@@ -791,15 +898,71 @@ const ShopsMap = () => {
             {/* Actions */}
             <div className="grid grid-cols-2 gap-3 mt-2">
               {/* 導航按鈕 - 開啟 Google Maps */}
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${selectedShop.latitude},${selectedShop.longitude}&destination_place_id=${selectedShop.title}`}
-                target="_blank"
-                rel="noreferrer"
-                className="btn"
-              >
-                <CornerUpRight size={18} />
-                導航
-              </a>
+              <div className="btn flex gap-0">
+                <div
+                  onClick={() => {
+                    location.href = getMapLink(preferredMap, {
+                      placeName: selectedShop.title,
+                      lat: selectedShop.latitude,
+                      lng: selectedShop.longitude,
+                    });
+                    // window.open(
+                    // getMapLink(preferredMap, {
+                    //   placeName: selectedShop.title,
+                    //   lat: selectedShop.latitude,
+                    //   lng: selectedShop.longitude,
+                    // }),
+                    //   "_blank"
+                    // );
+                  }}
+                  className="flex-1 flex gap-x-2 justify-center items-center"
+                >
+                  <CornerUpRight size={18} />
+                  導航
+                  {preferredMap === "google_map" ? (
+                    <Google className="w-4 h-4" />
+                  ) : (
+                    <Apple className="w-4 h-4" />
+                  )}
+                </div>
+
+                <div className="divider divider-horizontal mx-0 my-2" />
+                <details className="dropdown dropdown-top">
+                  <summary className="list-none">
+                    <ChevronDown size={16} />
+                  </summary>
+                  <ul
+                    tabIndex={0}
+                    className="menu dropdown-content bg-base-100 rounded-box z-[100] w-48 p-2 shadow-xl border border-base-200 mb-2"
+                  >
+                    <li className="menu-title text-xs opacity-50">
+                      選擇預設地圖
+                    </li>
+                    <li>
+                      <a
+                        className={clsx(
+                          preferredMap === "google_map" && "active"
+                        )}
+                        onClick={() => handleMapPreferenceChange("google_map")}
+                      >
+                        Google Maps{" "}
+                        {preferredMap === "google_map" && <Check size={14} />}
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        className={clsx(
+                          preferredMap === "apple_map" && "active"
+                        )}
+                        onClick={() => handleMapPreferenceChange("apple_map")}
+                      >
+                        Apple Maps{" "}
+                        {preferredMap === "apple_map" && <Check size={14} />}
+                      </a>
+                    </li>
+                  </ul>
+                </details>
+              </div>
 
               {/* 查看詳情 - 內部路由 */}
               <Link

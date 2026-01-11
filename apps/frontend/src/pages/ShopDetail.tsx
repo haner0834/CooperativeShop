@@ -720,7 +720,7 @@ export const ShopDetailContent = ({
             <button
               onClick={() => {
                 handleTap();
-                navigate("/shops/map");
+                navigate(`/shops/map?id=${shop?.id}`);
               }}
               className="btn btn-primary flex-1 rounded-xl shadow-lg shadow-primary/20"
             >
