@@ -236,7 +236,7 @@ export const SidebarContent = ({
       ))}
     </ul>
 
-    <div className="w-full fixed bottom-0 m-2 lg:hidden pb-pwa">
+    <div className="w-full fixed bottom-0 m-2 lg:hidden pwa:m-5">
       <ThemeToggle />
     </div>
   </div>
