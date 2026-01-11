@@ -29,6 +29,7 @@ import ResponsiveSheet from "../widgets/ResponsiveSheet";
 import clsx from "clsx";
 import { useModal } from "../widgets/ModalContext";
 import { usePathHistory } from "../contexts/PathHistoryContext";
+import { StringParam, useQueryParam } from "use-query-params";
 
 interface PureMapProps {
   onMapLoad: (map: mapboxgl.Map) => void;
@@ -118,7 +119,7 @@ const ShopsMap = () => {
 
   const shopsCacheRef = useRef<Map<string, Shop>>(new Map());
   const [dataVersion, setDataVersion] = useState(0);
-  const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
+  const [selectedShopId, setSelectedShopId] = useQueryParam("id", StringParam);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const fetchedTilesRef = useRef<Set<string>>(new Set());
@@ -130,6 +131,11 @@ const ShopsMap = () => {
     isOpen: false,
     isSaved: false,
   });
+
+  const selectedShop = useMemo(() => {
+    if (!selectedShopId) return null;
+    return shopsCacheRef.current.get(selectedShopId) ?? null;
+  }, [selectedShopId, dataVersion]);
 
   const shopsGeoJson = useMemo(() => {
     let allShops = Array.from(shopsCacheRef.current.values());
@@ -364,7 +370,6 @@ const ShopsMap = () => {
     map.on("click", "shops", (e) => {
       console.log("Click");
       if (!e.features || e.features.length === 0) {
-        console.log(" wtf is this shi");
         return;
       }
       const feature = e.features[0];
@@ -374,7 +379,8 @@ const ShopsMap = () => {
       // Find full shop data
       const clickedShop = shopsCacheRef.current.get(shopId);
       if (clickedShop) {
-        setSelectedShop(clickedShop);
+        setSelectedShopId(shopId);
+
         setIsSheetOpen(true);
 
         map.flyTo({
@@ -545,6 +551,36 @@ const ShopsMap = () => {
     return () => clearTimeout(t);
   }, [searchInput, mapInstance]);
 
+  useEffect(() => {
+    const fetchInitialShop = async () => {
+      if (!selectedShopId || !activeUserRef.current) return;
+
+      try {
+        const resData = await authedFetch(path(`/api/shops/${selectedShopId}`));
+        if (resData.success && resData.data) {
+          const shop = transformDtoToShop(resData.data);
+
+          shopsCacheRef.current.set(shop.id, shop);
+          setDataVersion((v) => v + 1);
+          setIsSheetOpen(true);
+
+          if (mapInstance) {
+            mapInstance.flyTo({
+              center: [shop.longitude, shop.latitude],
+              zoom: 16,
+              essential: true,
+            });
+          }
+        }
+      } catch (error) {
+        showToast({ title: "找不到該店家資訊", type: "error" });
+        setSelectedShopId(undefined);
+      }
+    };
+
+    fetchInitialShop();
+  }, [selectedShopId, mapInstance, activeUserRef.current]);
+
   return (
     <div className="fixed w-full h-full touch-none bg-base-100">
       {/* 1. The Map */}
@@ -636,7 +672,7 @@ const ShopsMap = () => {
                             center: [shop.longitude, shop.latitude],
                             zoom: 17,
                           });
-                          setSelectedShop(shop);
+                          setSelectedShopId(shop.id);
                           setIsSheetOpen(true);
                           setIsSearchFocused(false);
                           setSearchInput("");
