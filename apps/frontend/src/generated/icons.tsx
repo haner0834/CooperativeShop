@@ -1,5 +1,6 @@
 import React from 'react';
 import WangAvatarUrl from '@shared/icons/WangAvatar.jpg';
+import AppleIcon from '@shared/icons/apple.svg?react';
 import FacebookIcon from '@shared/icons/facebook.svg?react';
 import FrogUrl from '@shared/icons/frog.jpeg';
 import GithubIcon from '@shared/icons/github.svg?react';
@@ -12,6 +13,11 @@ import TintedInstagramUrl from '@shared/icons/tinted-instagram.png';
 
 export const WangAvatar = (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
   return <img src={WangAvatarUrl} {...props} />;
+};
+
+
+export const Apple = (props: React.SVGProps<SVGSVGElement>) => {
+  return <AppleIcon {...props} />;
 };
 
 
