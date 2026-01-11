@@ -20,13 +20,15 @@ import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import { useDevice } from "../widgets/DeviceContext";
 import { transformDtoToShop, type Shop } from "../types/shop";
 import { SearchResultItem } from "./Shops"; // Reuse from Shops
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthFetch } from "../auth/useAuthFetch";
 import { useAuth } from "../auth/AuthContext";
 import { path } from "../utils/path";
 import { useToast } from "../widgets/Toast/ToastProvider";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
 import clsx from "clsx";
+import { useModal } from "../widgets/ModalContext";
+import { usePathHistory } from "../contexts/PathHistoryContext";
 
 interface PureMapProps {
   onMapLoad: (map: mapboxgl.Map) => void;
@@ -93,14 +95,21 @@ const getTileSize = (zoom: number) => {
 };
 
 const ShopsMap = () => {
+  const navigate = useNavigate();
   const { isDesktop, isMobile } = useDevice();
   const { authedFetch } = useAuthFetch();
-  const { activeUserRef } = useAuth();
+  const { activeUserRef, restorePromise } = useAuth();
   const { showToast } = useToast();
+  const { showModal } = useModal();
+  const { goBack } = usePathHistory();
 
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
   const [showSidebar, setShowSidebar] = useState(false);
+
+  const [isAvailable, setIsAvailable] = useState(
+    !(activeUserRef.current?.isSchoolLimited ?? true)
+  );
 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchInput, setSearchInput] = useState("");
@@ -451,6 +460,41 @@ const ShopsMap = () => {
   };
 
   useEffect(() => {
+    const checkAvailable = async () => {
+      if (!activeUserRef.current) {
+        const result = await restorePromise;
+        if (!result.ok || !activeUserRef.current) {
+          showModal({
+            title: "請先登入以繼續使用",
+            buttons: [
+              { label: "關閉" },
+              { label: "返回", role: "primary", onClick: () => goBack() },
+            ],
+          });
+          return;
+        }
+      }
+
+      if (activeUserRef.current.isSchoolLimited) {
+        const { success, data } = await authedFetch(path("/api/map/check"));
+        if (!success || !data.allowed) {
+          showModal({
+            title: "貴校本日地圖使用次數已達上限",
+            description: "若需了解狀況，請至 FAQ 或詢問貴校學生會狀況",
+            buttons: [
+              { label: "FAQ", onClick: () => navigate("/faq") },
+              { label: "返回", onClick: () => goBack() },
+            ],
+          });
+          return;
+        }
+      }
+      setIsAvailable(true);
+    };
+    checkAvailable();
+  }, []);
+
+  useEffect(() => {
     const doSearch = async () => {
       console.log("Hello", searchInput, mapRef.current);
       if (!searchInput && mapRef.current) {
@@ -503,16 +547,36 @@ const ShopsMap = () => {
   return (
     <div className="fixed w-full h-full touch-none bg-base-100">
       {/* 1. The Map */}
-      <div className="absolute inset-0 z-0">
-        <PureMap onMapLoad={handleMapLoad} />
-      </div>
+      {isAvailable ? (
+        <div className="absolute inset-0 z-0">
+          <PureMap onMapLoad={handleMapLoad} />
+        </div>
+      ) : (
+        <div className="absolute inset-0 h-full overflow-visible">
+          <div className="relative inset-0 h-full p-10 lg:ps-74 flex flex-col">
+            <h1 className="text-9xl font-black z-10">Shops Map</h1>
+            <p className="mt-5 p-2 text-sm z-10">
+              這裡，你可以看到最方便的地圖服務，完美整合我們的商店服務。
+              極速體驗、終極享受、流程優化，想得到的功能都在這裡。
+              現在加入我們，開始享受吧！
+            </p>
+
+            <div className="absolute -bottom-100 right-0 w-50 h-400 bg-teal-400 rotate-38" />
+            <div className="absolute -bottom-100 left-0 w-50 h-400 bg-purple-500 -rotate-22" />
+            <div className="absolute top-100 -left-20 w-400 h-50 bg-amber-300 rotate-10" />
+            <div className="absolute top-100 -left-20 w-450 h-50 bg-fuchsia-500 -rotate-25" />
+          </div>
+        </div>
+      )}
 
       {/* 2. Top UI (Search & Controls) */}
       <div className="absolute inset-0 flex flex-col w-full pt-safe-area pointer-events-none">
         {/* Top Bar Container */}
         <div className="relative flex items-center m-4 gap-3 pointer-events-auto">
           {/* A. Search Mode */}
-          {isSearchFocused ? (
+          {!isAvailable ? (
+            <></>
+          ) : isSearchFocused ? (
             <div className="flex-1 flex relative">
               <div className="flex-1"></div>
               <div className="flex items-center gap-2 bg-base-100 rounded-full shadow-md px-2 w-full max-w-120 h-12 border border-base-200">
@@ -649,19 +713,23 @@ const ShopsMap = () => {
         </div>
 
         {/* 3. Bottom UI (Location Button) */}
-        <div className="flex-1" />
-        <div className="relative flex items-center m-4 gap-4 mb-8 pointer-events-auto">
-          <div className="flex-1"></div>
-          <button
-            onClick={handleLocateMe}
-            className="btn btn-circle shadow-md z-10"
-          >
-            <Navigation
-              size={20}
-              className="-translate-x-[1.5px] translate-y-[1.5px]"
-            />
-          </button>
-        </div>
+        {isAvailable && (
+          <>
+            <div className="flex-1" />
+            <div className="relative flex items-center m-4 gap-4 mb-8 pointer-events-auto">
+              <div className="flex-1"></div>
+              <button
+                onClick={handleLocateMe}
+                className="btn btn-circle shadow-md z-10"
+              >
+                <Navigation
+                  size={20}
+                  className="-translate-x-[1.5px] translate-y-[1.5px]"
+                />
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       <Sidebar isOpen={showSidebar} onClose={() => setShowSidebar(false)}>
