@@ -78,8 +78,19 @@ const PureMap = ({ onMapLoad }: PureMapProps) => {
   );
 };
 
-const TILE_SIZE = 0.01; // 0.01 ~= 1.1 km
 const THRESHOLD = 0.3; // 缺失比例閾值
+
+/**
+ * 根據 Zoom Level 取得動態瓦片大小 (單位：經緯度度數)
+ * Zoom 14 (市中心) -> 0.01 度 (~1.1km)
+ * Zoom 10 (城市)   -> 0.16 度 (~18km)
+ * Zoom 5  (國家)   -> 5.12 度 (~570km)
+ */
+const getTileSize = (zoom: number) => {
+  const zLayer = Math.round(zoom);
+  const size = 0.01 * Math.pow(2, Math.max(0, 14 - zLayer));
+  return { size, zLayer };
+};
 
 const ShopsMap = () => {
   const { isDesktop, isMobile } = useDevice();
@@ -154,10 +165,11 @@ const ShopsMap = () => {
 
   const fetchShopsInBounds = useCallback(
     async (currentMap: mapboxgl.Map) => {
-      console.log("called");
       if (!currentMap || !activeUserRef.current) return;
+
       const bounds = currentMap.getBounds();
       if (!bounds) return;
+
       const south = bounds.getSouth();
       const north = bounds.getNorth();
       const west = bounds.getWest();
@@ -165,40 +177,47 @@ const ShopsMap = () => {
       const latSpan = north - south;
       const lngSpan = east - west;
       const BUFFER_RATIO = 0.25;
+
       const pad = {
         minLat: south - latSpan * BUFFER_RATIO,
         maxLat: north + latSpan * BUFFER_RATIO,
         minLng: west - lngSpan * BUFFER_RATIO,
         maxLng: east + lngSpan * BUFFER_RATIO,
       };
+
       const cellsInView: string[] = [];
       const missingCells: string[] = [];
+
+      const { size, zLayer } = getTileSize(currentMap.getZoom());
+
       for (
-        let lat = Math.floor(pad.minLat / TILE_SIZE);
-        lat <= Math.floor(pad.maxLat / TILE_SIZE);
+        let lat = Math.floor(pad.minLat / size);
+        lat <= Math.floor(pad.maxLat / size);
         lat++
       ) {
         for (
-          let lng = Math.floor(pad.minLng / TILE_SIZE);
-          lng <= Math.floor(pad.maxLng / TILE_SIZE);
+          let lng = Math.floor(pad.minLng / size);
+          lng <= Math.floor(pad.maxLng / size);
           lng++
         ) {
-          const cellId = `${lat}_${lng}`;
+          const cellId = `z${zLayer}_${lat}_${lng}`;
           cellsInView.push(cellId);
           if (!fetchedTilesRef.current.has(cellId)) {
             missingCells.push(cellId);
           }
         }
       }
-      const missingRatio = missingCells.length / cellsInView.length;
+
+      const missingRatio =
+        cellsInView.length > 0 ? missingCells.length / cellsInView.length : 0;
+
       if (missingRatio < THRESHOLD) {
-        console.log(
-          `[Map] Skip fetch. Missing ratio: ${(missingRatio * 100).toFixed(1)}%`
-        );
         return;
       }
+
       if (abortControllerRef.current) abortControllerRef.current.abort();
       abortControllerRef.current = new AbortController();
+
       try {
         const params = new URLSearchParams({
           minLat: pad.minLat.toString(),
@@ -207,13 +226,16 @@ const ShopsMap = () => {
           maxLng: pad.maxLng.toString(),
           limit: "500",
         });
+
         const route = path(`/api/shops?${params.toString()}`);
         let resData;
         resData = await authedFetch(route, {
           signal: abortControllerRef.current.signal,
         });
+
         if (resData.success && Array.isArray(resData.data)) {
           let hasNew = false;
+
           resData.data.forEach((dto: any) => {
             if (!shopsCacheRef.current.has(dto.id)) {
               const shop = transformDtoToShop(dto);
@@ -221,8 +243,10 @@ const ShopsMap = () => {
               hasNew = true;
             }
           });
+
+          missingCells.forEach((id) => fetchedTilesRef.current.add(id));
+
           if (hasNew) {
-            missingCells.forEach((id) => fetchedTilesRef.current.add(id));
             requestAnimationFrame(() => setDataVersion((v) => v + 1));
           }
         }
