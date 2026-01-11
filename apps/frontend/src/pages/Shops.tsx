@@ -55,7 +55,7 @@ export const ShopSectionTitle = ({
   </div>
 );
 
-const SearchResultItem = ({
+export const SearchResultItem = ({
   shop,
   index,
   onClick,

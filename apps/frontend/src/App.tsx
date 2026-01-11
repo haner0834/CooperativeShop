@@ -4,8 +4,8 @@ import { Route, Routes } from "react-router-dom";
 import Root from "./pages/Root";
 import ProtectedGate from "./auth/ProtectedGate";
 import FilteredShops from "./pages/CategorizedShops";
-import ShopMap from "./pages/ShopMap";
 import UserAccountCenter from "./pages/AccounCenter";
+const ShopsMap = lazy(() => import("./pages/ShopsMap"));
 const SchoolDetail = lazy(() => import("./pages/SchoolDetail"));
 const Navbar = lazy(() => import("./widgets/Navbar"));
 const LoginHint = lazy(() => import("./pages/LoginHint"));
@@ -65,7 +65,7 @@ function App() {
         <Route path="account-center" element={<UserAccountCenter />} />
       </Route>
 
-      <Route path="shops/map" element={<ShopMap />} />
+      <Route path="shops/map" element={<ShopsMap />} />
 
       <Route path="shops/preview" element={<ShopPreview />} />
 

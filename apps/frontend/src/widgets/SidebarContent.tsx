@@ -229,13 +229,14 @@ export const SidebarContent = ({
   disabled?: boolean;
 }) => (
   <div className="pt-16">
+    <div className="pt-safe-area" />
     <ul className="menu bg-base-100 min-h-full w-full space-y-2">
       {menu.map((item, i) => (
         <SidebarItem key={i} item={item} disabled={disabled} />
       ))}
     </ul>
 
-    <div className="w-full fixed bottom-0 m-2 lg:hidden pwa:bottom-4 pwa:m-4">
+    <div className="w-full fixed bottom-0 m-2 lg:hidden">
       <ThemeToggle />
     </div>
   </div>
