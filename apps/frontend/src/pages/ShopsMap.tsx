@@ -32,6 +32,7 @@ import { useModal } from "../widgets/ModalContext";
 import { usePathHistory } from "../contexts/PathHistoryContext";
 import { StringParam, useQueryParam } from "use-query-params";
 import { Apple, Google } from "@icons";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 interface PureMapProps {
   onMapLoad: (map: mapboxgl.Map) => void;
@@ -654,6 +655,7 @@ const ShopsMap = () => {
 
   return (
     <div className="fixed w-full h-full touch-none bg-base-100">
+      <PageMeta {...routesMeta.shopsMap} />
       {/* 1. The Map */}
       {isAvailable ? (
         <div className="absolute inset-0 z-0">

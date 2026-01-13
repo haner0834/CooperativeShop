@@ -63,12 +63,12 @@ export const routesMeta = {
     url: "https://cooperativeshops.org/shops",
   },
   schools: {
-    title: "合作校列表",
+    title: "合作校列表 | 南校聯合特約",
     description: "瀏覽南校聯合特約 26 所高中職。",
     url: "https://cooperativeshops.org/schools",
   },
   qrScanner: {
-    title: "QR 掃描驗證",
+    title: "QR 掃描驗證 | 南校聯合特約",
     description: "掃描 QR code，立即驗證身份",
     url: "https://cooperativeshops.org/qr-scanner",
   },
