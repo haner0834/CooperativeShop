@@ -11,7 +11,7 @@
   {
     "name": "南大附中",
     "abbreviation": "tntcshsa",
-    "emailFormat": [],
+    "emailFormat": ["@gm.tntcsh.tn.edu.tw"],
     "studentIdFormat": {
       "length": 6,
       "prefix": "",
@@ -148,7 +148,7 @@
       "length": 6,
       "prefix": "",
       "suffix": "",
-      "regex": "^(4|3|2)([1-9]|1[0-5])(\\d{3})$"
+      "regex": "^(4(11|19|12|16|14|15|13)|3(11|91|12|16|14|15|13|19)|2(11|91|12|16|14|15|13))\\d{3}$"
     },
     "websiteUrl": "https://www.hysh.tn.edu.tw",
     "instagramAccount": "hysh.116th",
@@ -234,7 +234,7 @@
   {
     "name": "黎明高中",
     "abbreviation": "lmsh",
-    "emailFormat": [],
+    "emailFormat": ["@lmsh.tn.edu.tw"],
     "studentIdFormat": {
       "length": null,
       "prefix": "",
