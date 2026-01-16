@@ -34,11 +34,11 @@ export interface RecordFileResult {
   fileKey: string;
   url: string;
   thumbnailKey: string | null;
-  thumbnailUrl: string;
+  thumbnailUrl: string | null;
   category: string;
   contentType: string;
   createdAt: Date;
-  userId: string;
+  userId: string | null;
 }
 
 @Injectable()

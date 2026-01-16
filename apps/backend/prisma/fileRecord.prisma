@@ -3,9 +3,9 @@ model FileRecord {
     fileKey      String     @unique
     url          String
     thumbnailKey String?    @unique
-    thumbnailUrl String
+    thumbnailUrl String?
     user         User?      @relation(fields: [userId], references: [id])
-    userId       String
+    userId       String?
     category     String
     contentType  String
     createdAt    DateTime   @default(now())
