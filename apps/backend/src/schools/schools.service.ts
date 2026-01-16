@@ -55,7 +55,7 @@ export class SchoolsService {
       id: school.id,
       name: school.name,
       abbreviation: school.abbreviation,
-      loginMethod: school.studentIdFormat ? 'credential' : 'google',
+      loginMethod: school.emailFormats.length >= 1 ? 'google' : 'credential',
       instagramAccount: school.instagramAccount,
       websiteUrl: school.websiteUrl,
     };
@@ -72,7 +72,7 @@ export class SchoolsService {
       id: school.id,
       name: school.name,
       abbreviation: school.abbreviation,
-      loginMethod: school.studentIdFormat ? 'credential' : 'google',
+      loginMethod: school.emailFormats.length >= 1 ? 'google' : 'credential',
       instagramAccount: school.instagramAccount,
       websiteUrl: school.websiteUrl,
     };
