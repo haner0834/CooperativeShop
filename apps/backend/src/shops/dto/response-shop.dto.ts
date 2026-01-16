@@ -14,7 +14,7 @@ export class ResponseImageDto {
   fileUrl: string;
 
   @IsString()
-  thumbnailUrl: string;
+  thumbnailUrl: string | null;
 }
 
 export class ResponseShopDto {
