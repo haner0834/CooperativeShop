@@ -9,7 +9,7 @@ import type {
 
 export interface ResponseImageDto {
   fileUrl: string;
-  thumbnailUrl: string;
+  thumbnailUrl: string | null;
 }
 
 export type ShopMode = "edit" | "create";
@@ -33,7 +33,7 @@ export interface Shop {
   workSchedules: WorkScheduleBackend[];
   distance?: number;
   hotScore?: number;
-  isSaved?: boolean
+  isSaved?: boolean;
 }
 
 export interface CreateShopDto {
@@ -70,7 +70,7 @@ export interface ResponseShopDto {
   googleMapsLink: string | null;
   distance?: number;
   hotScore: number;
-  isSaved?: boolean
+  isSaved?: boolean;
 }
 
 // 轉換函數：將後端 DTO 轉換為前端 Shop 介面
@@ -103,7 +103,7 @@ export function transformDtoToShop(dto: ResponseShopDto): Shop {
     longitude: dto.longitude,
     latitude: dto.latitude,
     workSchedules: dto.workSchedules,
-    isSaved: dto.isSaved
+    isSaved: dto.isSaved,
   };
 }
 

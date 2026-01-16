@@ -536,16 +536,18 @@ export const ShopDetailContent = ({
           {/* Mobile Carousel / Desktop Grid */}
           {(shop?.images.length ?? 0) > 0 ? (
             <div className="relative w-full h-[40vh] lg:h-full group">
-              <img
-                src={shop?.images[activeImgIndex].thumbnailUrl}
-                alt="Shop Cover"
-                className="w-full h-full object-cover lg:object-center transition-transform duration-700 hover:scale-105"
-                onClick={() => {
-                  handleTap();
-                  setIsModalOpen(true);
-                }}
-                itemProp="image"
-              />
+              {shop?.images[activeImgIndex].thumbnailUrl && (
+                <img
+                  src={shop?.images[activeImgIndex].thumbnailUrl}
+                  alt="Shop Cover"
+                  className="w-full h-full object-cover lg:object-center transition-transform duration-700 hover:scale-105"
+                  onClick={() => {
+                    handleTap();
+                    setIsModalOpen(true);
+                  }}
+                  itemProp="image"
+                />
+              )}
 
               {/* Image Controls (Mobile Overlay) */}
               <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2 lg:hidden">
