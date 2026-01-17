@@ -259,11 +259,13 @@ const ShopImagesBlock = ({
             key={img.localId}
             className="aspect-square h-full relative flex-none rounded-field overflow-hidden"
           >
-            <ImageWithFallback
-              src={img.previewUrl}
-              error={img.previewUrl === "" ? <div /> : undefined}
-              className="object-cover h-full aspect-square"
-            />
+            {img.previewUrl && (
+              <ImageWithFallback
+                src={img.previewUrl}
+                error={img.previewUrl === "" ? <div /> : undefined}
+                className="object-cover h-full aspect-square"
+              />
+            )}
             {img.isUploading && (
               <div>
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white">

@@ -244,12 +244,13 @@ const ShopDrafts = () => {
                       </p>
                     </div>
 
-                    {draft.data.images.length >= 1 && (
-                      <img
-                        src={draft.data.images[0].previewUrl}
-                        className="h-10/12 aspect-square rounded-field object-contain"
-                      />
-                    )}
+                    {draft.data.images.length >= 1 &&
+                      draft.data.images[0].previewUrl && (
+                        <img
+                          src={draft.data.images[0].previewUrl}
+                          className="h-10/12 aspect-square rounded-field object-contain"
+                        />
+                      )}
 
                     <span className="absolute bottom-2 right-3 text-xs opacity-50">
                       {getTime(draft.dateISOString)}

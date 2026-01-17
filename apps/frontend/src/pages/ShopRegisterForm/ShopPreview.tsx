@@ -47,7 +47,9 @@ const ShopPreview = () => {
         thumbnailUrl: R2_PUBLIC_URL + "/" + l.uploadInfo?.thumbnailKey,
       })),
       thumbnailLink:
-        data.images.length > 0 ? data.images.map((l) => l.previewUrl)[0] : "",
+        data.images.length > 0
+          ? data.images.map((l) => l.previewUrl)[0] ?? ""
+          : "",
       isOpen: false,
       longitude: data.selectedPoint?.lng ?? 0,
       latitude: data.selectedPoint?.lat ?? 0,
