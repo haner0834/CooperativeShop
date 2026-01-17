@@ -125,11 +125,12 @@ const sanitizeUrl = (url: string): string => {
 
   const lowerUrl = url.toLowerCase();
 
-  // 如果不以安全協議開頭，或者是以 'javascript:' 或 'data:' 開頭，則移除協議
+  // 如果不以安全協議開頭，或者是以 'javascript:'、'data:' 或 'vbscript:' 開頭，則移除協議
   if (
     !safeProtocols.some((p) => lowerUrl.startsWith(p)) ||
     lowerUrl.startsWith("javascript:") ||
-    lowerUrl.startsWith("data:")
+    lowerUrl.startsWith("data:") ||
+    lowerUrl.startsWith("vbscript:")
   ) {
     // 移除開頭的協議，只保留內容。
     // 這確保了即使輸入了 javascript:alert(1)，我們也只留下 alert(1) 作為純文字。
