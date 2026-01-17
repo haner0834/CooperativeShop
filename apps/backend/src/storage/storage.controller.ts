@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { RecordFileResult, StorageService } from './storage.service';
@@ -22,6 +24,15 @@ import { type UserPayload } from 'src/auth/types/auth.types';
 @Controller('storage')
 export class StorageController {
   constructor(private readonly storageService: StorageService) {}
+
+  @Get('test')
+  test(@Req() req: any) {
+    return {
+      ip: req.ip,
+      ips: req.ips,
+      xff: req.headers['x-forwarded-for'],
+    };
+  }
 
   @Post('presigned-url')
   @UseGuards(JwtAccessGuard)
