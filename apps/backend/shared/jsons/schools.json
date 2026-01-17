@@ -234,7 +234,7 @@
   {
     "name": "黎明高中",
     "abbreviation": "lmsh",
-    "emailFormat": ["@lmsh.tn.edu.tw"],
+    "emailFormat": [],
     "studentIdFormat": {
       "length": null,
       "prefix": "",
