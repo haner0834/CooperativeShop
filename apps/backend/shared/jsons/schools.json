@@ -11,7 +11,7 @@
   {
     "name": "南大附中",
     "abbreviation": "tntcshsa",
-    "emailFormat": ["@gm.tntcsh.tn.edu.tw"],
+    "emailFormat": [],
     "studentIdFormat": {
       "length": 6,
       "prefix": "",
