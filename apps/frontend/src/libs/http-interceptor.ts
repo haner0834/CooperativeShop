@@ -3,6 +3,17 @@ import { getDeviceId } from "../utils/device";
 
 const TARGET_ORIGIN = window.location.origin;
 const TARGET_PATH = "/api";
+const IMAGE_HOST_ORIGIN = "https://image.cooperativeshops.org";
+
+const isImageHostUrl = (url: string | undefined): boolean => {
+  if (!url) return false;
+  try {
+    const fullUrl = new URL(url, window.location.origin);
+    return fullUrl.origin === IMAGE_HOST_ORIGIN;
+  } catch {
+    return false;
+  }
+};
 
 const shouldIntercept = (url: string | undefined): boolean => {
   if (!url) return false;
@@ -23,7 +34,7 @@ const shouldIntercept = (url: string | undefined): boolean => {
 axios.interceptors.request.use((config) => {
   if (
     config.url?.startsWith("https://r2.cloudflarestorage.com") ||
-    config.url?.startsWith("https://image.cooperativeshops.org")
+    isImageHostUrl(config.url)
   ) {
     return config;
   }
