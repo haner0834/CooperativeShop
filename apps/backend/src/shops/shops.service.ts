@@ -275,6 +275,9 @@ export class ShopsService {
       SUNDAY: 0,
     };
 
+    // 限制每間店可更新的圖片數量上限，避免惡意大量資料導致效能問題
+    const MAX_IMAGES = 100;
+
     return await this.prisma.$transaction(async (tx) => {
       // 3. 更新商店基本資料 (不包含 schedules JSON)
       await tx.shop.update({
@@ -308,6 +311,19 @@ export class ShopsService {
 
       // 5. 更新圖片 (保留您原本的 Diff 邏輯)
       if (images) {
+        if (!Array.isArray(images)) {
+          throw new BadRequestError(
+            'INVALID_IMAGES',
+            'Images must be an array.',
+          );
+        }
+        if (images.length > MAX_IMAGES) {
+          throw new BadRequestError(
+            'TOO_MANY_IMAGES',
+            `Too many images provided. Maximum allowed is ${MAX_IMAGES}.`,
+          );
+        }
+
         const currentImages = currentShop.images;
         const newFileKeys = images.map((img) => img.fileKey);
         const currentFileKeys = currentImages.map((img) => img.file.fileKey);
