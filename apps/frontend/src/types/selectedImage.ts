@@ -1,6 +1,6 @@
 export interface SelectedImage {
-  localId: string; // 前端生成 ID
-  previewUrl: string; // base64 或 blob url
+  localId: string;
+  previewUrl: string | null;
   uploadInfo?: {
     fileKey: string;
     uploadUrl: string;

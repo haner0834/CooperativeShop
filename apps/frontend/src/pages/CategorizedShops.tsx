@@ -134,7 +134,8 @@ const FilteredShops = () => {
     });
   };
 
-  const getFileKey = (fileUrl: string) => {
+  const getFileKey = (fileUrl: string | null) => {
+    if (!fileUrl) return null;
     const R2_PUBLIC_URL = "https://image.cooperativeshops.org";
     return fileUrl.replace(R2_PUBLIC_URL + "/", "");
   };
@@ -152,19 +153,25 @@ const FilteredShops = () => {
     const shop: ResponseShopDto = data;
     const key = `SHOP_DRAFT_${shopId}`;
     const { images: _, workSchedules: wb, ...rest } = transformDtoToShop(shop);
-    const images: SelectedImage[] = shop.images.map((image) => ({
-      localId: crypto.randomUUID() as string,
-      isUploading: false,
-      uploadProgress: 0,
-      previewUrl: image.thumbnailUrl,
-      status: "success",
-      uploadInfo: {
-        uploadUrl: "",
-        thumbnailUploadUrl: "",
-        fileKey: getFileKey(image.fileUrl),
-        thumbnailKey: getFileKey(image.thumbnailUrl),
-      },
-    }));
+    const images: SelectedImage[] = shop.images.map((image) => {
+      const fileKey = getFileKey(image.fileUrl);
+      const thumbnailKey = getFileKey(image.thumbnailUrl);
+      if (!fileKey || !thumbnailKey) throw new Error("Fuck you. stupid ass");
+
+      return {
+        localId: crypto.randomUUID() as string,
+        isUploading: false,
+        uploadProgress: 0,
+        previewUrl: image.thumbnailUrl,
+        status: "success",
+        uploadInfo: {
+          uploadUrl: "",
+          thumbnailUploadUrl: "",
+          fileKey,
+          thumbnailKey,
+        },
+      };
+    });
     const selectedPoint = {
       id: crypto.randomUUID(),
       title: shop.address,
