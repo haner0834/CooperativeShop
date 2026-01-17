@@ -25,15 +25,6 @@ import { type UserPayload } from 'src/auth/types/auth.types';
 export class StorageController {
   constructor(private readonly storageService: StorageService) {}
 
-  @Get('test')
-  test(@Req() req: any) {
-    return {
-      ip: req.ip,
-      ips: req.ips,
-      xff: req.headers['x-forwarded-for'],
-    };
-  }
-
   @Post('presigned-url')
   @UseGuards(JwtAccessGuard)
   async generatePresignedUrl(@Body() body: GeneratePresignedUrlDto) {

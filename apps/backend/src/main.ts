@@ -19,7 +19,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.set('trust proxy', 1);
+  app.set('trust proxy', true);
 
   app.setGlobalPrefix('api', { exclude: ['sitemap.xml'] });
 
