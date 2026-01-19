@@ -20,7 +20,7 @@ import { RateLimitGuard } from './rate-limit/rate-limit.guard';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { env } from './common/utils/env.utils';
 import { SitemapModule } from './site-map/site-map.module';
-import { DeviceCookieInterceptor } from './rate-limit/device-cookie.interceptor';
+import { DeviceCookieInterceptor } from './device-id/device-cookie.interceptor';
 import { AccountModule } from './account/account.module';
 import { DeviceIdGuard } from './device-id/device-id.guard';
 import { DeviceIdService } from './device-id/device-id.service';

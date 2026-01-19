@@ -32,6 +32,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { env } from 'src/common/utils/env.utils';
 import { GoogleRedirectGuard } from './guards/google-redirect.guard';
 import { RateLimit } from 'src/rate-limit/rate-limit.decorator';
+import { DeviceId } from 'src/device-id/device-id.decorator';
 
 const httpOnlyCookieOptions = {
   httpOnly: true,
@@ -68,7 +69,7 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   async register(
     @Body() registerDto: RegisterDto,
-    @Headers('x-device-id') deviceId: string,
+    @DeviceId() deviceId: string,
     @Res({ passthrough: true }) res: express.Response,
     @Req() req: any, // NOTE: Use express.d.ts to tell compiler, rather than this shi
     @Headers('user-agent') userAgent: string,
@@ -89,7 +90,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() loginDto: LoginDto,
-    @Headers('x-device-id') deviceId: string,
+    @DeviceId() deviceId: string,
     @Res({ passthrough: true }) res: express.Response,
     @Req() req: any, // NOTE: Use express.d.ts to tell compiler, rather than this shi
     @Headers('user-agent') userAgent: string,
@@ -111,7 +112,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async logout(
     @Req() req: express.Request,
-    @Headers('x-device-id') deviceId: string,
+    @DeviceId() deviceId: string,
     @Res({ passthrough: true }) res: express.Response,
     @CurrentUser() user: UserPayload,
   ) {
@@ -133,7 +134,7 @@ export class AuthController {
   @RateLimit({ uid: 30, did: 30, global: 200, isolateScope: 'auth:refresh' })
   async refreshToken(
     @Req() req: express.Request,
-    @Headers('x-device-id') deviceId: string,
+    @DeviceId() deviceId: string,
     @Res({ passthrough: true }) res: express.Response,
     @Headers('user-agent') userAgent: string,
   ) {
@@ -162,7 +163,7 @@ export class AuthController {
   @Log({ prefix: 'AuthController.restoreSession', logReturn: false })
   async restoreSession(
     @Req() req: express.Request,
-    @Headers('x-device-id') deviceId: string,
+    @DeviceId() deviceId: string,
     @Res({ passthrough: true }) res: express.Response,
     @Headers('user-agent') userAgent: string,
   ) {
@@ -190,7 +191,7 @@ export class AuthController {
   async switchAccount(
     @Req() req: express.Request,
     @Body() switchAccountDto: SwitchAccountDto,
-    @Headers('x-device-id') deviceId: string,
+    @DeviceId() deviceId: string,
     @Res({ passthrough: true }) res: express.Response,
     @CurrentUser() currentUser: UserPayload,
     @Headers('user-agent') userAgent: string,
