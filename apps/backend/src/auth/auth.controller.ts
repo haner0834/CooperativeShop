@@ -28,11 +28,11 @@ import {
 import type { UserPayload } from './types/auth.types';
 import type { User } from '@prisma/client';
 import { BadRequestError, UnauthorizedError } from 'src/types/error.types';
-import { AuthGuard } from '@nestjs/passport';
 import { env } from 'src/common/utils/env.utils';
 import { GoogleRedirectGuard } from './guards/google-redirect.guard';
 import { RateLimit } from 'src/rate-limit/rate-limit.decorator';
 import { DeviceId } from 'src/device-id/device-id.decorator';
+import { type DeviceIdResult } from 'src/device-id/types/device-id-result';
 
 const httpOnlyCookieOptions = {
   httpOnly: true,
@@ -69,11 +69,12 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   async register(
     @Body() registerDto: RegisterDto,
-    @DeviceId() deviceId: string,
+    @DeviceId() deviceIdResult: DeviceIdResult,
     @Res({ passthrough: true }) res: express.Response,
     @Req() req: any, // NOTE: Use express.d.ts to tell compiler, rather than this shi
     @Headers('user-agent') userAgent: string,
   ) {
+    const deviceId = this.getDeviceId(deviceIdResult);
     const user = await this.authService.registerWithStudentId(registerDto);
     const meta: AuthMeta = {
       ...req.cf,
@@ -90,11 +91,12 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() loginDto: LoginDto,
-    @DeviceId() deviceId: string,
+    @DeviceId() deviceIdResult: DeviceIdResult,
     @Res({ passthrough: true }) res: express.Response,
     @Req() req: any, // NOTE: Use express.d.ts to tell compiler, rather than this shi
     @Headers('user-agent') userAgent: string,
   ) {
+    const deviceId = this.getDeviceId(deviceIdResult);
     const user = await this.authService.loginWithStudentId(loginDto);
     const meta: AuthMeta = {
       ...req.cf,
@@ -112,10 +114,11 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async logout(
     @Req() req: express.Request,
-    @DeviceId() deviceId: string,
+    @DeviceId() deviceIdResult: DeviceIdResult,
     @Res({ passthrough: true }) res: express.Response,
     @CurrentUser() user: UserPayload,
   ) {
+    const deviceId = this.getDeviceId(deviceIdResult);
     const refreshToken = req.cookies?.refreshToken;
     if (!refreshToken) throw new UnauthorizedError();
 
@@ -134,10 +137,11 @@ export class AuthController {
   @RateLimit({ uid: 30, did: 30, global: 200, isolateScope: 'auth:refresh' })
   async refreshToken(
     @Req() req: express.Request,
-    @DeviceId() deviceId: string,
+    @DeviceId() deviceIdResult: DeviceIdResult,
     @Res({ passthrough: true }) res: express.Response,
     @Headers('user-agent') userAgent: string,
   ) {
+    const deviceId = this.getDeviceId(deviceIdResult);
     const refreshToken = req.cookies?.refreshToken;
     const ipAddress = req.ip;
 
@@ -163,13 +167,12 @@ export class AuthController {
   @Log({ prefix: 'AuthController.restoreSession', logReturn: false })
   async restoreSession(
     @Req() req: express.Request,
-    @DeviceId() deviceId: string,
+    @DeviceId() deviceIdResult: DeviceIdResult,
     @Res({ passthrough: true }) res: express.Response,
     @Headers('user-agent') userAgent: string,
   ) {
+    const deviceId = this.getDeviceId(deviceIdResult);
     const refreshToken = req.cookies?.refreshToken;
-    if (!deviceId)
-      throw new BadRequestError('MISSING_DEVICE_ID', 'Missing device ID');
 
     const user = await this.authService.restoreSession(refreshToken, deviceId);
 
@@ -191,11 +194,12 @@ export class AuthController {
   async switchAccount(
     @Req() req: express.Request,
     @Body() switchAccountDto: SwitchAccountDto,
-    @DeviceId() deviceId: string,
+    @DeviceId() deviceIdResult: DeviceIdResult,
     @Res({ passthrough: true }) res: express.Response,
     @CurrentUser() currentUser: UserPayload,
     @Headers('user-agent') userAgent: string,
   ) {
+    const deviceId = this.getDeviceId(deviceIdResult);
     const ipAddress = req.ip;
     const result = await this.authService.switchAccount(
       switchAccountDto.targetUserId,
@@ -258,5 +262,22 @@ export class AuthController {
     const frontendUrl = env('FRONTEND_URL', '/shops');
 
     return res.redirect(redirectUrl ? redirectUrl : frontendUrl);
+  }
+
+  private getDeviceId(deviceIdResult: DeviceIdResult): string;
+
+  private getDeviceId(
+    deviceIdResult: DeviceIdResult,
+    strict: false,
+  ): string | null;
+
+  private getDeviceId(deviceIdResult: DeviceIdResult, strict: boolean = true) {
+    const deviceId = deviceIdResult?.value ?? null;
+
+    if (!deviceId && strict) {
+      throw new BadRequestError('MISSING_DEVICE_ID', 'Missing device id');
+    }
+
+    return deviceId;
   }
 }
