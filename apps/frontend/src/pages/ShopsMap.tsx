@@ -188,6 +188,9 @@ const ShopsMap = () => {
   const [dataVersion, setDataVersion] = useState(0);
   const [selectedShopId, setSelectedShopId] = useQueryParam("id", StringParam);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  useEffect(() => {
+    if (!isSheetOpen) setSelectedShopId(undefined);
+  }, [isSheetOpen]);
 
   const fetchedTilesRef = useRef<Set<string>>(new Set());
   const abortControllerRef = useRef<AbortController | null>(null);
