@@ -34,6 +34,7 @@ export class GetShopsDto {
   isOpen?: boolean;
 
   @IsOptional()
+  @Transform(({ value }) => value === 'true')
   @IsBoolean()
   isSaved?: boolean;
 
