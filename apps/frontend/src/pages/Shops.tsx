@@ -334,6 +334,7 @@ const Shops = () => {
       setIsLoading(false);
     } else {
       fetchShops(false).then(() => {
+        if (activeUserRef.current) return; // only called when page reloads
         // After fetching shops, fetch saved status
         fetchSavedStatus();
       });
