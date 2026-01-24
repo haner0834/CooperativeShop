@@ -446,7 +446,6 @@ const ShopsMap = () => {
       }
       const feature = e.features[0];
       const shopId = feature.properties?.id;
-      console.log(shopId);
 
       // Find full shop data
       const clickedShop = shopsCacheRef.current.get(shopId);
