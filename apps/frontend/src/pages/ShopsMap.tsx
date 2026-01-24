@@ -650,7 +650,7 @@ const ShopsMap = () => {
     };
 
     fetchInitialShop();
-  }, [selectedShopId, mapInstance, activeUserRef.current]);
+  }, []);
 
   return (
     <div className="fixed w-full h-full touch-none bg-base-100">
