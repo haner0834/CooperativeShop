@@ -137,6 +137,7 @@ export class ShopsService {
       userLat,
       userLng,
       isOpen,
+      isSaved,
       hasDiscount,
       schoolAbbr,
       limit = 20,
@@ -145,7 +146,6 @@ export class ShopsService {
 
     const where: Prisma.ShopWhereInput = {};
 
-    // --- 篩選邏輯 ---
     if (schoolAbbr) where.school = { abbreviation: schoolAbbr };
     if (hasDiscount) where.discount = { not: null };
 
@@ -154,7 +154,7 @@ export class ShopsService {
         { title: { contains: q, mode: 'insensitive' } },
         { description: { contains: q, mode: 'insensitive' } },
         { address: { contains: q, mode: 'insensitive' } },
-        { subTitle: { startsWith: q, mode: 'insensitive' } },
+        { subTitle: { contains: q, mode: 'insensitive' } },
       ];
     }
 
@@ -163,9 +163,7 @@ export class ShopsService {
       where.longitude = { gte: minLng, lte: maxLng };
     }
 
-    // 計算當前時間 (UTC+8 簡易版，建議用 date-fns-tz 處理時區)
     const now = new Date();
-    // 假設 Server 是 UTC，轉換為台灣時間
     const twTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
     const currentDay = twTime.getUTCDay();
     const currentMinute = twTime.getUTCHours() * 60 + twTime.getUTCMinutes();
@@ -176,6 +174,14 @@ export class ShopsService {
           dayOfWeek: currentDay,
           startMinute: { lte: currentMinute },
           endMinute: { gte: currentMinute },
+        },
+      };
+    }
+
+    if (isSaved && userId) {
+      where.savedBy = {
+        some: {
+          userId: userId,
         },
       };
     }
