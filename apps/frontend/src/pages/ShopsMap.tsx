@@ -188,6 +188,9 @@ const ShopsMap = () => {
   const [dataVersion, setDataVersion] = useState(0);
   const [selectedShopId, setSelectedShopId] = useQueryParam("id", StringParam);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  useEffect(() => {
+    if (!isSheetOpen) setSelectedShopId(undefined);
+  }, [isSheetOpen]);
 
   const fetchedTilesRef = useRef<Set<string>>(new Set());
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -446,7 +449,6 @@ const ShopsMap = () => {
       }
       const feature = e.features[0];
       const shopId = feature.properties?.id;
-      console.log(shopId);
 
       // Find full shop data
       const clickedShop = shopsCacheRef.current.get(shopId);
@@ -651,7 +653,7 @@ const ShopsMap = () => {
     };
 
     fetchInitialShop();
-  }, [selectedShopId, mapInstance, activeUserRef.current]);
+  }, []);
 
   return (
     <div className="fixed w-full h-full touch-none bg-base-100">

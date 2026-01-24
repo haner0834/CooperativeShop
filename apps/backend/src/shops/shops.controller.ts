@@ -74,8 +74,14 @@ export class ShopsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.shopsService.findOne(id);
+  @UseGuards(JwtAccessGuard)
+  @BypassJwt()
+  findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: UserPayload | undefined,
+  ) {
+    const userId = user?.id ?? null;
+    return this.shopsService.findOne(id, userId);
   }
 
   @Patch(':id')

@@ -36,6 +36,11 @@ export class GetShopsDto {
   @IsOptional()
   @Transform(({ value }) => value === 'true')
   @IsBoolean()
+  isSaved?: boolean;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true')
+  @IsBoolean()
   hasDiscount?: boolean;
 
   @IsOptional()

@@ -205,7 +205,7 @@ const Shops = () => {
       setIsLoading(true);
 
       try {
-        let endpoint = "/api/shops";
+        const endpoint = "/api/shops";
         let params: Record<string, any> = {
           limit: LIMIT,
           offset: isLoadMore ? offsetRef.current : 0,
@@ -213,10 +213,7 @@ const Shops = () => {
 
         // 處理不同 Type 的 API 參數
         if (currentType === "saved") {
-          endpoint = "/api/shops/saved";
-          // Saved endpoint might not support pagination/filtering the same way,
-          // assuming backend supports standard filtering for saved or returns all.
-          // If backend saved endpoint doesn't support params, we filter client side.
+          params.isSaved = true;
         } else if (currentType === "popular") {
           params.sortBy = "hot";
         } else if (currentType === "nearby") {
@@ -334,6 +331,7 @@ const Shops = () => {
       setIsLoading(false);
     } else {
       fetchShops(false).then(() => {
+        if (activeUserRef.current) return; // only called when page reloads
         // After fetching shops, fetch saved status
         fetchSavedStatus();
       });
