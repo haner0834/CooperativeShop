@@ -227,13 +227,20 @@ export class ShopsService {
     return results;
   }
 
-  async findOne(id: string): Promise<ResponseShopDto> {
+  async findOne(id: string, userId: string | null): Promise<ResponseShopDto> {
     const shop = await this.prisma.shop.findUnique({
       where: { id },
       include: {
         school: { select: { abbreviation: true } },
         images: { include: { file: true } },
         workSchedules: true,
+        _count: userId
+          ? {
+              select: {
+                savedBy: { where: { userId } },
+              },
+            }
+          : undefined,
       },
     });
     if (!shop) {
