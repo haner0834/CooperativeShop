@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Response } from 'express';
 import { DeviceIdService } from 'src/device-id/device-id.service';
+import { DeviceIdContext } from './types/device-id-context';
 
 @Injectable()
 export class DeviceCookieInterceptor implements NestInterceptor {
@@ -20,7 +21,8 @@ export class DeviceCookieInterceptor implements NestInterceptor {
         const req = ctx.getRequest();
         const res = ctx.getResponse<Response>();
 
-        const { deviceId, shouldSetCookie } = req['rateLimitContext'] || {};
+        const { deviceId, shouldSetCookie }: DeviceIdContext =
+          req['rateLimitContext'] || {};
 
         if (shouldSetCookie && deviceId) {
           const signedValue = this.deviceIdService.signDeviceId(deviceId);
