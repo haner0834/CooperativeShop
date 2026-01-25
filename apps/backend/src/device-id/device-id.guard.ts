@@ -8,24 +8,10 @@ export class DeviceIdGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
-    let result: DeviceIdResult = null;
-
-    const fromCookie = req.cookies?.['d_id'];
-    if (fromCookie) {
-      const verifiedId = this.deviceIdService.verifyDeviceId(fromCookie);
-      if (verifiedId) {
-        result = { value: verifiedId, verified: true, source: 'cookie' };
-      }
-    }
-
-    if (!result) {
-      const fromHeader = req.headers['x-device-id'];
-      if (typeof fromHeader === 'string') {
-        result = { value: fromHeader, verified: false, source: 'header' };
-      }
-    }
+    let { result, context: deviceContext } = this.deviceIdService.resolve(req);
 
     req['__device_id_result__'] = result;
+    if (deviceContext) req['__device_id_context__'] = deviceContext;
     return true;
   }
 }

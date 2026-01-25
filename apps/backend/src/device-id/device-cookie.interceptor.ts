@@ -22,7 +22,7 @@ export class DeviceCookieInterceptor implements NestInterceptor {
         const res = ctx.getResponse<Response>();
 
         const { deviceId, shouldSetCookie }: DeviceIdContext =
-          req['rateLimitContext'] || {};
+          req['__device_id_context__'] || {};
 
         if (shouldSetCookie && deviceId) {
           const signedValue = this.deviceIdService.signDeviceId(deviceId);
