@@ -29,6 +29,7 @@ import { getErrorMessage } from "../utils/errors";
 import { useAuth } from "../auth/AuthContext";
 import { usePathHistory } from "../contexts/PathHistoryContext";
 import PageMeta, { routesMeta } from "../widgets/PageMeta";
+import { getRecentShopsFromLS } from "../utils/recent-shops";
 
 // --- Helpers ---
 const transitionProps = { type: "tween", duration: 0.2 } as const;
@@ -98,17 +99,6 @@ export const SearchResultItem = ({
 );
 
 type ViewType = "home" | "all" | "saved" | "hot" | "nearby" | "recent";
-
-// --- Local Storage Helper for Recent Shops ---
-const RECENT_SHOPS_KEY = "recent_shops_v1";
-const getRecentShopsFromLS = (): Shop[] => {
-  try {
-    const item = localStorage.getItem(RECENT_SHOPS_KEY);
-    return item ? JSON.parse(item) : [];
-  } catch {
-    return [];
-  }
-};
 
 const Shops = () => {
   const [searchParams, setSearchParams] = useSearchParams();
