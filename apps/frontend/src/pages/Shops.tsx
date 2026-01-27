@@ -747,7 +747,7 @@ const Shops = () => {
         {currentType === "home" && recentShops.length >= 1 && !searchQuery && (
           <section className="mb-8">
             <ShopSectionTitle
-              title="Recent Visited"
+              title="近期訪問"
               onClickArrow={() => updateQuery({ type: "recent" })}
             />
             <div className="flex overflow-x-auto px-4 gap-4 no-scrollbar pb-2">
