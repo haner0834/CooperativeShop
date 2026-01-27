@@ -317,7 +317,7 @@ const Shops = () => {
 
     if (currentType === "recent") {
       // Handle Recent locally
-      setRecentShops(getRecentShopsFromLS());
+      setShops(getRecentShopsFromLS());
       setIsLoading(false);
     } else {
       fetchShops(false).then(() => {
@@ -417,7 +417,12 @@ const Shops = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading)
+        if (
+          entries[0].isIntersecting &&
+          hasMore &&
+          !isLoading &&
+          currentType !== "recent"
+        )
           fetchShops(true);
       },
       { threshold: 0.1 }
@@ -465,13 +470,6 @@ const Shops = () => {
     const timeoutId = setTimeout(fetchPreview, 300);
     return () => clearTimeout(timeoutId);
   }, [searchInput]);
-
-  useEffect(() => {
-    setShops([]);
-    offsetRef.current = 0;
-    setHasMore(true);
-    fetchShops(false);
-  }, [currentType, searchQuery, isOpenFilter]);
 
   useEffect(() => {
     localStorage.setItem("lastOpen", `/shops?type=${currentType}`);
