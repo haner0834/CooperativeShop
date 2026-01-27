@@ -97,7 +97,7 @@ export const SearchResultItem = ({
   </li>
 );
 
-type ViewType = "home" | "all" | "saved" | "popular" | "nearby" | "recent";
+type ViewType = "home" | "all" | "saved" | "hot" | "nearby" | "recent";
 
 // --- Local Storage Helper for Recent Shops ---
 const RECENT_SHOPS_KEY = "recent_shops_v1";
@@ -214,7 +214,7 @@ const Shops = () => {
         // 處理不同 Type 的 API 參數
         if (currentType === "saved") {
           params.isSaved = true;
-        } else if (currentType === "popular") {
+        } else if (currentType === "hot") {
           params.sortBy = "hot";
         } else if (currentType === "nearby") {
           params.sortBy = "nearby";
@@ -396,6 +396,18 @@ const Shops = () => {
     setSearchInput("");
     updateQuery({ q: null });
     setIsSearchFocused(false); // 回到有 Logo 的初始狀態
+  };
+
+  const getSectionTitle = () => {
+    const nameMap: Record<ViewType, string> = {
+      home: "所有商家",
+      all: "所有商家",
+      saved: "已保存",
+      hot: "熱門",
+      nearby: "附近商家",
+      recent: "近期訪問",
+    };
+    return searchQuery ? `搜尋結果：「${searchQuery}」` : nameMap[currentType];
   };
 
   // Cmd+K
@@ -826,13 +838,7 @@ const Shops = () => {
 
         <section>
           <ShopSectionTitle
-            title={
-              searchQuery
-                ? `搜尋結果：「${searchQuery}」`
-                : currentType === "home"
-                ? "所有商家"
-                : "商家"
-            }
+            title={getSectionTitle()}
             onClickArrow={
               currentType === "home"
                 ? () => updateQuery({ type: "all" })
