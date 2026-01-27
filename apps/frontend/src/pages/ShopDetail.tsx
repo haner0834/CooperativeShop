@@ -43,6 +43,7 @@ import PageMeta, { routesMeta } from "../widgets/PageMeta";
 import { useInteraction } from "../contexts/InteractionProvider";
 import { useAuthFetch } from "../auth/useAuthFetch";
 import { useAuth } from "../auth/AuthContext";
+import { appendRecentShopsToLS } from "../utils/recent-shops";
 
 const getCurrentMinOfDay = () => {
   const now = new Date();
@@ -766,7 +767,7 @@ const ShopDetail = () => {
   const [shop, setShop] = useState<Shop | null>(null);
   const { showModal } = useModal();
 
-  const a = async () => {
+  const getShopInfo = async (): Promise<Shop | null> => {
     const { data: resData } = await axios.get(path(`/api/shops/${id}`));
     const { success, data, error } = resData;
     if (!success) {
@@ -774,9 +775,17 @@ const ShopDetail = () => {
         title: "找不到商店",
         description: getErrorMessage(error.code),
       });
-      return;
+      return null;
     }
-    setShop(transformDtoToShop(data));
+    const shop = transformDtoToShop(data);
+    return shop;
+  };
+
+  const a = async () => {
+    const shop = await getShopInfo();
+    if (!shop) return;
+    setShop(shop);
+    appendRecentShopsToLS(shop);
   };
 
   useEffect(() => {
