@@ -29,6 +29,7 @@ import { getErrorMessage } from "../utils/errors";
 import { useAuth } from "../auth/AuthContext";
 import { usePathHistory } from "../contexts/PathHistoryContext";
 import PageMeta, { routesMeta } from "../widgets/PageMeta";
+import { getRecentShopsFromLS } from "../utils/recent-shops";
 
 // --- Helpers ---
 const transitionProps = { type: "tween", duration: 0.2 } as const;
@@ -98,17 +99,6 @@ export const SearchResultItem = ({
 );
 
 type ViewType = "home" | "all" | "saved" | "hot" | "nearby" | "recent";
-
-// --- Local Storage Helper for Recent Shops ---
-const RECENT_SHOPS_KEY = "recent_shops_v1";
-const getRecentShopsFromLS = (): Shop[] => {
-  try {
-    const item = localStorage.getItem(RECENT_SHOPS_KEY);
-    return item ? JSON.parse(item) : [];
-  } catch {
-    return [];
-  }
-};
 
 const Shops = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -327,7 +317,7 @@ const Shops = () => {
 
     if (currentType === "recent") {
       // Handle Recent locally
-      setRecentShops(getRecentShopsFromLS());
+      setShops(getRecentShopsFromLS());
       setIsLoading(false);
     } else {
       fetchShops(false).then(() => {
@@ -427,7 +417,12 @@ const Shops = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading)
+        if (
+          entries[0].isIntersecting &&
+          hasMore &&
+          !isLoading &&
+          currentType !== "recent"
+        )
           fetchShops(true);
       },
       { threshold: 0.1 }
@@ -475,13 +470,6 @@ const Shops = () => {
     const timeoutId = setTimeout(fetchPreview, 300);
     return () => clearTimeout(timeoutId);
   }, [searchInput]);
-
-  useEffect(() => {
-    setShops([]);
-    offsetRef.current = 0;
-    setHasMore(true);
-    fetchShops(false);
-  }, [currentType, searchQuery, isOpenFilter]);
 
   useEffect(() => {
     localStorage.setItem("lastOpen", `/shops?type=${currentType}`);
@@ -757,7 +745,7 @@ const Shops = () => {
         {currentType === "home" && recentShops.length >= 1 && !searchQuery && (
           <section className="mb-8">
             <ShopSectionTitle
-              title="Recent Visited"
+              title="近期訪問"
               onClickArrow={() => updateQuery({ type: "recent" })}
             />
             <div className="flex overflow-x-auto px-4 gap-4 no-scrollbar pb-2">
