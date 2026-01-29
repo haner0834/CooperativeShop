@@ -102,6 +102,7 @@ export function transformDtoToShop(dto: ResponseShopDto): Shop {
     address: dto.address,
     longitude: dto.longitude,
     latitude: dto.latitude,
+    distance: dto.distance,
     workSchedules: dto.workSchedules,
     isSaved: dto.isSaved,
   };

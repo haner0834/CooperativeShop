@@ -45,6 +45,13 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
     }
   };
 
+  const formatDistance = (km: number) => {
+    if (km < 1) {
+      return `${(km * 100).toFixed(0)} 公尺`;
+    }
+    return `${km.toFixed(2)} 公里`;
+  };
+
   useEffect(() => {
     setIsSaved(shop.isSaved ?? false);
   }, [shop.isSaved]);
@@ -79,6 +86,12 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
               </div>
 
               <span className="opacity-60 text-sm">{shop.address}</span>
+
+              {shop.distance && (
+                <span className="badge badge-neutral badge-sm mx-2">
+                  {formatDistance(shop.distance)}
+                </span>
+              )}
             </div>
 
             <button
