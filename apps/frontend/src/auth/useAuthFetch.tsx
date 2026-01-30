@@ -25,6 +25,8 @@ type AuthFetchOptions = RequestInit & {
    * @default 1 (i.e. 1 initial request + 1 retry = 2 attempts in total)
    */
   retries?: number;
+
+  bypass?: boolean;
 };
 
 /**
@@ -43,7 +45,7 @@ export const useAuthFetch = () => {
 
   const authedFetch = useCallback(
     async (url: string, options: AuthFetchOptions = {}) => {
-      const { retries = 1, ...fetchOptions } = options;
+      const { retries = 1, bypass = false, ...fetchOptions } = options;
       const maxAttempts = retries + 1;
       let lastError: Error | null = null;
       console.log("AuthedFetch called.");
@@ -57,7 +59,7 @@ export const useAuthFetch = () => {
 
         // After waiting, if `activeUser` is still `null`
         // it failed.
-        if (!result.ok) {
+        if (!result.ok && !options.bypass) {
           throw new Error(result.errorCode ?? "SESSION_NOT_FOUND");
         }
       }
