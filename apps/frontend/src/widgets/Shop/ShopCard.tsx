@@ -7,6 +7,7 @@ import { useAuthFetch } from "../../auth/useAuthFetch";
 import { useToast } from "../Toast/ToastProvider";
 import { useInView } from "react-intersection-observer";
 import { useInteraction } from "../../contexts/InteractionProvider";
+import { LazyLoadImage } from "react-lazy-load-image-component";
 
 const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
   const [isSaved, setIsSaved] = useState(false);
@@ -70,7 +71,7 @@ const ShopCard = ({ shop, className }: { shop: Shop; className: string }) => {
   return (
     <Link to={`/shops/${shop.id}`} className="flex-none" ref={ref}>
       <article className="relative space-y-2 transition-transform ease-in-out duration-300 hover:scale-98">
-        <img
+        <LazyLoadImage
           src={shop.thumbnailLink}
           className={`${className} aspect-[5/3] object-cover rounded-box`}
         />
