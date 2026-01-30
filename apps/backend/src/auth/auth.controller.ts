@@ -164,7 +164,6 @@ export class AuthController {
   @Post('restore')
   @HttpCode(HttpStatus.OK)
   @RateLimit({ uid: 30, did: 30, global: 200, isolateScope: 'auth:restore' })
-  @Log({ prefix: 'AuthController.restoreSession', logReturn: false })
   async restoreSession(
     @Req() req: express.Request,
     @DeviceId() deviceIdResult: DeviceIdResult,
