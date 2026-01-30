@@ -35,7 +35,6 @@ import { formatWeekdays } from "../utils/formatWeekdays";
 import { buildHref, ContactCategoryIcon } from "../utils/contactInfoMap";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
 import { usePathHistory } from "../contexts/PathHistoryContext";
-import axios from "axios";
 import { path } from "../utils/path";
 import { useModal } from "../widgets/ModalContext";
 import { getErrorMessage } from "../utils/errors";
@@ -766,9 +765,10 @@ const ShopDetail = () => {
   const { id } = useParams();
   const [shop, setShop] = useState<Shop | null>(null);
   const { showModal } = useModal();
+  const { authedFetch } = useAuthFetch();
 
   const getShopInfo = async (): Promise<Shop | null> => {
-    const { data: resData } = await axios.get(path(`/api/shops/${id}`));
+    const resData = await authedFetch(path(`/api/shops/${id}`));
     const { success, data, error } = resData;
     if (!success) {
       showModal({
