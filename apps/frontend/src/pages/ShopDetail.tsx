@@ -266,6 +266,8 @@ export const ShopDetailContent = ({
   useEffect(() => {
     if (!shop) return;
 
+    setIsSaved(shop.isSaved ?? false);
+
     addInteraction(shop.id, "viewCount");
 
     let startTime = Date.now();
@@ -768,7 +770,9 @@ const ShopDetail = () => {
   const { authedFetch } = useAuthFetch();
 
   const getShopInfo = async (): Promise<Shop | null> => {
-    const resData = await authedFetch(path(`/api/shops/${id}`));
+    const resData = await authedFetch(path(`/api/shops/${id}`), {
+      bypass: true,
+    });
     const { success, data, error } = resData;
     if (!success) {
       showModal({
