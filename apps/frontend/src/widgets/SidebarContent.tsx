@@ -121,8 +121,8 @@ export const menu: MenuItem[] = [
     icon: "Ellipsis",
     color: "text-gray-400",
     children: [
-      { label: "常見問題", icon: "BadgeQuestionMark", href: "/faq" },
       { label: "學校列表", icon: "School", href: "/schools" },
+      { label: "常見問題", icon: "BadgeQuestionMark", href: "/faq" },
     ],
   },
 ];
