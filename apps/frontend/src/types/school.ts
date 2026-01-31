@@ -8,6 +8,8 @@ export interface School {
   instagramAccount: string | null;
   websiteUrl: string | null;
   shops: Shop[];
+  usersCount: number;
+  shopsCount: number;
 }
 
 export type LoginMethod = "credential" | "google";

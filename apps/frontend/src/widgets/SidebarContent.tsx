@@ -112,7 +112,7 @@ export const menu: MenuItem[] = [
       { label: "個人 QR", icon: "QrCode", href: "/home" },
       { label: "帳號中心", icon: "UserRoundCog", href: "/account-center" },
       // { label: "QR 掃描", icon: "ScanLine" },
-      { label: "學校", icon: "School", href: "/schools/me" },
+      { label: "我的學校", icon: "School", href: "/schools/me" },
     ],
     requireAuth: true, // as the father node set `true`, children has it default `true` unless explictly set
   },
@@ -120,7 +120,10 @@ export const menu: MenuItem[] = [
     label: "其他",
     icon: "Ellipsis",
     color: "text-gray-400",
-    children: [{ label: "FAQ", icon: "BadgeQuestionMark", href: "/faq" }],
+    children: [
+      { label: "合作學校", icon: "School", href: "/schools" },
+      { label: "常見問題", icon: "BadgeQuestionMark", href: "/faq" },
+    ],
   },
 ];
 

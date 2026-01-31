@@ -50,12 +50,13 @@ function App() {
         <Route path="login-hint" element={<LoginHint />} />
         <Route path="qr-scanner" element={<QrScannerRef />} />
         <Route path="qr-verification" element={<QrVerification />} />
-        <Route path="schools" element={<Schools />} />
       </Route>
 
       <Route element={<ProtectedGate />}>
         <Route path="home" element={<Home />} />
       </Route>
+
+      <Route path="schools" element={<Schools />} />
 
       <Route path="schools/:abbr" element={<SchoolDetail />} />
 
