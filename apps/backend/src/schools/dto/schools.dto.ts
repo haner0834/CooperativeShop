@@ -5,4 +5,6 @@ export interface SchoolDTO {
   loginMethod: string;
   instagramAccount: string | null;
   websiteUrl: string | null;
+  shopsCount: number;
+  usersCount: number;
 }
