@@ -321,8 +321,8 @@ export class ShopRankingService {
   ): Promise<void> {
     const today = this.getTodayDate();
 
-    await this.prisma.$transaction(
-      scores.map((score) =>
+    await this.prisma.$transaction([
+      ...scores.map((score) =>
         this.prisma.shopRanking.upsert({
           where: {
             shopId_type_date: {
@@ -344,7 +344,16 @@ export class ShopRankingService {
           },
         }),
       ),
-    );
+      ...scores.map((score) =>
+        this.prisma.shop.update({
+          where: { id: score.shopId },
+          data: {
+            [type === 'hot' ? 'cachedHotScore' : 'cachedHomeScore']:
+              score.score,
+          },
+        }),
+      ),
+    ]);
   }
 
   /**
