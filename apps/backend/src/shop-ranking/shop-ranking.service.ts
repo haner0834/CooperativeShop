@@ -5,6 +5,9 @@ import { CachedRankingData } from './types/cached-ranking-data.types';
 import { ShopEngagementMetrics } from './types/shop-engagement-metrics.types';
 import { ShopWithRanking, RankingType } from './types/shop-with-ranking.types';
 import { env } from 'src/common/utils/env.utils';
+import { log1p, mean, std, zScore } from 'src/common/utils/math.utils';
+import { HotScoreStats } from './types/hot-score-stat.types';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class ShopRankingService {
@@ -39,11 +42,14 @@ export class ShopRankingService {
     const sevenDaysAgo = this.getDateDaysAgo(7);
 
     const metrics = await this.getShopMetrics(sevenDaysAgo, today);
+    const activeMetrics = metrics.filter((x) => x.impressions > 0);
+
+    const hotScoreStats = this.calculateHotScoreStats(activeMetrics);
 
     const hotScores = metrics
       .map((m) => ({
         shopId: m.shopId,
-        score: this.calculateHotScore(m),
+        score: this.calculateHotScore(m, hotScoreStats),
         rank: 0,
       }))
       .filter((s) => s.score > 0);
@@ -57,7 +63,7 @@ export class ShopRankingService {
   }
 
   /**
-   * Calculate Home ranking (balanced)
+   * Calculate Home ranking
    */
   private async calculateHomeRanking(): Promise<void> {
     const today = this.getTodayDate();
@@ -65,7 +71,7 @@ export class ShopRankingService {
 
     const metrics = await this.getShopMetrics(sevenDaysAgo, today);
     const allShops = await this.prisma.shop.findMany({
-      select: { id: true },
+      select: { id: true, cachedHotScore: true },
     });
 
     const homeScores = allShops.map((shop) => {
@@ -73,7 +79,7 @@ export class ShopRankingService {
 
       return {
         shopId: shop.id,
-        score: this.calculateHomeScore(metric),
+        score: this.calculateHomeScore(shop.cachedHotScore, metric),
         rank: 0,
       };
     });
@@ -87,167 +93,140 @@ export class ShopRankingService {
   }
 
   /**
-   * Calculate Nearby ranking based on user location
-   * On-demand calculation
-   */
-  async calculateNearbyRanking(
-    userLat: number,
-    userLng: number,
-  ): Promise<ShopWithRanking[]> {
-    // Get all shops
-    const shops = await this.prisma.shop.findMany();
-
-    // Calculate distance for each shop
-    const shopsWithDistance = shops.map((shop) => {
-      const distance = this.calculateDistance(
-        userLat,
-        userLng,
-        shop.latitude,
-        shop.longitude,
-      );
-
-      return {
-        ...shop,
-        distance,
-      };
-    });
-
-    // Get recent engagement metrics
-    const today = this.getTodayDate();
-    const sevenDaysAgo = this.getDateDaysAgo(7);
-    const metrics = await this.getShopMetrics(sevenDaysAgo, today);
-
-    // Calculate nearby score
-    const nearbyScores = shopsWithDistance.map((shop) => {
-      const metric = metrics.find((m) => m.shopId === shop.id);
-      const score = this.calculateNearbyScore(shop.distance, metric);
-      const thumbnailLink = this.R2_PUBLIC_URL + '/' + shop.thumbnailKey;
-
-      return {
-        id: shop.id,
-        title: shop.title,
-        description: shop.description,
-        contactInfo: shop.contactInfo,
-        thumbnailLink,
-        discount: shop.discount,
-        address: shop.address,
-        longitude: shop.longitude,
-        latitude: shop.latitude,
-        schoolId: shop.schoolId,
-        distance: shop.distance,
-        score,
-        rank: 0,
-      };
-    });
-
-    // Sort by score
-    nearbyScores.sort((a, b) => b.score - a.score);
-    nearbyScores.forEach((shop, index) => {
-      shop.rank = index + 1;
-    });
-
-    return nearbyScores;
-  }
-
-  /**
    * Scoring algorithms
    */
-  private calculateHotScore(metrics: ShopEngagementMetrics): number {
+  private calculateHotScore(
+    metrics: ShopEngagementMetrics,
+    stats: HotScoreStats,
+  ): number {
     if (metrics.impressions === 0) return 0;
 
-    const weights = {
-      impressions: 1,
-      views: 5,
-      taps: 10,
-      avgViewDuration: 2,
-      conversionRate: 15,
+    const conversionRate = metrics.views > 0 ? metrics.taps / metrics.views : 0; // 0~1
+
+    const logMetrics = {
+      impressions: log1p(metrics.impressions),
+      views: log1p(metrics.views),
+      taps: log1p(metrics.taps),
+      avgViewDuration: log1p(metrics.avgViewDuration),
+      uniqueUsers: log1p(metrics.uniqueUsers),
+      conversionRate,
     };
 
-    const conversionRate = metrics.taps / metrics.impressions;
-    const SHOP_COUNT = 300; // NOTE: Remember to update this data
-    const normalizedViewDuration = Math.min(
-      metrics.avgViewDuration / SHOP_COUNT,
-      1,
-    );
+    const z = {
+      impressions: zScore(
+        logMetrics.impressions,
+        stats.impressions.mean,
+        stats.impressions.std,
+      ),
+      views: zScore(logMetrics.views, stats.views.mean, stats.views.std),
+      taps: zScore(logMetrics.taps, stats.taps.mean, stats.taps.std),
+      avgViewDuration: zScore(
+        logMetrics.avgViewDuration,
+        stats.avgViewDuration.mean,
+        stats.avgViewDuration.std,
+      ),
+      uniqueUsers: zScore(
+        logMetrics.uniqueUsers,
+        stats.uniqueUsers.mean,
+        stats.uniqueUsers.std,
+      ),
+      conversionRate: zScore(
+        logMetrics.conversionRate,
+        stats.conversionRate.mean,
+        stats.conversionRate.std,
+      ),
+    };
 
-    return (
-      metrics.impressions * weights.impressions +
-      metrics.views * weights.views +
-      metrics.taps * weights.taps +
-      normalizedViewDuration * 100 * weights.avgViewDuration +
-      conversionRate * 100 * weights.conversionRate
-    );
+    const weights = {
+      impressions: 0.1,
+      views: 0.2,
+      taps: 0.25,
+      avgViewDuration: 0.15,
+      uniqueUsers: 0.2,
+      conversionRate: 0.1,
+    };
+
+    const rawScore =
+      z.impressions * weights.impressions +
+      z.views * weights.views +
+      z.taps * weights.taps +
+      z.avgViewDuration * weights.avgViewDuration +
+      z.uniqueUsers * weights.uniqueUsers +
+      z.conversionRate * weights.conversionRate;
+
+    const k = 1.2; // z-score 尺度下建議 0.8~1.5
+    const sigmoid = 1 / (1 + Math.exp(-k * rawScore));
+
+    return sigmoid * 100;
   }
 
-  private calculateHomeScore(metrics?: ShopEngagementMetrics): number {
-    let score = 0;
-
-    // 40% Engagement
-    if (metrics && metrics.impressions > 0) {
-      score += this.calculateHotScore(metrics) * 0.4;
-    }
-
-    // 30% Fairness (lower impression = higher boost)
-    const impressions = metrics?.impressions || 0;
-    const fairnessBoost = Math.max(0, 100 - impressions);
-    score += fairnessBoost * 0.3;
-
-    // 30% Base score for all shops (ensures everyone gets some visibility)
-    const randomBoost = Math.random() * 100;
-    score += randomBoost * 0.3;
-
-    // Penalty for non-engaging shops
-    if (metrics && metrics.impressions > 50 && metrics.views === 0) {
-      score *= 0.7;
-    }
-
-    return score;
-  }
-
-  private calculateNearbyScore(
-    distanceKm: number,
+  private calculateHomeScore(
+    hotScore: number,
     metrics?: ShopEngagementMetrics,
   ): number {
-    // Distance score: closer = higher
-    const maxDistance = 5; // km
-    const distanceScore = Math.max(0, 100 * (1 - distanceKm / maxDistance));
-
-    // Engagement boost
-    let engagementBoost = 0;
-    if (metrics && metrics.impressions > 0) {
-      const hotScore = this.calculateHotScore(metrics);
-      engagementBoost = Math.min(50, hotScore / 10);
+    // NOTE: This is called by cron job, not realtime, so that random num
+    if (!metrics) {
+      return 30 * randomInt(0, 1) + 70 * this.explorationBoost(0);
     }
 
-    return distanceScore * 0.8 + engagementBoost * 0.1;
+    const exploration = this.explorationBoost(metrics.impressions); // 0 ~ 1
+    const diversity = randomInt(0, 1); // 0 ~ 1
+
+    return hotScore * 0.4 + exploration * 35 + diversity * 25;
   }
 
-  /**
-   * Calculate distance using Haversine formula
-   */
-  private calculateDistance(
-    lat1: number,
-    lng1: number,
-    lat2: number,
-    lng2: number,
-  ): number {
-    const R = 6371; // Earth's radius in km
-    const dLat = this.toRad(lat2 - lat1);
-    const dLng = this.toRad(lng2 - lng1);
+  private calculateHotScoreStats(
+    metricsList: ShopEngagementMetrics[],
+  ): HotScoreStats {
+    const data = metricsList.map((m) => {
+      const conversionRate = m.views > 0 ? m.taps / m.views : 0;
 
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.toRad(lat1)) *
-        Math.cos(this.toRad(lat2)) *
-        Math.sin(dLng / 2) *
-        Math.sin(dLng / 2);
+      return {
+        impressions: log1p(m.impressions),
+        views: log1p(m.views),
+        taps: log1p(m.taps),
+        avgViewDuration: log1p(m.avgViewDuration),
+        uniqueUsers: log1p(m.uniqueUsers),
+        conversionRate, // 0~1
+      };
+    });
 
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  }
+    const impressions = data.map((d) => d.impressions);
+    const views = data.map((d) => d.views);
+    const taps = data.map((d) => d.taps);
+    const avgViewDuration = data.map((d) => d.avgViewDuration);
+    const uniqueUsers = data.map((d) => d.uniqueUsers);
+    const conversionRate = data.map((d) => d.conversionRate);
 
-  private toRad(degrees: number): number {
-    return degrees * (Math.PI / 180);
+    // μ / σ
+    const stats = {
+      impressions: {
+        mean: mean(impressions),
+        std: std(impressions, mean(impressions)),
+      },
+      views: {
+        mean: mean(views),
+        std: std(views, mean(views)),
+      },
+      taps: {
+        mean: mean(taps),
+        std: std(taps, mean(taps)),
+      },
+      avgViewDuration: {
+        mean: mean(avgViewDuration),
+        std: std(avgViewDuration, mean(avgViewDuration)),
+      },
+      uniqueUsers: {
+        mean: mean(uniqueUsers),
+        std: std(uniqueUsers, mean(uniqueUsers)),
+      },
+      conversionRate: {
+        mean: mean(conversionRate),
+        std: std(conversionRate, mean(conversionRate)),
+      },
+    };
+
+    return stats;
   }
 
   /**
@@ -257,59 +236,74 @@ export class ShopRankingService {
     startDate: Date,
     endDate: Date,
   ): Promise<ShopEngagementMetrics[]> {
-    // Single aggregation query
-    const stats = await this.prisma.shopDailyStat.groupBy({
-      by: ['shopId'],
-      where: {
-        date: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
-      _sum: {
-        impressions: true,
-        views: true,
-        taps: true,
-        viewTimeSec: true,
-      },
+    const DECAY_FACTOR = 0.9057;
+    const today = this.getTodayDate().getTime();
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+    const stats = await this.prisma.shopDailyStat.findMany({
+      where: { date: { gte: startDate, lte: endDate } },
     });
 
-    // Count unique users
+    const shopMap = new Map<string, ShopEngagementMetrics>();
+
+    for (const stat of stats) {
+      const daysAgo = Math.floor(
+        Math.abs(today - stat.date.getTime()) / MS_PER_DAY,
+      );
+      const weight = Math.pow(DECAY_FACTOR, daysAgo);
+
+      const existing: ShopEngagementMetrics = shopMap.get(stat.shopId) || {
+        shopId: stat.shopId,
+        impressions: 0,
+        views: 0,
+        taps: 0,
+        totalViewTime: 0,
+        uniqueUsers: 0,
+        impressionToViewRate: 0,
+        viewToTapRate: 0,
+        avgViewDuration: 0,
+      };
+
+      existing.impressions += (stat.impressions || 0) * weight;
+      existing.views += (stat.views || 0) * weight;
+      existing.taps += (stat.taps || 0) * weight;
+      existing.totalViewTime += (stat.viewTimeSec || 0) * weight;
+
+      shopMap.set(stat.shopId, existing);
+    }
+
     const uniqueUsers = await this.prisma.userShopDailyInteraction.groupBy({
       by: ['shopId'],
-      where: {
-        date: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
-      _count: {
-        identifier: true,
-      },
+      where: { date: { gte: startDate, lte: endDate } },
+      _count: { identifier: true },
     });
-
     const userCountMap = new Map(
       uniqueUsers.map((u) => [u.shopId, u._count.identifier]),
     );
 
-    return stats.map((stat) => {
-      const impressions = stat._sum.impressions || 0;
-      const views = stat._sum.views || 0;
-      const taps = stat._sum.taps || 0;
-      const totalViewTime = stat._sum.viewTimeSec || 0;
+    return Array.from(shopMap.values()).map((shop) => {
+      const impressions = shop.impressions;
+      const views = shop.views;
+      const taps = shop.taps;
+      const totalViewTime = shop.totalViewTime;
+      const uniqueUsers = userCountMap.get(shop.shopId) || 0;
 
       return {
-        shopId: stat.shopId,
+        shopId: shop.shopId,
         impressions,
         views,
         taps,
         totalViewTime,
-        uniqueUsers: userCountMap.get(stat.shopId) || 0,
+        uniqueUsers,
         impressionToViewRate: impressions > 0 ? views / impressions : 0,
         viewToTapRate: views > 0 ? taps / views : 0,
         avgViewDuration: views > 0 ? totalViewTime / views : 0,
       };
     });
+  }
+
+  private explorationBoost(impressions: number): number {
+    return Math.exp(-impressions / 20);
   }
 
   /**
@@ -321,8 +315,8 @@ export class ShopRankingService {
   ): Promise<void> {
     const today = this.getTodayDate();
 
-    await this.prisma.$transaction(
-      scores.map((score) =>
+    await this.prisma.$transaction([
+      ...scores.map((score) =>
         this.prisma.shopRanking.upsert({
           where: {
             shopId_type_date: {
@@ -344,120 +338,17 @@ export class ShopRankingService {
           },
         }),
       ),
-    );
+      ...scores.map((score) =>
+        this.prisma.shop.update({
+          where: { id: score.shopId },
+          data: {
+            [type === 'hot' ? 'cachedHotScore' : 'cachedHomeScore']:
+              score.score,
+          },
+        }),
+      ),
+    ]);
   }
-
-  /**
-   * Upload rankings to R2 as JSON
-   */
-  // private async uploadRankingsToR2(type: RankingType): Promise<void> {
-  //   const today = this.getTodayDate();
-
-  //   const shops = await this.prisma.shop.findMany({
-  //     include: {
-  //       rankings: {
-  //         where: {
-  //           type,
-  //           date: today,
-  //         },
-  //         select: {
-  //           rank: true,
-  //           score: true,
-  //         },
-  //       },
-  //     },
-  //   });
-
-  //   const shopsWithRankings: ShopWithRanking[] = shops.map((shop) => ({
-  //     id: shop.id,
-  //     title: shop.title,
-  //     description: shop.description,
-  //     contactInfo: shop.contactInfo,
-  //     thumbnailLink: this.R2_PUBLIC_URL + '/' + shop.thumbnailKey,
-  //     discount: shop.discount,
-  //     address: shop.address,
-  //     longitude: shop.longitude,
-  //     latitude: shop.latitude,
-  //     schoolId: shop.schoolId,
-  //     rank: shop.rankings[0]?.rank,
-  //     score: shop.rankings[0]?.score,
-  //   }));
-
-  //   const data: CachedRankingData = {
-  //     type,
-  //     date: today.toISOString(),
-  //     shops: shopsWithRankings,
-  //     generatedAt: new Date().toISOString(),
-  //   };
-
-  //   // Upload to R2
-  //   const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
-  //   const key = `rankings/${type}/${dateStr}.json`;
-  //   await this.storageService.uploadJson(key, data);
-  // }
-
-  /**
-   * Get rankings from R2
-   */
-  // async getRankingsFromR2(type: RankingType): Promise<CachedRankingData> {
-  //   const today = this.getTodayDate();
-  //   const dateStr = today.toISOString().split('T')[0];
-  //   const key = `rankings/${type}/${dateStr}.json`;
-
-  //   try {
-  //     const data =
-  //       await this.storageService.downloadJson<CachedRankingData>(key);
-  //     return data;
-  //   } catch (error) {
-  //     return this.getRankingsFromDB(type);
-  //   }
-  // }
-
-  /**
-   * Fallback: Get rankings from database
-   */
-  // private async getRankingsFromDB(
-  //   type: RankingType,
-  // ): Promise<CachedRankingData> {
-  //   const today = this.getTodayDate();
-
-  //   const shops = await this.prisma.shop.findMany({
-  //     include: {
-  //       rankings: {
-  //         where: {
-  //           type,
-  //           date: today,
-  //         },
-  //         select: {
-  //           rank: true,
-  //           score: true,
-  //         },
-  //       },
-  //     },
-  //   });
-
-  //   const shopsWithRankings: ShopWithRanking[] = shops.map((shop) => ({
-  //     id: shop.id,
-  //     title: shop.title,
-  //     description: shop.description,
-  //     contactInfo: shop.contactInfo,
-  //     thumbnailLink: this.R2_PUBLIC_URL + '/' + shop.thumbnailKey,
-  //     discount: shop.discount,
-  //     address: shop.address,
-  //     longitude: shop.longitude,
-  //     latitude: shop.latitude,
-  //     schoolId: shop.schoolId,
-  //     rank: shop.rankings[0]?.rank,
-  //     score: shop.rankings[0]?.score,
-  //   }));
-
-  //   return {
-  //     type,
-  //     date: today.toISOString(),
-  //     shops: shopsWithRankings,
-  //     generatedAt: new Date().toISOString(),
-  //   };
-  // }
 
   /**
    * Helper: Get today's date at 00:00:00
