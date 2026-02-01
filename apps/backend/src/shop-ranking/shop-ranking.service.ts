@@ -92,69 +92,6 @@ export class ShopRankingService {
   }
 
   /**
-   * Calculate Nearby ranking based on user location
-   * On-demand calculation
-   */
-  async calculateNearbyRanking(
-    userLat: number,
-    userLng: number,
-  ): Promise<ShopWithRanking[]> {
-    // Get all shops
-    const shops = await this.prisma.shop.findMany();
-
-    // Calculate distance for each shop
-    const shopsWithDistance = shops.map((shop) => {
-      const distance = this.calculateDistance(
-        userLat,
-        userLng,
-        shop.latitude,
-        shop.longitude,
-      );
-
-      return {
-        ...shop,
-        distance,
-      };
-    });
-
-    // Get recent engagement metrics
-    const today = this.getTodayDate();
-    const sevenDaysAgo = this.getDateDaysAgo(7);
-    const metrics = await this.getShopMetrics(sevenDaysAgo, today);
-
-    // Calculate nearby score
-    const nearbyScores = shopsWithDistance.map((shop) => {
-      const metric = metrics.find((m) => m.shopId === shop.id);
-      const score = this.calculateNearbyScore(shop.distance, metric);
-      const thumbnailLink = this.R2_PUBLIC_URL + '/' + shop.thumbnailKey;
-
-      return {
-        id: shop.id,
-        title: shop.title,
-        description: shop.description,
-        contactInfo: shop.contactInfo,
-        thumbnailLink,
-        discount: shop.discount,
-        address: shop.address,
-        longitude: shop.longitude,
-        latitude: shop.latitude,
-        schoolId: shop.schoolId,
-        distance: shop.distance,
-        score,
-        rank: 0,
-      };
-    });
-
-    // Sort by score
-    nearbyScores.sort((a, b) => b.score - a.score);
-    nearbyScores.forEach((shop, index) => {
-      shop.rank = index + 1;
-    });
-
-    return nearbyScores;
-  }
-
-  /**
    * Scoring algorithms
    */
   private calculateHotScore(
@@ -247,24 +184,6 @@ export class ShopRankingService {
     return score;
   }
 
-  private calculateNearbyScore(
-    distanceKm: number,
-    metrics?: ShopEngagementMetrics,
-  ): number {
-    // Distance score: closer = higher
-    const maxDistance = 5; // km
-    const distanceScore = Math.max(0, 100 * (1 - distanceKm / maxDistance));
-
-    // Engagement boost
-    let engagementBoost = 0;
-    if (metrics && metrics.impressions > 0) {
-      const hotScore = this.calculateHotScore(metrics);
-      engagementBoost = Math.min(50, hotScore / 10);
-    }
-
-    return distanceScore * 0.8 + engagementBoost * 0.1;
-  }
-
   private calculateHotScoreStats(
     metricsList: ShopEngagementMetrics[],
   ): HotScoreStats {
@@ -317,34 +236,6 @@ export class ShopRankingService {
     };
 
     return stats;
-  }
-
-  /**
-   * Calculate distance using Haversine formula
-   */
-  private calculateDistance(
-    lat1: number,
-    lng1: number,
-    lat2: number,
-    lng2: number,
-  ): number {
-    const R = 6371; // Earth's radius in km
-    const dLat = this.toRad(lat2 - lat1);
-    const dLng = this.toRad(lng2 - lng1);
-
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.toRad(lat1)) *
-        Math.cos(this.toRad(lat2)) *
-        Math.sin(dLng / 2) *
-        Math.sin(dLng / 2);
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  }
-
-  private toRad(degrees: number): number {
-    return degrees * (Math.PI / 180);
   }
 
   /**
