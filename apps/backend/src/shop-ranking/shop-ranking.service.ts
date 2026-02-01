@@ -257,54 +257,65 @@ export class ShopRankingService {
     startDate: Date,
     endDate: Date,
   ): Promise<ShopEngagementMetrics[]> {
-    // Single aggregation query
-    const stats = await this.prisma.shopDailyStat.groupBy({
-      by: ['shopId'],
-      where: {
-        date: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
-      _sum: {
-        impressions: true,
-        views: true,
-        taps: true,
-        viewTimeSec: true,
-      },
+    const DECAY_FACTOR = 0.9057;
+    const today = this.getTodayDate().getTime();
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+    const stats = await this.prisma.shopDailyStat.findMany({
+      where: { date: { gte: startDate, lte: endDate } },
     });
 
-    // Count unique users
+    const shopMap = new Map<string, ShopEngagementMetrics>();
+
+    for (const stat of stats) {
+      const daysAgo = Math.floor(
+        Math.abs(today - stat.date.getTime()) / MS_PER_DAY,
+      );
+      const weight = Math.pow(DECAY_FACTOR, daysAgo);
+
+      const existing: ShopEngagementMetrics = shopMap.get(stat.shopId) || {
+        shopId: stat.shopId,
+        impressions: 0,
+        views: 0,
+        taps: 0,
+        totalViewTime: 0,
+        uniqueUsers: 0,
+        impressionToViewRate: 0,
+        viewToTapRate: 0,
+        avgViewDuration: 0,
+      };
+
+      existing.impressions += (stat.impressions || 0) * weight;
+      existing.views += (stat.views || 0) * weight;
+      existing.taps += (stat.taps || 0) * weight;
+      existing.totalViewTime += (stat.viewTimeSec || 0) * weight;
+
+      shopMap.set(stat.shopId, existing);
+    }
+
     const uniqueUsers = await this.prisma.userShopDailyInteraction.groupBy({
       by: ['shopId'],
-      where: {
-        date: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
-      _count: {
-        identifier: true,
-      },
+      where: { date: { gte: startDate, lte: endDate } },
+      _count: { identifier: true },
     });
-
     const userCountMap = new Map(
       uniqueUsers.map((u) => [u.shopId, u._count.identifier]),
     );
 
-    return stats.map((stat) => {
-      const impressions = stat._sum.impressions || 0;
-      const views = stat._sum.views || 0;
-      const taps = stat._sum.taps || 0;
-      const totalViewTime = stat._sum.viewTimeSec || 0;
+    return Array.from(shopMap.values()).map((shop) => {
+      const impressions = shop.impressions;
+      const views = shop.views;
+      const taps = shop.taps;
+      const totalViewTime = shop.totalViewTime;
+      const uniqueUsers = userCountMap.get(shop.shopId) || 0;
 
       return {
-        shopId: stat.shopId,
+        shopId: shop.shopId,
         impressions,
         views,
         taps,
         totalViewTime,
-        uniqueUsers: userCountMap.get(stat.shopId) || 0,
+        uniqueUsers,
         impressionToViewRate: impressions > 0 ? views / impressions : 0,
         viewToTapRate: views > 0 ? taps / views : 0,
         avgViewDuration: views > 0 ? totalViewTime / views : 0,
