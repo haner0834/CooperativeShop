@@ -7,12 +7,12 @@ import { Log } from 'src/common/decorators/logger.decorator';
 export class RankingScheduler {
   constructor(private shopRankingService: ShopRankingService) {}
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_HOUR)
   async updateHotRankings() {
     await this.shopRankingService.calculateAndUploadHotRankings();
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async updateHomeRankings() {
     await this.shopRankingService.calculateAndUploadHomeRankings();
   }
