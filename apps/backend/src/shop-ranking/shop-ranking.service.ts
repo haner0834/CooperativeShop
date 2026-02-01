@@ -5,6 +5,8 @@ import { CachedRankingData } from './types/cached-ranking-data.types';
 import { ShopEngagementMetrics } from './types/shop-engagement-metrics.types';
 import { ShopWithRanking, RankingType } from './types/shop-with-ranking.types';
 import { env } from 'src/common/utils/env.utils';
+import { log1p, mean, std, zScore } from 'src/common/utils/math.utils';
+import { HotScoreStats } from './types/hot-score-stat.types';
 
 @Injectable()
 export class ShopRankingService {
@@ -39,11 +41,14 @@ export class ShopRankingService {
     const sevenDaysAgo = this.getDateDaysAgo(7);
 
     const metrics = await this.getShopMetrics(sevenDaysAgo, today);
+    const activeMetrics = metrics.filter((x) => x.impressions > 0);
+
+    const hotScoreStats = this.calculateHotScoreStats(activeMetrics);
 
     const hotScores = metrics
       .map((m) => ({
         shopId: m.shopId,
-        score: this.calculateHotScore(m),
+        score: this.calculateHotScore(m, hotScoreStats),
         rank: 0,
       }))
       .filter((s) => s.score > 0);
@@ -152,31 +157,69 @@ export class ShopRankingService {
   /**
    * Scoring algorithms
    */
-  private calculateHotScore(metrics: ShopEngagementMetrics): number {
+  private calculateHotScore(
+    metrics: ShopEngagementMetrics,
+    stats: HotScoreStats,
+  ): number {
     if (metrics.impressions === 0) return 0;
 
-    const weights = {
-      impressions: 1,
-      views: 5,
-      taps: 10,
-      avgViewDuration: 2,
-      conversionRate: 15,
+    const conversionRate = metrics.views > 0 ? metrics.taps / metrics.views : 0; // 0~1
+
+    const logMetrics = {
+      impressions: log1p(metrics.impressions),
+      views: log1p(metrics.views),
+      taps: log1p(metrics.taps),
+      avgViewDuration: log1p(metrics.avgViewDuration),
+      uniqueUsers: log1p(metrics.uniqueUsers),
+      conversionRate,
     };
 
-    const conversionRate = metrics.taps / metrics.impressions;
-    const SHOP_COUNT = 300; // NOTE: Remember to update this data
-    const normalizedViewDuration = Math.min(
-      metrics.avgViewDuration / SHOP_COUNT,
-      1,
-    );
+    const z = {
+      impressions: zScore(
+        logMetrics.impressions,
+        stats.impressions.mean,
+        stats.impressions.std,
+      ),
+      views: zScore(logMetrics.views, stats.views.mean, stats.views.std),
+      taps: zScore(logMetrics.taps, stats.taps.mean, stats.taps.std),
+      avgViewDuration: zScore(
+        logMetrics.avgViewDuration,
+        stats.avgViewDuration.mean,
+        stats.avgViewDuration.std,
+      ),
+      uniqueUsers: zScore(
+        logMetrics.uniqueUsers,
+        stats.uniqueUsers.mean,
+        stats.uniqueUsers.std,
+      ),
+      conversionRate: zScore(
+        logMetrics.conversionRate,
+        stats.conversionRate.mean,
+        stats.conversionRate.std,
+      ),
+    };
 
-    return (
-      metrics.impressions * weights.impressions +
-      metrics.views * weights.views +
-      metrics.taps * weights.taps +
-      normalizedViewDuration * 100 * weights.avgViewDuration +
-      conversionRate * 100 * weights.conversionRate
-    );
+    const weights = {
+      impressions: 0.1,
+      views: 0.2,
+      taps: 0.25,
+      avgViewDuration: 0.15,
+      uniqueUsers: 0.2,
+      conversionRate: 0.1,
+    };
+
+    const rawScore =
+      z.impressions * weights.impressions +
+      z.views * weights.views +
+      z.taps * weights.taps +
+      z.avgViewDuration * weights.avgViewDuration +
+      z.uniqueUsers * weights.uniqueUsers +
+      z.conversionRate * weights.conversionRate;
+
+    const k = 1.2; // z-score 尺度下建議 0.8~1.5
+    const sigmoid = 1 / (1 + Math.exp(-k * rawScore));
+
+    return sigmoid * 100;
   }
 
   private calculateHomeScore(metrics?: ShopEngagementMetrics): number {
@@ -220,6 +263,60 @@ export class ShopRankingService {
     }
 
     return distanceScore * 0.8 + engagementBoost * 0.1;
+  }
+
+  private calculateHotScoreStats(
+    metricsList: ShopEngagementMetrics[],
+  ): HotScoreStats {
+    const data = metricsList.map((m) => {
+      const conversionRate = m.views > 0 ? m.taps / m.views : 0;
+
+      return {
+        impressions: log1p(m.impressions),
+        views: log1p(m.views),
+        taps: log1p(m.taps),
+        avgViewDuration: log1p(m.avgViewDuration),
+        uniqueUsers: log1p(m.uniqueUsers),
+        conversionRate, // 0~1
+      };
+    });
+
+    const impressions = data.map((d) => d.impressions);
+    const views = data.map((d) => d.views);
+    const taps = data.map((d) => d.taps);
+    const avgViewDuration = data.map((d) => d.avgViewDuration);
+    const uniqueUsers = data.map((d) => d.uniqueUsers);
+    const conversionRate = data.map((d) => d.conversionRate);
+
+    // μ / σ
+    const stats = {
+      impressions: {
+        mean: mean(impressions),
+        std: std(impressions, mean(impressions)),
+      },
+      views: {
+        mean: mean(views),
+        std: std(views, mean(views)),
+      },
+      taps: {
+        mean: mean(taps),
+        std: std(taps, mean(taps)),
+      },
+      avgViewDuration: {
+        mean: mean(avgViewDuration),
+        std: std(avgViewDuration, mean(avgViewDuration)),
+      },
+      uniqueUsers: {
+        mean: mean(uniqueUsers),
+        std: std(uniqueUsers, mean(uniqueUsers)),
+      },
+      conversionRate: {
+        mean: mean(conversionRate),
+        std: std(conversionRate, mean(conversionRate)),
+      },
+    };
+
+    return stats;
   }
 
   /**
