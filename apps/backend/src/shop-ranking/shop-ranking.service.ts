@@ -7,6 +7,7 @@ import { ShopWithRanking, RankingType } from './types/shop-with-ranking.types';
 import { env } from 'src/common/utils/env.utils';
 import { log1p, mean, std, zScore } from 'src/common/utils/math.utils';
 import { HotScoreStats } from './types/hot-score-stat.types';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class ShopRankingService {
@@ -62,7 +63,7 @@ export class ShopRankingService {
   }
 
   /**
-   * Calculate Home ranking (balanced)
+   * Calculate Home ranking
    */
   private async calculateHomeRanking(): Promise<void> {
     const today = this.getTodayDate();
@@ -70,7 +71,7 @@ export class ShopRankingService {
 
     const metrics = await this.getShopMetrics(sevenDaysAgo, today);
     const allShops = await this.prisma.shop.findMany({
-      select: { id: true },
+      select: { id: true, cachedHotScore: true },
     });
 
     const homeScores = allShops.map((shop) => {
@@ -78,7 +79,7 @@ export class ShopRankingService {
 
       return {
         shopId: shop.id,
-        score: this.calculateHomeScore(metric),
+        score: this.calculateHomeScore(shop.cachedHotScore, metric),
         rank: 0,
       };
     });
@@ -159,29 +160,19 @@ export class ShopRankingService {
     return sigmoid * 100;
   }
 
-  private calculateHomeScore(metrics?: ShopEngagementMetrics): number {
-    let score = 0;
-
-    // 40% Engagement
-    if (metrics && metrics.impressions > 0) {
-      score += this.calculateHotScore(metrics) * 0.4;
+  private calculateHomeScore(
+    hotScore: number,
+    metrics?: ShopEngagementMetrics,
+  ): number {
+    // NOTE: This is called by cron job, not realtime, so that random num
+    if (!metrics) {
+      return 30 * randomInt(0, 1) + 70 * this.explorationBoost(0);
     }
 
-    // 30% Fairness (lower impression = higher boost)
-    const impressions = metrics?.impressions || 0;
-    const fairnessBoost = Math.max(0, 100 - impressions);
-    score += fairnessBoost * 0.3;
+    const exploration = this.explorationBoost(metrics.impressions); // 0 ~ 1
+    const diversity = randomInt(0, 1); // 0 ~ 1
 
-    // 30% Base score for all shops (ensures everyone gets some visibility)
-    const randomBoost = Math.random() * 100;
-    score += randomBoost * 0.3;
-
-    // Penalty for non-engaging shops
-    if (metrics && metrics.impressions > 50 && metrics.views === 0) {
-      score *= 0.7;
-    }
-
-    return score;
+    return hotScore * 0.6 + exploration * 25 + diversity * 15;
   }
 
   private calculateHotScoreStats(
@@ -309,6 +300,10 @@ export class ShopRankingService {
         avgViewDuration: views > 0 ? totalViewTime / views : 0,
       };
     });
+  }
+
+  private explorationBoost(impressions: number): number {
+    return Math.exp(-impressions / 20);
   }
 
   /**
