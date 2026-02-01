@@ -172,7 +172,7 @@ export class ShopRankingService {
     const exploration = this.explorationBoost(metrics.impressions); // 0 ~ 1
     const diversity = randomInt(0, 1); // 0 ~ 1
 
-    return hotScore * 0.6 + exploration * 25 + diversity * 15;
+    return hotScore * 0.4 + exploration * 35 + diversity * 25;
   }
 
   private calculateHotScoreStats(
