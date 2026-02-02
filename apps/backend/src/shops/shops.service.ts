@@ -250,7 +250,7 @@ export class ShopsService {
       },
     });
     if (!shop) {
-      throw new NotFoundError('SHOP_NOT_FOUND', 'Shop not found.');
+      throw new NotFoundError('SHOP', 'Shop not found.');
     }
     return transformShopToDto(shop);
   }
@@ -262,8 +262,7 @@ export class ShopsService {
       include: { images: { include: { file: true } } },
     });
 
-    if (!currentShop)
-      throw new NotFoundError('SHOP_NOT_FOUND', 'Shop not found.');
+    if (!currentShop) throw new NotFoundError('SHOP', 'Shop not found.');
 
     // 權限檢查：僅限同校管理員修改
     if (currentShop.schoolId !== user.schoolId) {
@@ -410,7 +409,7 @@ export class ShopsService {
   ): Promise<{ saved: boolean }> {
     // 1. Check if shop exist
     const shop = await this.prisma.shop.findUnique({ where: { id: shopId } });
-    if (!shop) throw new NotFoundError('SHOP_NOT_FOUND', 'Shop not found');
+    if (!shop) throw new NotFoundError('SHOP', 'Shop not found');
 
     // 2. Check if has saved
     const existingSave = await this.prisma.savedShop.findUnique({
