@@ -19,7 +19,6 @@ export class SchoolRateLimitGuard implements CanActivate {
     const isExpensive = !!(
       query.q ||
       query.sortBy === 'nearby' ||
-      query.sortBy === 'hot' ||
       query.isOpen ||
       query.minLat
     );
