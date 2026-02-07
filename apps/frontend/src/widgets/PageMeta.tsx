@@ -122,10 +122,11 @@ export const routesMeta = {
   },
 
   /** /shops/:id */
-  shopDetail: (shopName: string) => ({
+  shopDetail: (shopName: string, image: string) => ({
     title: `${shopName} | 特約商店 | 南校聯合特約`,
     description: `查看 ${shopName} 的特約優惠內容、使用方式與相關說明。`,
     url: "https://cooperativeshops.org/shops",
+    image,
   }),
 
   /** /schools/:abbr */
