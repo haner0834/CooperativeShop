@@ -438,7 +438,7 @@ export const ShopDetailContent = ({
 
     return (
       <div className="space-y-4">
-        <PageMeta {...routesMeta.shopDetail(shop.title)} />
+        <PageMeta {...routesMeta.shopDetail(shop.title, shop.thumbnailLink)} />
         {displayGroups.map((group, idx) => {
           const isToday = group.days.includes(currentWeekday);
 
