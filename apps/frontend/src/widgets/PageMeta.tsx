@@ -135,6 +135,12 @@ export const routesMeta = {
     description: `查看 ${schoolName} 參與南校聯合特約的相關資訊與可用優惠。`,
     url: "https://cooperativeshops.org/schools",
   }),
+
+  accountCenter: {
+    title: "帳號中心 | 南校聯合特約",
+    description: "查看帳號內容、管理設備與登入帳號。",
+    url: "https://cooperativeshops.org/account-center",
+  },
 } as const;
 
 export default PageMeta;

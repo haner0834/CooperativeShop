@@ -34,6 +34,7 @@ import { useModal } from "../widgets/ModalContext";
 import { useAuthFetch } from "../auth/useAuthFetch";
 import { path } from "../utils/path";
 import { getErrorMessage } from "../utils/errors";
+import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 type DeviceType = "iPhone" | "iPad" | "Mac" | "Windows" | "Android" | "Other";
 
@@ -251,6 +252,7 @@ const UserAccountCenter = () => {
 
   return (
     <div className="min-h-screen bg-base-300 flex flex-col items-center pt-18">
+      <PageMeta {...routesMeta.accountCenter} />
       {selectedSession && (
         <SessionDetailModal
           session={selectedSession}
