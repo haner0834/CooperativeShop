@@ -1,0 +1,22 @@
+model Admin {
+    id       String     @id @default(cuid())
+    accounts Account[]
+    name     String
+    level    AdminLevel
+    email    String     @unique
+    isActive Boolean    @default(true)
+
+    schoolId String?
+    school   School? @relation(references: [id], fields: [schoolId])
+
+    lastLoginAt DateTime?
+    lastLoginIp String?
+
+    createAt DateTime @default(now())
+    updateAt DateTime @updatedAt()
+}
+
+enum AdminLevel {
+    ORGANIZATION
+    SCHOOL
+}

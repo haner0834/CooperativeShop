@@ -6,9 +6,19 @@ model Account {
     provider          String // "google" 或 "credentials" (代表學號密碼)
     providerAccountId String // Google ID 或 學號
 
+    role AccountRole @default(USER)
+
+    adminId String?
+    admin   Admin?  @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
     // 用來儲存雜湊後的密碼，只有 credentials provider 才需要
     password String?
     sessions AuthSession[]
 
     @@unique([provider, providerAccountId])
+}
+
+enum AccountRole {
+    ADMIN
+    USER
 }

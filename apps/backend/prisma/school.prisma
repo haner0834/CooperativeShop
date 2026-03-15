@@ -5,6 +5,7 @@ model School {
     emailFormats     String[]
     studentIdFormat  Json?
     users            User[]
+    admins           Admin[]
     shops            Shop[]
     instagramAccount String?
     websiteUrl       String?
