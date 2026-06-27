@@ -16,6 +16,7 @@ import { TokenService } from './token.service';
 import { UserPayload } from '../types/auth.types';
 import { UAParser } from 'ua-parser-js';
 import { CloudflareContext } from 'src/common/interceptors/cloudflare-context.interceptor';
+import { hasUser } from '../utils/has-user.util';
 
 export interface GoogleProfile {
   id: string;
@@ -57,7 +58,7 @@ export class AuthService {
         },
       },
     });
-    if (!account || !account.user.school) {
+    if (!account || !account.user || !account.user.school) {
       throw new InternalError(
         'Data integrity error: Account or School missing.',
       );
@@ -107,11 +108,11 @@ export class AuthService {
 
     // 取得此設備上所有已登入的帳號資訊
     const sessions = await this.prisma.authSession.findMany({
-      where: { deviceId },
+      where: { deviceId, account: { user: { isNot: null } } },
       include: { account: { include: { user: true } } },
     });
 
-    const switchableAccounts = sessions.map((s) => ({
+    const switchableAccounts = sessions.filter(hasUser).map((s) => ({
       id: s.account.user.id,
       name: s.account.user.name,
       email: s.account.user.email,
@@ -204,7 +205,7 @@ export class AuthService {
     });
 
     // 確保使用者屬於指定的學校
-    if (!account || account.user.schoolId !== data.schoolId) {
+    if (!account || !account.user || account.user.schoolId !== data.schoolId) {
       throw new BadRequestError('INVALID_CREDENTIAL', 'Invalid credentials.');
     }
 
@@ -236,11 +237,12 @@ export class AuthService {
           provider: 'google',
           providerAccountId: profile.id,
         },
+        user: { isNot: null },
       },
       include: { user: true },
     });
 
-    if (existingAccount) return existingAccount.user;
+    if (existingAccount && existingAccount.user) return existingAccount.user;
 
     // 交易：尋找或建立 User，然後建立 Account
     return await this.prisma.$transaction(async (tx) => {
@@ -312,6 +314,11 @@ export class AuthService {
           deviceId,
           accountId: decoded.accountId,
         },
+        account: {
+          user: {
+            isNot: null,
+          },
+        },
       },
       select: {
         id: true,
@@ -330,7 +337,7 @@ export class AuthService {
         },
       },
     });
-    if (!session)
+    if (!session || !session.account.user)
       throw new UnauthorizedError('Session not found. Please log in again.');
 
     // 2. 比對 token
@@ -397,7 +404,10 @@ export class AuthService {
 
     // 尋找目標帳號在此設備上的 session
     const targetSession = await this.prisma.authSession.findFirst({
-      where: { deviceId, account: { userId: targetUserId } },
+      where: {
+        deviceId,
+        account: { userId: targetUserId, user: { isNot: null } },
+      },
       select: {
         id: true,
         account: {
@@ -421,7 +431,7 @@ export class AuthService {
       },
     });
 
-    if (!targetSession)
+    if (!targetSession || !targetSession.account.user)
       throw new UnauthorizedError(
         'Target account is not logged in on this device.',
       );
