@@ -2,7 +2,7 @@ import { Account, AuthSession, User } from '@prisma/client';
 
 type AuthSessionWithAccount = AuthSession & {
   account: Account & {
-    user: User;
+    user: User | null;
   };
 };
 
