@@ -791,7 +791,7 @@ const ShopsMap = () => {
                 </div>
                 <ul
                   tabIndex={0}
-                  className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-52 mt-2 border border-base-200"
+                  className="dropdown-content z-1 menu p-2 shadow-lg bg-base-100 rounded-box w-52 mt-2 border border-base-200"
                 >
                   <li>
                     <a
@@ -848,7 +848,7 @@ const ShopsMap = () => {
               >
                 <Navigation
                   size={20}
-                  className="-translate-x-[1.5px] translate-y-[1.5px]"
+                  className="translate-x-[-1.5px] translate-y-[1.5px]"
                 />
               </button>
             </div>
@@ -937,7 +937,7 @@ const ShopsMap = () => {
                   </summary>
                   <ul
                     tabIndex={0}
-                    className="menu dropdown-content bg-base-100 rounded-box z-[100] w-48 p-2 shadow-xl border border-base-200 mb-2"
+                    className="menu dropdown-content bg-base-100 rounded-box z-100 w-48 p-2 shadow-xl border border-base-200 mb-2"
                   >
                     <li className="menu-title text-xs opacity-50">
                       選擇預設地圖
