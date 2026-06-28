@@ -65,7 +65,7 @@ const Hero = () => {
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start pt-4">
             <Link
-              to="/choose-school"
+              to="/shops"
               className="btn btn-primary rounded-full px-8 text-lg font-medium shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/25 transition-all"
             >
               立即開始
