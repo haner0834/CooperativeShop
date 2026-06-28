@@ -24,9 +24,8 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-
-    "baseUrl": "src/*", // or "src" if all imports are from `src`
     "paths": {
+      "*": ["./src/*"],
       "@shared/*": ["../shared/*"],
       "@assets/*": ["../assets/*"],
       "@icons": ["../generated/icons"]
