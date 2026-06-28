@@ -289,6 +289,8 @@ const Shops = () => {
           showModal({
             title: "無法取得商家",
             description: getErrorMessage(err.message),
+            showDismissButton: true,
+            buttons: [{ label: "關閉", role: "primary" }],
           });
         }
         setHasMore(false);
