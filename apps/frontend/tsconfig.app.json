@@ -26,9 +26,9 @@
     "noUncheckedSideEffectImports": true,
     "paths": {
       "*": ["./src/*"],
-      "@shared/*": ["../shared/*"],
-      "@assets/*": ["../assets/*"],
-      "@icons": ["../generated/icons"]
+      "@shared/*": ["./src/shared/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@icons": ["./src/generated/icons"]
     }
   },
   "include": ["src"]
