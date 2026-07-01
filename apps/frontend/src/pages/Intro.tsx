@@ -17,6 +17,7 @@ import PageMeta, { routesMeta } from "../widgets/PageMeta";
 import {
   ArrowRight,
   CheckCircle2,
+  Mail,
   ScanLine,
   School,
   Smartphone,
@@ -835,6 +836,14 @@ const Footer = () => {
               className="opacity-40 hover:opacity-100 transition-opacity"
             >
               <Github className="w-5 h-5" />
+            </a>
+
+            <a
+              href="mailto:contact@tnshops.org"
+              target="_blank"
+              className="opacity-40 hover:opacity-100 transition-opacity"
+            >
+              <Mail className="w-5 h-5" />
             </a>
           </div>
         </div>
