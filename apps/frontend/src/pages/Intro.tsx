@@ -825,6 +825,7 @@ const Footer = () => {
           <div className="flex flex-1 justify-end gap-4">
             <a
               href="https://www.instagram.com/cooperativeshops_2026/"
+              aria-label="Instagram"
               target="_blank"
               className="opacity-40 hover:opacity-100 transition-opacity"
             >
@@ -832,6 +833,7 @@ const Footer = () => {
             </a>
             <a
               href="https://github.com/haner0834/CooperativeShop"
+              aria-label="Github"
               target="_blank"
               className="opacity-40 hover:opacity-100 transition-opacity"
             >
@@ -840,6 +842,7 @@ const Footer = () => {
 
             <a
               href="mailto:contact@tnshops.org"
+              aria-label="Email"
               target="_blank"
               className="opacity-40 hover:opacity-100 transition-opacity"
             >
