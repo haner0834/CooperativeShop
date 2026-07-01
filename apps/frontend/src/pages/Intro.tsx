@@ -103,7 +103,7 @@ const Hero = () => {
             className="relative z-10"
           >
             <div className="relative w-full aspect-[1.58/1] rounded-box border border-base-300 bg-base-100 shadow-lg overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-base-100 to-base-200 opacity-50" />
+              <div className="absolute inset-0 bg-linear-to-br from-base-100 to-base-200 opacity-50" />
 
               <div className="relative p-6 h-full flex flex-col justify-between text-base-content">
                 <div className="flex justify-between items-start">
@@ -512,7 +512,7 @@ const CardReplacementAnimation = () => {
           >
             <div className="absolute -inset-6">
               {/* 光暈 */}
-              <div className="absolute inset-6 -m-1 bg-gradient-to-r from-primary/60 to-secondary/60 opacity-30 blur-lg rounded-box" />
+              <div className="absolute inset-6 -m-1 bg-linear-to-r from-primary/60 to-secondary/60 opacity-30 blur-lg rounded-box" />
 
               {/* 卡片本體 */}
               <div className="absolute inset-6 rounded-box border border-base-300 backdrop-blur-xl overflow-hidden group">
@@ -580,7 +580,7 @@ const FeatureGrid = () => {
           {/* Card 2 */}
           <div className="card bg-base-200/50 border border-base-200 hover:border-primary/50 transition-colors p-8 flex flex-col items-center text-center relative overflow-hidden">
             {/* 連接線示意 (Desktop only) */}
-            <div className="hidden md:block absolute top-1/2 -left-4 w-8 h-[2px] bg-base-300" />
+            <div className="hidden md:block absolute top-1/2 -left-4 w-8 h-0.5 bg-base-300" />
 
             <div className="w-16 h-16 rounded-2xl bg-purple-600/10 text-purple-600 flex items-center justify-center mb-6">
               <Smartphone className="w-8 h-8" />
@@ -593,7 +593,7 @@ const FeatureGrid = () => {
 
           {/* Card 3 */}
           <div className="card bg-base-200/50 border border-base-200 hover:border-primary/50 transition-colors p-8 flex flex-col items-center text-center relative">
-            <div className="hidden md:block absolute top-1/2 -left-4 w-8 h-[2px] bg-base-300" />
+            <div className="hidden md:block absolute top-1/2 -left-4 w-8 h-0.5 bg-base-300" />
 
             <div className="w-16 h-16 rounded-2xl bg-green-600/10 text-green-600 flex items-center justify-center mb-6">
               <Zap className="w-8 h-8" />
@@ -681,7 +681,7 @@ function BrokenSponsor() {
       <div
         className="
           absolute -inset-6 rounded-3xl
-          bg-gradient-to-r from-pink-500/40 via-purple-500/40 to-cyan-500/40
+          bg-linear-to-r from-pink-500/40 via-purple-500/40 to-cyan-500/40
           blur-3xl
           animate-pulse
           group-hover:[animation-play-state:paused]
@@ -762,7 +762,7 @@ function BrokenSponsor() {
         <p
           className="
             text-lg font-black
-            bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500
+            bg-linear-to-r from-yellow-400 via-red-500 to-pink-500
             bg-clip-text text-transparent
             animate-glitch
             drop-shadow-[0_0_10px_rgba(255,0,0,0.7)]
@@ -885,7 +885,7 @@ const Footer = () => {
             <div
               className="
           absolute -inset-6 rounded-3xl
-          bg-gradient-to-r from-blue-500 via-cyan-500 to-red-600
+          bg-linear-to-r from-blue-500 via-cyan-500 to-red-600
           blur-2xl
           animate-pulse
           group-hover:[animation-play-state:paused]
@@ -941,7 +941,7 @@ const Footer = () => {
         text-lg font-bold
         animate-text-lag-strong
         group-hover:animate-text-wobble-strong
-        bg-gradient-to-r from-fuchsia-400 to-violet-500
+        bg-linear-to-r from-fuchsia-400 to-violet-500
         bg-clip-text text-transparent
       "
               >
