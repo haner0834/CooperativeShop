@@ -125,7 +125,7 @@ const SessionDetailModal = ({
           </div>
           {sessionFields.map((field, idx) => (
             <Fragment key={idx}>
-              <div className="h-[1px] bg-base-300" />
+              <div className="h-px bg-base-300" />
               <div className="flex justify-between">
                 <span>{field.label}</span>
                 <span>{field.value}</span>

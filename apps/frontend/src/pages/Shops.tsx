@@ -559,7 +559,7 @@ const Shops = () => {
 
                   {/* 下拉選單顯示條件 */}
                   {isSearchFocused && searchInput && (
-                    <div className="absolute top-full left-0 w-full mt-2 bg-base-100 shadow-xl rounded-box overflow-hidden border border-base-200 z-[60]">
+                    <div className="absolute top-full left-0 w-full mt-2 bg-base-100 shadow-xl rounded-box overflow-hidden border border-base-200 z-60">
                       <ul className="flex flex-col p-2">
                         {isPreviewLoading ? (
                           <div className="p-4 flex justify-center">
@@ -615,7 +615,7 @@ const Shops = () => {
             >
               <form
                 onSubmit={handleSearchSubmit}
-                className="flex justify-center h-full pr-[10px]"
+                className="flex justify-center h-full pr-2.5"
               >
                 <label className={`input w-full flex items-center gap-2`}>
                   <Search className="opacity-50 w-5 h-5" />
@@ -755,7 +755,7 @@ const Shops = () => {
                 <ShopCard
                   key={`rec-${s.id}`}
                   shop={s}
-                  className="w-80 flex-shrink-0"
+                  className="w-80 shrink-0"
                 />
               ))}
             </div>
@@ -855,7 +855,7 @@ const Shops = () => {
             {isLoading &&
               [...Array(6)].map((_, i) => (
                 <div key={i} className="flex flex-col space-y-4">
-                  <div className="skeleton w-full aspect-[16/9]" />
+                  <div className="skeleton w-full aspect-video" />
                   <div className="skeleton h-6 w-3/4" />
                 </div>
               ))}
