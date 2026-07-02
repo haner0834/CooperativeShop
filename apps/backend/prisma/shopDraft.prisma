@@ -28,6 +28,7 @@ model ShopDraft {
     images       Json // array
 
     schoolId String
+    school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
     stage         ShopDraftStage
     reservedUntil DateTime?
