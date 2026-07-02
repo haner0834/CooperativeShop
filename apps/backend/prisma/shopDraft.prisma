@@ -4,11 +4,11 @@ model ShopDraft {
     updatedAt DateTime @updatedAt
 
     version          ShopDraftVersion[]
-    currentVersionId String?
+    currentVersionId String?            @unique
     currentVersion   ShopDraftVersion?  @relation("CurrentVersion", fields: [currentVersionId], references: [id])
 
     shopId String? @unique
-    shop   Shop?   @relation(fields: [shopId], references: [id])
+    shop   Shop?   @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
     title         String
     subTitle      String?
@@ -47,7 +47,7 @@ enum ShopDraftStage {
 
 model ShopDraftVersion {
     id           String       @id @default(cuid())
-    draftId      String       @unique
+    draftId      String
     draft        ShopDraft    @relation(fields: [draftId], references: [id], onDelete: Cascade)
     versionNo    Int
     snapshot     Json
@@ -58,7 +58,8 @@ model ShopDraftVersion {
     submittedAt  DateTime
     reviewedAt   DateTime?
 
-    currentFor ShopDraft[] @relation("CurrentVersion")
+    currentFor  ShopDraft? @relation("CurrentVersion")
+    shopDraftId String
 
     @@unique([draftId, versionNo])
 }
