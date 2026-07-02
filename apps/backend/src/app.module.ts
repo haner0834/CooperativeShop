@@ -26,6 +26,7 @@ import { DeviceIdGuard } from './device-id/device-id.guard';
 import { DeviceIdService } from './device-id/device-id.service';
 import { CloudflareContextInterceptor } from './common/interceptors/cloudflare-context.interceptor';
 import { MapModule } from './map/map.module';
+import { ShopDraftModule } from './shop-draft/shop-draft.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { MapModule } from './map/map.module';
     SitemapModule,
     AccountModule,
     MapModule,
+    ShopDraftModule,
   ],
   controllers: [AppController],
   providers: [
