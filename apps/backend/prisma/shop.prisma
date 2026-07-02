@@ -20,6 +20,7 @@ model Shop {
     cachedHotScore  Float           @default(0)
     cachedHomeScore Float           @default(0)
     savedBy         SavedShop[]
+    shopDraft       ShopDraft?
 
     @@index([title])
     @@index([schoolId])

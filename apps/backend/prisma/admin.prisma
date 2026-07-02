@@ -12,6 +12,8 @@ model Admin {
     lastLoginAt DateTime?
     lastLoginIp String?
 
+    reviewedDrafts ShopDraftVersion[]
+
     createAt DateTime @default(now())
     updateAt DateTime @updatedAt()
 }

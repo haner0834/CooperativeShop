@@ -1,0 +1,82 @@
+model ShopDraft {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    version          ShopDraftVersion[]
+    currentVersionId String?
+    currentVersion   ShopDraftVersion?  @relation("CurrentVersion", fields: [currentVersionId], references: [id])
+
+    shopId String? @unique
+    shop   Shop?   @relation(fields: [shopId], references: [id])
+
+    title         String
+    subTitle      String?
+    normalizedKey String  @unique
+    description   String
+
+    contactInfo Json // An array
+
+    discount      String?
+    workSchedules Json // array
+
+    address   String
+    longitude Float
+    latitude  Float
+
+    thumbnailKey String
+    images       Json // array
+
+    schoolId String
+
+    stage         ShopDraftStage
+    reservedUntil DateTime?
+
+    draftLock ShopDraftLock?
+
+    @@index([normalizedKey])
+}
+
+enum ShopDraftStage {
+    RESERVED
+    EDITING
+    SUBMITTED
+    ARCHIVED
+}
+
+model ShopDraftVersion {
+    id           String       @id @default(cuid())
+    draftId      String       @unique
+    draft        ShopDraft    @relation(fields: [draftId], references: [id], onDelete: Cascade)
+    versionNo    Int
+    snapshot     Json
+    reviewStatus ReviewStatus
+    rejectReason String?
+    reviewerId   String?
+    reviewer     Admin?       @relation(fields: [reviewerId], references: [id])
+    submittedAt  DateTime
+    reviewedAt   DateTime?
+
+    currentFor ShopDraft[] @relation("CurrentVersion")
+
+    @@unique([draftId, versionNo])
+}
+
+enum ReviewStatus {
+    PROCESSING
+    REJECT
+    SUCCESS
+}
+
+model ShopDraftLock {
+    id      String    @id @default(cuid())
+    draftId String    @unique
+    draft   ShopDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+
+    lockedBy  String // userId
+    lockedAt  DateTime
+    expiresAt DateTime // default 30 min after lock
+
+    @@index([draftId])
+    @@index([expiresAt])
+}
