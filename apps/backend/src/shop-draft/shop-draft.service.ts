@@ -76,7 +76,14 @@ export class ShopDraftService {
         id: true,
         title: true,
         subtitle: true,
+        normalizedKey: true,
         thumbnailKey: true,
+        school: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 
@@ -84,11 +91,11 @@ export class ShopDraftService {
 
     const rankedDrafts = drafts
       .map((draft) => {
-        // 對資料庫撈出來的每筆草稿也進行正規化
-        const dbKey = this.calculateNormalizedKey(
-          draft.title || '',
-          draft.subtitle || '',
-        );
+        const dbKey = {
+          title: draft.title,
+          subtitle: draft.subtitle,
+          fullKey: draft.normalizedKey,
+        };
         const score = this.draftSimilarityScore(inputKey, dbKey);
 
         return {
@@ -104,7 +111,21 @@ export class ShopDraftService {
     return rankedDrafts;
   }
 
-  // -- Create Reserverance --
+  // -- Create Reserve --
+  async createReserve(title: string, subtitle: string) {
+    const normalizedKey = this.calculateNormalizedKey(title, subtitle);
+    const matchDraft = await this.prisma.shopDraft.findUnique({
+      where: {
+        normalizedKey: normalizedKey.fullKey,
+      },
+    });
+    if (matchDraft) {
+      throw new ConflictError(
+        'DRAFT_NORMALIZED_KEY_CONFLICT',
+        "There's already a draft with the same title + subtitle",
+      );
+    }
+  }
 
   // -- Sync Draft --
   // get, update
