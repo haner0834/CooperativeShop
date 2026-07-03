@@ -8,6 +8,8 @@ import {
   UnauthorizedError,
 } from 'src/types/error.types';
 
+const LOCK_TTL_SECONDS = 5 * 60;
+
 @Injectable()
 export class ShopDraftLockService {
   constructor(
@@ -15,9 +17,25 @@ export class ShopDraftLockService {
     @InjectRedis() private readonly redis: Redis,
   ) {}
 
+  private getLockKey(draftId: string): string {
+    return `draft-lock:${draftId}`;
+  }
+
   async acquireLock(draftId: string, userId: string): Promise<string> {
-    const lockToken = await this.prisma.$transaction(async (tx) => {
-      // 檢查 draft 是否存在且可編輯
+    const lockKey = this.getLockKey(draftId);
+
+    // 1. 檢查 Redis 中是否已有鎖
+    const existingLockStr = await this.redis.get(lockKey);
+    if (existingLockStr) {
+      const existingLock = JSON.parse(existingLockStr);
+      // 如果鎖存在，且不是自己的，就拒絕
+      if (existingLock.userId !== userId) {
+        throw new ConflictError('LOCKED_BY_OTHERS', 'Locked by others.');
+      }
+    }
+
+    // 2. 檢查草稿狀態與轉換 Stage (保留原本 DB 對草稿本身的狀態更新)
+    await this.prisma.$transaction(async (tx) => {
       const draft = await tx.shopDraft.findUnique({
         where: { id: draftId },
       });
@@ -33,38 +51,6 @@ export class ShopDraftLockService {
         );
       }
 
-      // 檢查是否已有人鎖住（且鎖未過期）
-      const existingLock = await tx.shopDraftLock.findUnique({
-        where: { draftId },
-      });
-
-      if (existingLock) {
-        const now = new Date();
-        if (existingLock.expiresAt > now && existingLock.lockedBy !== userId) {
-          // 被別人鎖住且還沒過期
-          throw new ConflictError('LOCKED_BY_OTHERS', 'Locked by others.');
-        }
-        // 自己的鎖或已過期，更新鎖
-        await tx.shopDraftLock.update({
-          where: { id: existingLock.id },
-          data: {
-            lockedBy: userId,
-            lockedAt: new Date(),
-            expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 min
-          },
-        });
-      } else {
-        // 沒有鎖，新建一個
-        await tx.shopDraftLock.create({
-          data: {
-            draftId,
-            lockedBy: userId,
-            lockedAt: new Date(),
-            expiresAt: new Date(Date.now() + 30 * 60 * 1000),
-          },
-        });
-      }
-
       // 轉換 draft stage
       if (draft.stage === 'RESERVED') {
         await tx.shopDraft.update({
@@ -75,39 +61,38 @@ export class ShopDraftLockService {
           },
         });
       }
-
-      const lockToken: string = crypto.randomUUID();
-      // Token 存在 cache（Redis 或內存）5分鐘，每次 API 呼叫驗證它
-      await this.redis.set(
-        `draft-lock-token:${draftId}:${userId}`,
-        lockToken,
-        'EX',
-        5 * 60,
-      );
-
-      return lockToken;
     });
+
+    // 3. 發放 Token 並寫入 Redis (儲存 userId 與 lockToken 以供後續驗證)
+    const lockToken: string = crypto.randomUUID();
+    const lockData = JSON.stringify({ userId, lockToken });
+
+    // 設定鎖的過期時間
+    await this.redis.set(lockKey, lockData, 'EX', LOCK_TTL_SECONDS);
 
     return lockToken;
   }
 
   async verifyLock(draftId: string, userId: string, lockToken: string) {
-    const cachedToken = await this.redis.get(
-      `draft-lock-token:${draftId}:${userId}`,
-    );
+    const lockKey = this.getLockKey(draftId);
+    const lockStr = await this.redis.get(lockKey);
 
-    if (cachedToken !== lockToken) {
+    if (!lockStr) {
+      throw new UnauthorizedError('INVALID_OR_EXPIRED_TOKEN');
+    }
+
+    const lock = JSON.parse(lockStr);
+
+    // 確保持有鎖的人是該 user，且 Token 相符
+    if (lock.userId !== userId || lock.lockToken !== lockToken) {
       throw new UnauthorizedError('INVALID_OR_EXPIRED_TOKEN');
     }
   }
 
   async refreshToken(draftId: string, userId: string, lockToken: string) {
-    await this.redis.set(
-      `draft-lock-token:${draftId}:${userId}`,
-      lockToken,
-      'EX',
-      5 * 60,
-    );
+    const lockKey = this.getLockKey(draftId);
+    // 直接延長 Redis Key 的壽命
+    await this.redis.expire(lockKey, LOCK_TTL_SECONDS);
   }
 
   async verifyAndRefreshLock(
@@ -121,25 +106,15 @@ export class ShopDraftLockService {
   }
 
   async releaseLock(draftId: string, userId: string): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
-      const lock = await tx.shopDraftLock.findUnique({
-        where: { draftId },
-      });
+    const lockKey = this.getLockKey(draftId);
+    const lockStr = await this.redis.get(lockKey);
 
-      if (lock && lock.lockedBy === userId) {
-        await tx.shopDraftLock.delete({ where: { id: lock.id } });
+    if (lockStr) {
+      const lock = JSON.parse(lockStr);
+      // 安全機制：確認這把鎖目前確實是該使用者的，才能將其刪除 (避免把別人的鎖誤刪)
+      if (lock.userId === userId) {
+        await this.redis.del(lockKey);
       }
-    });
-
-    await this.redis.del(`draft-lock-token:${draftId}:${userId}`);
-  }
-
-  // -- Cron job --
-  async cleanupExpiredLocks(): Promise<void> {
-    await this.prisma.shopDraftLock.deleteMany({
-      where: {
-        expiresAt: { lt: new Date() },
-      },
-    });
+    }
   }
 }

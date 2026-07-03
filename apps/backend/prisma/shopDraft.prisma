@@ -33,8 +33,6 @@ model ShopDraft {
     stage         ShopDraftStage
     reservedUntil DateTime?
 
-    draftLock ShopDraftLock?
-
     @@index([normalizedKey])
 }
 
@@ -68,17 +66,4 @@ enum ReviewStatus {
     PROCESSING
     REJECT
     SUCCESS
-}
-
-model ShopDraftLock {
-    id      String    @id @default(cuid())
-    draftId String    @unique
-    draft   ShopDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
-
-    lockedBy  String // userId
-    lockedAt  DateTime
-    expiresAt DateTime // default 30 min after lock
-
-    @@index([draftId])
-    @@index([expiresAt])
 }
