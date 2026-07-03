@@ -91,7 +91,7 @@ export class ShopDraftLockService {
     return lockToken;
   }
 
-  private async verifyLock(draftId: string, userId: string, lockToken: string) {
+  async verifyLock(draftId: string, userId: string, lockToken: string) {
     const cachedToken = await this.redis.get(
       `draft-lock-token:${draftId}:${userId}`,
     );
@@ -101,11 +101,7 @@ export class ShopDraftLockService {
     }
   }
 
-  private async refreshToken(
-    draftId: string,
-    userId: string,
-    lockToken: string,
-  ) {
+  async refreshToken(draftId: string, userId: string, lockToken: string) {
     await this.redis.set(
       `draft-lock-token:${draftId}:${userId}`,
       lockToken,

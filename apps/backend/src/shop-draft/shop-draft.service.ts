@@ -2,10 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
-import { ConflictError, InternalError } from 'src/types/error.types';
+import {
+  ConflictError,
+  InternalError,
+  NotFoundError,
+} from 'src/types/error.types';
 import { NormalizedDraftDraftKey } from './types/normalized-draft-key.types';
 import levenshtein from 'fast-levenshtein';
 import { ShopDraftLockService } from './services/shop-draft-lock.service';
+import { DraftWithRelations } from './types/draft-with-relations.types';
 
 @Injectable()
 export class ShopDraftService {
@@ -91,7 +96,7 @@ export class ShopDraftService {
 
     const rankedDrafts = drafts
       .map((draft) => {
-        const dbKey = {
+        const dbKey: NormalizedDraftDraftKey = {
           title: draft.title,
           subtitle: draft.subtitle,
           fullKey: draft.normalizedKey,
@@ -127,9 +132,6 @@ export class ShopDraftService {
     }
   }
 
-  // -- Sync Draft --
-  // get, update
-
   // -- Submit Draft --
 
   // -- Reviewing Draft --
@@ -138,6 +140,26 @@ export class ShopDraftService {
 
   // -- List Out Drafts --
   // filter with specific stage
+
+  // -- Sync Draft --
+
+  async getDraft(draftId: string) {
+    const draft: DraftWithRelations | null =
+      await this.prisma.shopDraft.findUnique({
+        where: { id: draftId },
+        include: {
+          school: true,
+          shop: true,
+          currentVersion: true,
+        },
+      });
+
+    if (!draft) {
+      throw new NotFoundError('DRAFT');
+    }
+
+    return draft;
+  }
 
   async updateField(
     draftId: string,

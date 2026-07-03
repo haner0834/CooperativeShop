@@ -1,5 +1,5 @@
 export interface NormalizedDraftDraftKey {
   title: string;
-  subtitle: string;
+  subtitle: string | null;
   fullKey: string;
 }
