@@ -9,7 +9,7 @@ import {
   UnauthorizedError,
 } from 'src/types/error.types';
 import { NormalizedDraftDraftKey } from './types/normalized-draft-key.types';
-import levenshtien from 'fast-levenshtein';
+import levenshtein from 'fast-levenshtein';
 
 @Injectable()
 export class ShopDraftService {
@@ -41,7 +41,7 @@ export class ShopDraftService {
     if (!a && !b) return 1; // 都空視為相同
     if (!a || !b) return 0; // 其中一個空視為完全不同
 
-    const distance = levenshtien.get(a, b);
+    const distance = levenshtein.get(a, b);
     const maxLen = Math.max(a.length, b.length);
 
     // 相似度 = 1 - (距離占最長字串的比例)
