@@ -11,7 +11,7 @@ model ShopDraft {
     shop   Shop?   @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
     title         String
-    subTitle      String?
+    subtitle      String?
     normalizedKey String  @unique
     description   String
 
