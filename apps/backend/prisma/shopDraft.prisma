@@ -56,14 +56,15 @@ model ShopDraftVersion {
     submittedAt  DateTime
     reviewedAt   DateTime?
 
-    currentFor  ShopDraft? @relation("CurrentVersion")
-    shopDraftId String
+    currentFor ShopDraft? @relation("CurrentVersion")
 
     @@unique([draftId, versionNo])
 }
 
 enum ReviewStatus {
+    IDLE
     PROCESSING
     REJECT
     SUCCESS
+    SUPERSEDED
 }
