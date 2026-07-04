@@ -133,6 +133,66 @@ export class ShopDraftService {
   }
 
   // -- Submit Draft --
+  async submitDraft(
+    draftId: string,
+    userId: string,
+    lockToken: string,
+    options?: { overwrite?: boolean },
+  ) {
+    this.lockService.verifyLock(draftId, userId, lockToken);
+
+    const draft = await this.prisma.shopDraft.findUnique({
+      where: { id: draftId },
+      include: {
+        currentVersion: true,
+      },
+    });
+    if (!draft) throw new NotFoundError('DRAFT');
+    if (draft.stage === 'SUBMITTED') {
+      if (!options?.overwrite) {
+        throw new ConflictError(
+          'DRAFT_ALREADY_SUBMITTED',
+          'i dont want to write msg. you know what youre doing so yeah fuck you <3',
+        );
+      }
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      const { currentVersion, ...pureDraft } = draft;
+
+      // 已提交再提交
+      if (
+        draft.stage === 'SUBMITTED' &&
+        currentVersion &&
+        currentVersion.reviewStatus === 'IDLE'
+      ) {
+        await tx.shopDraftVersion.update({
+          where: { id: currentVersion.id },
+          data: { reviewStatus: 'SUPERSEDED' },
+        });
+      }
+
+      const newVersion = await tx.shopDraftVersion.create({
+        data: {
+          draftId: draftId,
+          versionNo: (currentVersion?.versionNo ?? 0) + 1,
+          snapshot: pureDraft,
+          reviewStatus: 'IDLE',
+          submittedAt: new Date(),
+        },
+      });
+
+      await tx.shopDraft.update({
+        where: { id: draftId },
+        data: {
+          stage: 'SUBMITTED',
+          currentVersionId: newVersion.id,
+        },
+      });
+    });
+
+    this.lockService.releaseLock(draftId, userId);
+  }
 
   // -- Reviewing Draft --
 
