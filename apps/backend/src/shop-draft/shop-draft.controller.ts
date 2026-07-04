@@ -24,7 +24,7 @@ import { SubmitDraftDto } from './dto/submit-draft.dto';
 export class ShopDraftController {
   constructor(private readonly shopDraftService: ShopDraftService) {}
 
-  @Get('get')
+  @Get(':id')
   @UseGuards(JwtAccessGuard)
   async get(@Param('id') id: string) {
     const draft = await this.shopDraftService.getDraft(id);
