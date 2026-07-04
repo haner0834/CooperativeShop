@@ -11,6 +11,9 @@ import { NormalizedDraftDraftKey } from './types/normalized-draft-key.types';
 import levenshtein from 'fast-levenshtein';
 import { ShopDraftLockService } from './services/shop-draft-lock.service';
 import { DraftWithRelations } from './types/draft-with-relations.types';
+import { DraftFilterOptions } from './types/draft-filter-options.types';
+import { Prisma } from '@prisma/client';
+import { GetDraftOptions } from './types/get-draft-options.types';
 
 @Injectable()
 export class ShopDraftService {
@@ -199,7 +202,42 @@ export class ShopDraftService {
   // -- Confirm Draft --
 
   // -- List Out Drafts --
-  // filter with specific stage
+  async getDrafts(
+    filters: DraftFilterOptions,
+    options?: GetDraftOptions,
+  ): Promise<DraftWithRelations[]> {
+    const { stage, schoolAbbr } = filters;
+
+    const where: Prisma.ShopDraftWhereInput = {};
+    if (stage) {
+      where.stage = stage;
+    }
+    if (schoolAbbr) {
+      where.school = {
+        abbreviation: schoolAbbr,
+      };
+    }
+
+    // 2. 動態構建關聯查詢 (Include)
+    const include: Prisma.ShopDraftInclude = {};
+
+    if (options?.school) include.school = true;
+    if (options?.shop) include.shop = true;
+    if (options?.currentVersion) include.currentVersion = true;
+    if (options?.versions) include.versions = true;
+
+    // 3. 組裝查詢物件
+    const query: Prisma.ShopDraftFindManyArgs = { where };
+
+    // 如果 include 裡面有任何一個欄位被設為 true，才帶入 include 參數
+    if (Object.keys(include).length > 0) {
+      query.include = include;
+    }
+
+    return this.prisma.shopDraft.findMany(query) as Promise<
+      DraftWithRelations[]
+    >;
+  }
 
   // -- Sync Draft --
 

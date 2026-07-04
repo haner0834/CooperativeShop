@@ -5,6 +5,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ShopDraftService } from './shop-draft.service';
@@ -19,6 +20,8 @@ import { UserPayload } from 'src/auth/types/auth.types';
 import { PermissionError, UnauthorizedError } from 'src/types/error.types';
 import { BypassJwt } from 'src/common/decorators/bypass-jwt.decorator';
 import { SubmitDraftDto } from './dto/submit-draft.dto';
+import { DraftFilterOptions } from './types/draft-filter-options.types';
+import { GetDraftOptions } from './types/get-draft-options.types';
 
 @Controller('shop-draft')
 export class ShopDraftController {
@@ -26,10 +29,23 @@ export class ShopDraftController {
 
   @Get(':id')
   @UseGuards(JwtAccessGuard)
-  async get(@Param('id') id: string) {
+  async get(@Param('id') id: string): Promise<ShopDraftDto> {
     const draft = await this.shopDraftService.getDraft(id);
 
     return plainToInstance(ShopDraftDto, draft, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  @Get()
+  @UseGuards(JwtAccessGuard)
+  async getDrafts(
+    @Query() filters: DraftFilterOptions,
+    @Query() options: GetDraftOptions,
+  ): Promise<ShopDraftDto[]> {
+    const drafts = await this.shopDraftService.getDrafts(filters, options);
+
+    return plainToInstance(ShopDraftDto, drafts, {
       excludeExtraneousValues: true,
     });
   }
