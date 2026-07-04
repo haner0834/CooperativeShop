@@ -202,6 +202,17 @@ export class ShopDraftService {
   // -- Confirm Draft --
 
   // -- List Out Drafts --
+  private getIncludeFromOptions(
+    options?: GetDraftOptions,
+  ): Prisma.ShopDraftInclude {
+    const include: Prisma.ShopDraftInclude = {};
+    if (options?.school) include.school = true;
+    if (options?.shop) include.shop = true;
+    if (options?.currentVersion) include.currentVersion = true;
+    if (options?.versions) include.versions = true;
+    return include;
+  }
+
   async getDrafts(
     filters: DraftFilterOptions,
     options?: GetDraftOptions,
@@ -219,12 +230,7 @@ export class ShopDraftService {
     }
 
     // 2. 動態構建關聯查詢 (Include)
-    const include: Prisma.ShopDraftInclude = {};
-
-    if (options?.school) include.school = true;
-    if (options?.shop) include.shop = true;
-    if (options?.currentVersion) include.currentVersion = true;
-    if (options?.versions) include.versions = true;
+    const include = this.getIncludeFromOptions(options);
 
     // 3. 組裝查詢物件
     const query: Prisma.ShopDraftFindManyArgs = { where };
@@ -241,15 +247,16 @@ export class ShopDraftService {
 
   // -- Sync Draft --
 
-  async getDraft(draftId: string) {
+  async getDraft(
+    draftId: string,
+    options: GetDraftOptions = { school: true, currentVersion: true },
+  ) {
+    const include = this.getIncludeFromOptions(options);
+
     const draft: DraftWithRelations | null =
       await this.prisma.shopDraft.findUnique({
         where: { id: draftId },
-        include: {
-          school: true,
-          shop: true,
-          currentVersion: true,
-        },
+        include,
       });
 
     if (!draft) {
