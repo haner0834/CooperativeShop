@@ -3,7 +3,7 @@ model ShopDraft {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    version          ShopDraftVersion[]
+    versions         ShopDraftVersion[]
     currentVersionId String?            @unique
     currentVersion   ShopDraftVersion?  @relation("CurrentVersion", fields: [currentVersionId], references: [id])
 
