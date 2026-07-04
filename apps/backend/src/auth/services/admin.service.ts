@@ -1,6 +1,5 @@
 // src/auth/admin/admin.service.ts
 import {
-  Inject,
   Injectable,
   Logger,
   OnModuleDestroy,
@@ -9,9 +8,9 @@ import {
 import type { Redis } from 'ioredis';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AdminContext } from '../types/admin-context.types';
+import { InjectRedis } from '@nestjs-modules/ioredis';
 
 const REDIS_HASH_KEY = 'admin:active_accounts';
-const REDIS_INVALIDATE_CHANNEL = 'admin:invalidate';
 const SAFETY_REFRESH_INTERVAL_MS = 60_000; // 保底輪詢，容忍最多 1 分鐘落差
 
 @Injectable()
@@ -25,22 +24,37 @@ export class AdminService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private readonly prisma: PrismaService,
-    @Inject('REDIS_CLIENT') private readonly redis: Redis,
-    @Inject('REDIS_SUBSCRIBER') private readonly redisSub: Redis,
+    @InjectRedis() private readonly redis: Redis,
   ) {}
 
   async onModuleInit() {
     this.initialLoad = this.warmUp();
     await this.initialLoad;
 
-    await this.redisSub
-      .subscribe(REDIS_INVALIDATE_CHANNEL)
-      .catch((e) => this.logger.error('Subscribe admin channel failed', e));
+    // 1. 啟用 Redis 的鍵空間通知 (Key-space Notifications)
+    // 'g' 代表啟用一般命令（例如 DEL, HSET），'h' 代表啟用 Hash 類型命令
+    await this.redis
+      .config('SET', 'notify-keyspace-events', 'gh')
+      .catch((e) =>
+        this.logger.warn('Failed to set Redis config for notifications', e),
+      );
 
-    this.redisSub.on('message', (channel, accountId) => {
-      if (channel === REDIS_INVALIDATE_CHANNEL) {
-        this.applyInvalidation(accountId).catch((e) =>
-          this.logger.warn(`Apply invalidation failed: ${accountId}`, e),
+    // 2. 訂閱此 Hash 鍵的事件通道
+    // Redis 會將該 Key 的動作推播到 __keyspace@0__:admin:active_accounts
+    const channelName = `__keyspace@0__:${REDIS_HASH_KEY}`;
+    await this.redis
+      .subscribe(channelName)
+      .catch((e) => this.logger.error(`Subscribe to ${channelName} failed`, e));
+
+    // 3. 監聽訊息（當 Redis 資料有變動時，訊息內容會是動作名稱，如 "hset", "hdel", "del"）
+    this.redis.on('message', (channel, action) => {
+      if (channel === channelName) {
+        this.logger.log(
+          `Redis cache changed via action: ${action}. Refreshing local cache...`,
+        );
+        // 當遠端有變動時，重新同步一次本機快取
+        this.syncLocalCacheFromRedis().catch((e) =>
+          this.logger.warn('Sync local cache from Redis failed', e),
         );
       }
     });
@@ -59,31 +73,22 @@ export class AdminService implements OnModuleInit, OnModuleDestroy {
 
   /** Guard 唯一需要呼叫的方法，永遠只讀 local memory */
   async getAdminContext(accountId: string): Promise<AdminContext | null> {
-    await this.initialLoad; // 避免開機瞬間 cache 還沒熱身就誤判成 false
+    await this.initialLoad;
     return this.localCache.get(accountId) ?? null;
   }
 
   /**
    * 在升級/降級/停用 admin 的地方呼叫這個，
-   * 讓所有 instance 立即同步，不用等 60 秒保底輪詢。
+   * 這裡只負責直接改 Redis，改完後 Redis 的通知機制會觸發所有服務的訊息監聽
    */
   async invalidateAccount(accountId: string): Promise<void> {
-    await this.applyInvalidation(accountId);
-    await this.redis
-      .publish(REDIS_INVALIDATE_CHANNEL, accountId)
-      .catch((e) => this.logger.warn('Publish invalidate event failed', e));
-  }
-
-  private async applyInvalidation(accountId: string): Promise<void> {
     const ctx = await this.loadOneFromDb(accountId);
 
     if (ctx) {
-      this.localCache.set(accountId, ctx);
       await this.redis
         .hset(REDIS_HASH_KEY, accountId, JSON.stringify(ctx))
         .catch((e) => this.logger.warn('Update redis hash failed', e));
     } else {
-      this.localCache.delete(accountId);
       await this.redis
         .hdel(REDIS_HASH_KEY, accountId)
         .catch((e) => this.logger.warn('Delete from redis hash failed', e));
@@ -92,19 +97,25 @@ export class AdminService implements OnModuleInit, OnModuleDestroy {
 
   private async warmUp(): Promise<void> {
     try {
-      const all = await this.redis.hgetall(REDIS_HASH_KEY);
-      if (all && Object.keys(all).length > 0) {
-        this.localCache = new Map(
-          Object.entries(all).map(([id, json]) => [
-            id,
-            JSON.parse(json) as AdminContext,
-          ]),
-        );
-        return;
-      }
-      await this.refreshFromDb(); // Redis 是空的，可能第一次啟動
+      await this.syncLocalCacheFromRedis();
     } catch (e) {
       this.logger.error('Redis unavailable on warm-up, fallback to DB', e);
+      await this.refreshFromDb();
+    }
+  }
+
+  /** 從 Redis 讀取最新狀態並蓋掉 Local Cache */
+  private async syncLocalCacheFromRedis(): Promise<void> {
+    const all = await this.redis.hgetall(REDIS_HASH_KEY);
+    if (all && Object.keys(all).length > 0) {
+      this.localCache = new Map(
+        Object.entries(all).map(([id, json]) => [
+          id,
+          JSON.parse(json) as AdminContext,
+        ]),
+      );
+    } else {
+      // 如果 Redis 是空的，有可能是第一次啟動，改從 DB 撈
       await this.refreshFromDb();
     }
   }
