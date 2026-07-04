@@ -41,6 +41,9 @@ export class ShopDraftVersionDto {
   @Expose() id: string;
   @Expose() versionNo: number;
   @Expose() reviewStatus: ReviewStatus;
+  @Expose() reviewerId: string;
+  @Expose() submittedAt: Date;
+  @Expose() reviewedAt: Date;
   @Expose() rejectReason?: string;
 }
 
@@ -57,6 +60,8 @@ export class ShopDraftDto {
   @Expose() @Type(() => Date) updatedAt: Date;
 
   @Expose() currentVersion: ShopDraftVersionDto | null;
+
+  @Expose() versions: ShopDraftVersionDto[] = [];
 
   @Expose() shopId: string | null;
 
