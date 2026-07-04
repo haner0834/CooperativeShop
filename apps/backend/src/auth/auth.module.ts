@@ -10,6 +10,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtAccessGuard } from './guards/jwt-access.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { PrismaModule } from '../prisma/prisma.module';
+import { AdminService } from './services/admin.service';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { PrismaModule } from '../prisma/prisma.module';
     GoogleStrategy,
     JwtAccessGuard,
     JwtRefreshGuard,
+    AdminService,
   ],
-  exports: [AuthService, TokenService],
+  exports: [AuthService, TokenService, AdminService],
 })
 export class AuthModule {}
