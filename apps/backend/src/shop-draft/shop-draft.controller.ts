@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ShopDraftService } from './shop-draft.service';
 import { ShopDraftDto } from './dto/shop-draft.dto';
-import { plainToInstance } from 'node_modules/class-transformer/types';
+import { plainToInstance } from 'class-transformer';
 import { ShopDraftLockService } from './services/shop-draft-lock.service';
 import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
 import { EditLockToken } from './decorators/draft-lock-token.decorator';
@@ -22,10 +22,17 @@ import { BypassJwt } from 'src/common/decorators/bypass-jwt.decorator';
 import { SubmitDraftDto } from './dto/submit-draft.dto';
 import { DraftFilterOptions } from './types/draft-filter-options.types';
 import { GetDraftOptions } from './types/get-draft-options.types';
+import { CurrentAdmin } from 'src/common/decorators/current-admin.decorator';
+import { RequireRole } from 'src/common/decorators/require-role.decorator';
+import { AdminContext } from 'src/auth/types/admin-context.types';
+import { ShopDraftReviewService } from './services/shop-draft-review.service';
 
 @Controller('shop-draft')
 export class ShopDraftController {
-  constructor(private readonly shopDraftService: ShopDraftService) {}
+  constructor(
+    private readonly shopDraftService: ShopDraftService,
+    private readonly shopDraftReviewService: ShopDraftReviewService,
+  ) {}
 
   @Get(':id')
   @UseGuards(JwtAccessGuard)
@@ -83,6 +90,25 @@ export class ShopDraftController {
 
     this.shopDraftService.submitDraft(dto.draftId, user.id, token, {
       overwrite: dto.overwrite,
+    });
+  }
+
+  @Get('review/:id')
+  @UseGuards(JwtAccessGuard)
+  @RequireRole('ADMIN', 'ORGANIZATION')
+  async reviewDraft(
+    draftId: string,
+    @CurrentAdmin() admin: AdminContext | null,
+  ) {
+    if (!admin) throw new PermissionError();
+
+    const snapshot = await this.shopDraftReviewService.getReviewSnapshot(
+      draftId,
+      admin.adminId,
+    );
+
+    return plainToInstance(ShopDraftDto, snapshot, {
+      excludeExtraneousValues: true,
     });
   }
 }

@@ -1,5 +1,5 @@
 import { ReviewStatus, ShopDraftStage } from '@prisma/client';
-import { Expose, Type } from 'node_modules/class-transformer/types';
+import { Expose, Type } from 'class-transformer';
 import { ContactInfoDto, WorkScheduleDto } from 'src/shops/dto/create-shop.dto';
 
 export type Weekday =

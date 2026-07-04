@@ -4,7 +4,7 @@ import {
   registerDecorator,
   ValidationOptions,
   ValidationArguments,
-} from 'node_modules/class-validator/types';
+} from 'class-validator';
 
 type AllowedShopDraftFields = Pick<
   ShopDraft,

@@ -1,5 +1,5 @@
 import { ShopDraftStage } from '@prisma/client';
-import { IsOptional, IsString } from 'node_modules/class-validator/types';
+import { IsOptional, IsString } from 'class-validator';
 
 export class DraftFilterOptions {
   @IsOptional()

@@ -1,8 +1,4 @@
-import {
-  IsBoolean,
-  IsOptional,
-  IsString,
-} from 'node_modules/class-validator/types';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class SubmitDraftDto {
   @IsString()
