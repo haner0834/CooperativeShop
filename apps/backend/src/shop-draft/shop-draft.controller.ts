@@ -25,6 +25,7 @@ export class ShopDraftController {
   constructor(private readonly shopDraftService: ShopDraftService) {}
 
   @Get('get')
+  @UseGuards(JwtAccessGuard)
   async get(@Param('id') id: string) {
     const draft = await this.shopDraftService.getDraft(id);
 
