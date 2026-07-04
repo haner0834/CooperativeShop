@@ -29,8 +29,11 @@ export class ShopDraftController {
 
   @Get(':id')
   @UseGuards(JwtAccessGuard)
-  async get(@Param('id') id: string): Promise<ShopDraftDto> {
-    const draft = await this.shopDraftService.getDraft(id);
+  async get(
+    @Param('id') id: string,
+    @Query() options: GetDraftOptions,
+  ): Promise<ShopDraftDto> {
+    const draft = await this.shopDraftService.getDraft(id, options);
 
     return plainToInstance(ShopDraftDto, draft, {
       excludeExtraneousValues: true,
