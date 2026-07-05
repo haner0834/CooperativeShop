@@ -27,6 +27,7 @@ import { DeviceIdService } from './device-id/device-id.service';
 import { CloudflareContextInterceptor } from './common/interceptors/cloudflare-context.interceptor';
 import { MapModule } from './map/map.module';
 import { ShopDraftModule } from './shop-draft/shop-draft.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
@@ -48,6 +49,13 @@ import { ShopDraftModule } from './shop-draft/shop-draft.module';
     AccountModule,
     MapModule,
     ShopDraftModule,
+    BullModule.forRoot({
+      connection: {
+        host: 'localhost',
+        port: 6379,
+        maxRetriesPerRequest: null,
+      },
+    }),
   ],
   controllers: [AppController],
   providers: [
