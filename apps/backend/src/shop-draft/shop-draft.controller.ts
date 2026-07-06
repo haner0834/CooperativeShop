@@ -17,7 +17,11 @@ import { EditLockToken } from './decorators/draft-lock-token.decorator';
 import { UpdateFieldDto } from './dto/update-field.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UserPayload } from 'src/auth/types/auth.types';
-import { PermissionError, UnauthorizedError } from 'src/types/error.types';
+import {
+  BadRequestError,
+  PermissionError,
+  UnauthorizedError,
+} from 'src/types/error.types';
 import { BypassJwt } from 'src/common/decorators/bypass-jwt.decorator';
 import { SubmitDraftDto } from './dto/submit-draft.dto';
 import { DraftFilterOptions } from './types/draft-filter-options.types';
@@ -26,6 +30,7 @@ import { CurrentAdmin } from 'src/common/decorators/current-admin.decorator';
 import { RequireRole } from 'src/common/decorators/require-role.decorator';
 import { AdminContext } from 'src/auth/types/admin-context.types';
 import { ShopDraftReviewService } from './services/shop-draft-review.service';
+import { ReviewDraftDto } from './dto/review-draft.dto';
 
 @Controller('shop-draft')
 export class ShopDraftController {
@@ -93,11 +98,11 @@ export class ShopDraftController {
     });
   }
 
-  @Get('review/:id')
+  @Get(':id/snapshot')
   @UseGuards(JwtAccessGuard)
   @RequireRole('ADMIN', 'ORGANIZATION')
-  async reviewDraft(
-    draftId: string,
+  async getDraftSnapshot(
+    @Param('id') draftId: string,
     @CurrentAdmin() admin: AdminContext | null,
   ) {
     if (!admin) throw new PermissionError();
@@ -110,5 +115,23 @@ export class ShopDraftController {
     return plainToInstance(ShopDraftDto, snapshot, {
       excludeExtraneousValues: true,
     });
+  }
+
+  @Post(':id/review')
+  @UseGuards(JwtAccessGuard)
+  @RequireRole('ADMIN', 'ORGANIZATION')
+  async reviewDraft(
+    @Param('id') draftId: string,
+    @Body() dto: ReviewDraftDto,
+    @CurrentAdmin() admin: AdminContext | null,
+  ) {
+    if (!admin) throw new PermissionError();
+
+    await this.shopDraftReviewService.reviewDraft(
+      draftId,
+      admin,
+      dto.result,
+      dto.rejectReason,
+    );
   }
 }
