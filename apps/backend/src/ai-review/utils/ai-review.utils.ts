@@ -46,19 +46,6 @@ export function buildShopInfoPayload(draft: ShopDraftForReview) {
 }
 
 /**
- * WARN: 合約掃描檔目前沒有對應的 Prisma 欄位與上傳流程，
- * 這裡永遠回傳 null，讓 prompt 內建的「輸入缺失」規則接手處理。
- * 等合約上傳功能做好之後，這裡要改成：
- *   1. 用 File API 上傳 PDF 取得 file URI，或直接塞 inline base64 data，
- *   2. 或是改用 Gemini 的 url_context tool 讓模型自己去抓連結。
- * 兩種都要記得同步在 request body 加對應的 contents/tools 設定
- * （目前的 ai-review.service.ts 尚未支援這兩種）。
- */
-export function buildContractPayload(_draft: ShopDraftForReview): null {
-  return null;
-}
-
-/**
  * NOTE: 目前沒有串接任何公開資訊蒐集流程（例如 Google Search Grounding），
  * 固定回傳 null。若要串接，記得回應會多出 groundingMetadata，
  * 需要另外解析，不要塞進這個欄位裡。

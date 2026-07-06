@@ -11,13 +11,13 @@ import {
   DEFAULT_GEMINI_MODEL,
 } from './ai-review.constants';
 import {
-  buildContractPayload,
   buildPublicInfoPayload,
   buildShopInfoPayload,
 } from './utils/ai-review.utils';
 import { AiReviewResult } from './interfaces/ai-review-result.interface';
 import { ShopDraftForReview } from './interfaces/shop-draft-for-review.interface';
 import { InternalError } from 'src/types/error.types';
+import { env } from 'src/common/utils/env.utils';
 
 @Injectable()
 export class AiReviewService {
@@ -27,16 +27,10 @@ export class AiReviewService {
   private readonly model: string;
   private readonly baseUrl: string;
 
-  constructor(
-    private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
-  ) {
-    this.apiKey = this.configService.getOrThrow<string>('GEMINI_API_KEY');
-    this.model =
-      this.configService.get<string>('GEMINI_MODEL') ?? DEFAULT_GEMINI_MODEL;
-    this.baseUrl =
-      this.configService.get<string>('GEMINI_API_BASE_URL') ??
-      DEFAULT_GEMINI_API_BASE_URL;
+  constructor(private readonly httpService: HttpService) {
+    this.apiKey = env('GEMINI_API_KEY');
+    this.model = env('GEMINI_MODEL') ?? DEFAULT_GEMINI_MODEL;
+    this.baseUrl = env('GEMINI_API_BASE_URL') ?? DEFAULT_GEMINI_API_BASE_URL;
   }
 
   /**
@@ -44,10 +38,15 @@ export class AiReviewService {
    */
   async reviewDraft(draft: ShopDraftForReview): Promise<AiReviewResult> {
     const shopInfo = buildShopInfoPayload(draft);
-    const contract = buildContractPayload(draft);
     const publicInfo = buildPublicInfoPayload(draft);
 
-    const requestBody = this.buildRequestBody(shopInfo, contract, publicInfo);
+    const contractBuffer: any = 0;
+
+    const requestBody = this.buildRequestBody(
+      shopInfo,
+      publicInfo,
+      contractBuffer,
+    );
     const url = `${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`;
 
     const responseData = await this.callGemini(url, requestBody);
@@ -56,25 +55,35 @@ export class AiReviewService {
 
   private buildRequestBody(
     shopInfo: unknown,
-    contract: unknown,
     publicInfo: unknown,
+    contractBuffer?: Buffer,
   ): Record<string, unknown> {
-    const body: Record<string, unknown> = {
+    const parts: any[] = [
+      {
+        text: JSON.stringify({
+          shop_info: shopInfo,
+          public_info: publicInfo,
+        }),
+      },
+    ];
+
+    if (contractBuffer) {
+      parts.push({
+        inlineData: {
+          mimeType: 'application/pdf',
+          data: contractBuffer.toString('base64'),
+        },
+      });
+    }
+
+    return {
       systemInstruction: {
         parts: [{ text: AI_REVIEW_SYSTEM_PROMPT }],
       },
       contents: [
         {
           role: 'user',
-          parts: [
-            {
-              text: JSON.stringify({
-                shop_info: shopInfo,
-                contract,
-                public_info: publicInfo,
-              }),
-            },
-          ],
+          parts: parts,
         },
       ],
       generationConfig: {
@@ -83,8 +92,6 @@ export class AiReviewService {
         temperature: 0.2,
       },
     };
-
-    return body;
   }
 
   private async callGemini(

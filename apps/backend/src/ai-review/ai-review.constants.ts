@@ -426,6 +426,6 @@ export const AI_REVIEW_RESPONSE_SCHEMA = {
   ],
 };
 
-export const DEFAULT_GEMINI_MODEL = 'gemini-3-flash';
+export const DEFAULT_GEMINI_MODEL = 'gemini-3.5-flash';
 export const DEFAULT_GEMINI_API_BASE_URL =
   'https://generativelanguage.googleapis.com/v1beta';
