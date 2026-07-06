@@ -26,11 +26,14 @@ export class AiReviewService {
   private readonly apiKey: string;
   private readonly model: string;
   private readonly baseUrl: string;
+  private readonly enableSearchGrounding: boolean;
 
   constructor(private readonly httpService: HttpService) {
     this.apiKey = env('GEMINI_API_KEY');
-    this.model = env('GEMINI_MODEL') ?? DEFAULT_GEMINI_MODEL;
-    this.baseUrl = env('GEMINI_API_BASE_URL') ?? DEFAULT_GEMINI_API_BASE_URL;
+    this.model = env('GEMINI_MODEL', DEFAULT_GEMINI_MODEL);
+    this.baseUrl = env('GEMINI_API_BASE_URL', DEFAULT_GEMINI_API_BASE_URL);
+    this.enableSearchGrounding =
+      env('GEMINI_ENABLE_SEARCH_GROUNDING', 'true') === 'true';
   }
 
   /**
@@ -42,11 +45,7 @@ export class AiReviewService {
 
     const contractBuffer: any = 0;
 
-    const requestBody = this.buildRequestBody(
-      shopInfo,
-      publicInfo,
-      contractBuffer,
-    );
+    const requestBody = this.buildRequestBody(shopInfo, contractBuffer);
     const url = `${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`;
 
     const responseData = await this.callGemini(url, requestBody);
@@ -55,14 +54,12 @@ export class AiReviewService {
 
   private buildRequestBody(
     shopInfo: unknown,
-    publicInfo: unknown,
     contractBuffer?: Buffer,
   ): Record<string, unknown> {
     const parts: any[] = [
       {
         text: JSON.stringify({
           shop_info: shopInfo,
-          public_info: publicInfo,
         }),
       },
     ];
@@ -76,7 +73,7 @@ export class AiReviewService {
       });
     }
 
-    return {
+    const body: Record<string, any> = {
       systemInstruction: {
         parts: [{ text: AI_REVIEW_SYSTEM_PROMPT }],
       },
@@ -92,6 +89,16 @@ export class AiReviewService {
         temperature: 0.2,
       },
     };
+
+    if (this.enableSearchGrounding) {
+      body.tools = [
+        {
+          googleSearch: {},
+        },
+      ];
+    }
+
+    return body;
   }
 
   private async callGemini(
@@ -100,7 +107,7 @@ export class AiReviewService {
   ): Promise<unknown> {
     try {
       const response = await firstValueFrom(
-        this.httpService.post(url, body, { timeout: 30_000 }),
+        this.httpService.post(url, body, { timeout: 60_000 }),
       );
       return response.data;
     } catch (error) {
@@ -118,6 +125,13 @@ export class AiReviewService {
   private parseResponse(data: any): AiReviewResult {
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
+    const groundingMetadata = data?.candidates?.[0]?.groundingMetadata;
+    if (groundingMetadata?.groundingChunks) {
+      this.logger.log(
+        `[Grounding] AI 成功檢索了 ${groundingMetadata.groundingChunks.length} 個真實網路資訊來源。`,
+      );
+    }
+
     if (!text) {
       this.logger.error(
         'Gemini 回應格式不符預期（找不到 candidates[0].content.parts[0].text）',
@@ -127,7 +141,26 @@ export class AiReviewService {
     }
 
     try {
-      return JSON.parse(text) as AiReviewResult;
+      const parsed = JSON.parse(text);
+
+      const requiredFields = [
+        'title',
+        'subtitle',
+        'discount',
+        'isPassed',
+        'suggestions',
+      ];
+      const hasAllFields = requiredFields.every((field) => field in parsed);
+
+      if (!hasAllFields) {
+        this.logger.error(
+          'Gemini 回應遺漏了關鍵的 JSON 欄位（可能受聯網影響斷篇）',
+          text,
+        );
+        throw new InternalError('AI 審核服務回應結構不完整');
+      }
+
+      return parsed as AiReviewResult;
     } catch (error) {
       this.logger.error('無法解析 AI 回應 JSON', text);
       throw new InternalError('AI 審核服務回應無法解析');
