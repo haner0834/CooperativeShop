@@ -29,6 +29,7 @@ import { MapModule } from './map/map.module';
 import { ShopDraftModule } from './shop-draft/shop-draft.module';
 import { BullModule } from '@nestjs/bullmq';
 import { InstaPostModule } from './insta-post/insta-post.module';
+import { AiReviewModule } from './ai-review/ai-review.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { InstaPostModule } from './insta-post/insta-post.module';
       },
     }),
     InstaPostModule,
+    AiReviewModule,
   ],
   controllers: [AppController],
   providers: [

@@ -28,6 +28,7 @@
     "@logtail/node": "^0.5.6",
     "@logtail/winston": "^0.5.6",
     "@nestjs-modules/ioredis": "^2.2.1",
+    "@nestjs/axios": "^4.0.1",
     "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.1.27",
     "@nestjs/config": "^4.0.2",
