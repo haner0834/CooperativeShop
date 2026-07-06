@@ -15,10 +15,14 @@ import { ResponseShopDto } from './dto/response-shop.dto';
 import { UserPayload } from 'src/auth/types/auth.types';
 import { GetShopsDto, ShopSortBy } from './dto/get-shop.dto';
 import { transformShopToDto } from 'src/common/utils/transformShopToDto.util';
+import { AdminService } from 'src/auth/services/admin.service';
 
 @Injectable()
 export class ShopsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly adminService: AdminService,
+  ) {}
 
   async create(createShopDto: CreateShopDto) {
     const requestHashId = calculateRequestHash(createShopDto);
@@ -264,8 +268,13 @@ export class ShopsService {
 
     if (!currentShop) throw new NotFoundError('SHOP', 'Shop not found.');
 
-    // 權限檢查：僅限同校管理員修改
-    if (currentShop.schoolId !== user.schoolId) {
+    const adminContext = await this.adminService.getAdminContext(
+      user.accountId,
+    );
+    if (
+      currentShop.schoolId !== user.schoolId ||
+      adminContext?.level === 'ORGANIZATION'
+    ) {
       throw new AuthError('ACCESS_DENIED', 'Modification is forbidden.');
     }
 
