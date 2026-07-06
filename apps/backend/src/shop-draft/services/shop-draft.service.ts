@@ -7,13 +7,13 @@ import {
   InternalError,
   NotFoundError,
 } from 'src/types/error.types';
-import { NormalizedDraftDraftKey } from './types/normalized-draft-key.types';
+import { NormalizedDraftDraftKey } from '../types/normalized-draft-key.types';
 import levenshtein from 'fast-levenshtein';
-import { ShopDraftLockService } from './services/shop-draft-lock.service';
-import { DraftWithRelations } from './types/draft-with-relations.types';
-import { DraftFilterOptions } from './types/draft-filter-options.types';
+import { ShopDraftLockService } from './shop-draft-lock.service';
+import { DraftWithRelations } from '../types/draft-with-relations.types';
+import { DraftFilterOptions } from '../types/draft-filter-options.types';
 import { Prisma } from '@prisma/client';
-import { GetDraftOptions } from './types/get-draft-options.types';
+import { GetDraftOptions } from '../types/get-draft-options.types';
 
 @Injectable()
 export class ShopDraftService {

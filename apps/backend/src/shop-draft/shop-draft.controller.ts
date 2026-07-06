@@ -8,7 +8,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ShopDraftService } from './shop-draft.service';
+import { ShopDraftService } from './services/shop-draft.service';
 import { ShopDraftDto } from './dto/shop-draft.dto';
 import { plainToInstance } from 'class-transformer';
 import { ShopDraftLockService } from './services/shop-draft-lock.service';

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ShopDraftService } from './shop-draft.service';
+import { ShopDraftService } from './services/shop-draft.service';
 import { ShopDraftController } from './shop-draft.controller';
 import { ShopDraftLockService } from './services/shop-draft-lock.service';
 import { ShopDraftReviewService } from './services/shop-draft-review.service';
