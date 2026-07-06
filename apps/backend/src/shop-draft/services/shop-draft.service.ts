@@ -142,7 +142,7 @@ export class ShopDraftService {
     lockToken: string,
     options?: { overwrite?: boolean },
   ) {
-    this.lockService.verifyLock(draftId, userId, lockToken);
+    await this.lockService.verifyLock(draftId, userId, lockToken);
 
     const draft = await this.prisma.shopDraft.findUnique({
       where: { id: draftId },
@@ -194,7 +194,7 @@ export class ShopDraftService {
       });
     });
 
-    this.lockService.releaseLock(draftId, userId);
+    await this.lockService.releaseLock(draftId, userId);
   }
 
   // -- Reviewing Draft --
