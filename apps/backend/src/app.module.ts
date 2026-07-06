@@ -28,6 +28,7 @@ import { CloudflareContextInterceptor } from './common/interceptors/cloudflare-c
 import { MapModule } from './map/map.module';
 import { ShopDraftModule } from './shop-draft/shop-draft.module';
 import { BullModule } from '@nestjs/bullmq';
+import { InstaPostModule } from './insta-post/insta-post.module';
 
 @Module({
   imports: [
@@ -51,11 +52,10 @@ import { BullModule } from '@nestjs/bullmq';
     ShopDraftModule,
     BullModule.forRoot({
       connection: {
-        host: 'localhost',
-        port: 6379,
-        maxRetriesPerRequest: null,
+        url: env('REDIS_URI'),
       },
     }),
+    InstaPostModule,
   ],
   controllers: [AppController],
   providers: [
