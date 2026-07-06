@@ -59,21 +59,21 @@ export class ShopDraftDto {
 
   @Expose() @Type(() => Date) updatedAt: Date;
 
-  @Expose() currentVersion: ShopDraftVersionDto | null;
+  @Expose() currentVersion?: ShopDraftVersionDto | null;
 
-  @Expose() versions: ShopDraftVersionDto[] = [];
+  @Expose() versions?: ShopDraftVersionDto[] = [];
 
   @Expose() shopId: string | null;
 
   @Expose() title: string;
 
-  @Expose() subTitle: string | null;
+  @Expose() subtitle: string | null;
 
   @Expose() normalizedKey: string;
 
   @Expose() description: string;
 
-  @Expose() @Type(() => WorkScheduleDto) contactInfo: ContactInfoDto[];
+  @Expose() @Type(() => ContactInfoDto) contactInfo: ContactInfoDto[];
 
   @Expose() discount: string | null;
 
