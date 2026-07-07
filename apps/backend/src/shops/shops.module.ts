@@ -9,5 +9,6 @@ import { RateLimitService } from 'src/rate-limit/rate-limit.service';
   controllers: [ShopsController],
   providers: [ShopsService, SchoolRateLimitGuard, RateLimitService],
   imports: [AuthModule],
+  exports: [ShopsService],
 })
 export class ShopsModule {}

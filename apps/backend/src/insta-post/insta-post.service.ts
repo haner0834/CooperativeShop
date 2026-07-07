@@ -1,8 +1,7 @@
-// instagram-post/instagram-post.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { INSTAGRAM_POST_QUEUE } from './insta-post.module';
+import { INSTAGRAM_POST_QUEUE } from './insta-post.constants';
 import { CreateInstagramPostDto } from './dto/create-insta-post.dto';
 
 @Injectable()

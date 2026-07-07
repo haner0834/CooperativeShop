@@ -1,8 +1,7 @@
-// instagram-post/instagram-post.processor.ts
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
-import { INSTAGRAM_POST_QUEUE } from './insta-post.module';
+import { INSTAGRAM_POST_QUEUE } from './insta-post.constants';
 import { PostPeerClient } from './postpeer.client';
 import { CreateInstagramPostDto } from './dto/create-insta-post.dto';
 

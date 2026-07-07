@@ -4,8 +4,7 @@ import { InstaPostController } from './insta-post.controller';
 import { BullModule } from '@nestjs/bullmq';
 import { InstagramPostProcessor } from './insta-post.processor';
 import { PostPeerClient } from './postpeer.client';
-
-export const INSTAGRAM_POST_QUEUE = 'insta-post';
+import { INSTAGRAM_POST_QUEUE } from './insta-post.constants';
 
 @Module({
   imports: [

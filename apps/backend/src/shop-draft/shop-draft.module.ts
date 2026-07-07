@@ -5,10 +5,19 @@ import { ShopDraftLockService } from './services/shop-draft-lock.service';
 import { ShopDraftReviewService } from './services/shop-draft-review.service';
 import { AuthModule } from 'src/auth/auth.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { AiReviewModule } from 'src/ai-review/ai-review.module';
+import { InstaPostModule } from 'src/insta-post/insta-post.module';
+import { ShopsModule } from 'src/shops/shops.module';
 
 @Module({
   controllers: [ShopDraftController],
   providers: [ShopDraftService, ShopDraftLockService, ShopDraftReviewService],
-  imports: [AuthModule, PrismaModule],
+  imports: [
+    AuthModule,
+    PrismaModule,
+    AiReviewModule,
+    InstaPostModule,
+    ShopsModule,
+  ],
 })
 export class ShopDraftModule {}

@@ -1,7 +1,6 @@
-// instagram-post/postpeer.client.ts
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
+import { env } from 'src/common/utils/env.utils';
 
 export interface PostPeerPostPayload {
   content: string;
@@ -17,11 +16,11 @@ export class PostPeerClient {
   private readonly logger = new Logger(PostPeerClient.name);
   private readonly http: AxiosInstance;
 
-  constructor(private readonly config: ConfigService) {
+  constructor() {
     this.http = axios.create({
-      baseURL: this.config.get('POSTPEER_BASE_URL'),
+      baseURL: env('POSTPEER_BASE_URL'),
       headers: {
-        'x-access-key': this.config.get('POSTPEER_API_KEY'),
+        'x-access-key': env('POSTPEER_API_KEY'),
         'Content-Type': 'application/json',
       },
       timeout: 30_000,
