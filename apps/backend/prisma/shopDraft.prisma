@@ -44,17 +44,18 @@ enum ShopDraftStage {
 }
 
 model ShopDraftVersion {
-    id           String       @id @default(cuid())
-    draftId      String
-    draft        ShopDraft    @relation(fields: [draftId], references: [id], onDelete: Cascade)
-    versionNo    Int
-    snapshot     Json
-    reviewStatus ReviewStatus
-    rejectReason String?
-    reviewerId   String?
-    reviewer     Admin?       @relation(fields: [reviewerId], references: [id])
-    submittedAt  DateTime
-    reviewedAt   DateTime?
+    id             String       @id @default(cuid())
+    draftId        String
+    draft          ShopDraft    @relation(fields: [draftId], references: [id], onDelete: Cascade)
+    versionNo      Int
+    snapshot       Json
+    aiReviewResult Json?
+    reviewStatus   ReviewStatus
+    rejectReason   String?
+    reviewerId     String?
+    reviewer       Admin?       @relation(fields: [reviewerId], references: [id])
+    submittedAt    DateTime
+    reviewedAt     DateTime?
 
     currentFor ShopDraft? @relation("CurrentVersion")
 
@@ -67,4 +68,5 @@ enum ReviewStatus {
     REJECT
     SUCCESS
     SUPERSEDED
+    AI_REJECT
 }

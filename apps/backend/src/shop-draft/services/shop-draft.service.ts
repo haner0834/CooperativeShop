@@ -1,7 +1,5 @@
-import { Injectable, UseGuards } from '@nestjs/common';
+import { Injectable, Logger, UseGuards } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { InjectRedis } from '@nestjs-modules/ioredis';
-import Redis from 'ioredis';
 import {
   ConflictError,
   InternalError,
@@ -14,12 +12,16 @@ import { DraftWithRelations } from '../types/draft-with-relations.types';
 import { DraftFilterOptions } from '../types/draft-filter-options.types';
 import { Prisma } from '@prisma/client';
 import { GetDraftOptions } from '../types/get-draft-options.types';
+import { AiReviewService } from 'src/ai-review/ai-review.service';
+import { plainToInstance } from 'class-transformer';
+import { ShopDraftDto } from '../dto/shop-draft.dto';
 
 @Injectable()
 export class ShopDraftService {
+  private readonly logger = new Logger(ShopDraftService.name);
   constructor(
     private readonly prisma: PrismaService,
-    @InjectRedis() private readonly redis: Redis,
+    private readonly aiReviewService: AiReviewService,
     private readonly lockService: ShopDraftLockService,
   ) {}
 
@@ -195,11 +197,34 @@ export class ShopDraftService {
     });
 
     await this.lockService.releaseLock(draftId, userId);
+
+    // Trigger AI Reviewing
+    this.prisma.shopDraft
+      .findUnique({
+        where: { id: draftId },
+      })
+      .then(async (latestDraft) => {
+        if (!latestDraft || !latestDraft.currentVersionId) return;
+        this.logger.error(`[AI_REVIEW] 背景預審開始`);
+        const reviewResult = await this.aiReviewService.reviewDraft(
+          plainToInstance(ShopDraftDto, latestDraft),
+        );
+
+        await this.prisma.shopDraftVersion.update({
+          where: { id: latestDraft.currentVersionId },
+          data: {
+            aiReviewResult: reviewResult as unknown as Prisma.InputJsonValue,
+            reviewStatus: reviewResult.isPassed ? 'IDLE' : 'AI_REJECT',
+          },
+        });
+      })
+      .catch((error) => {
+        this.logger.error(
+          `[AI_REVIEW] 背景預審發生錯誤: ${error.message}`,
+          error.stack,
+        );
+      });
   }
-
-  // -- Reviewing Draft --
-
-  // -- Confirm Draft --
 
   // -- List Out Drafts --
   private getIncludeFromOptions(
