@@ -22,6 +22,8 @@ export class AdminService implements OnModuleInit, OnModuleDestroy {
   private refreshTimer?: NodeJS.Timeout;
   private initialLoad!: Promise<void>;
 
+  private subscriber!: Redis;
+
   constructor(
     private readonly prisma: PrismaService,
     @InjectRedis() private readonly redis: Redis,
@@ -39,15 +41,17 @@ export class AdminService implements OnModuleInit, OnModuleDestroy {
         this.logger.warn('Failed to set Redis config for notifications', e),
       );
 
+    this.subscriber = this.redis.duplicate();
+
     // 2. 訂閱此 Hash 鍵的事件通道
     // Redis 會將該 Key 的動作推播到 __keyspace@0__:admin:active_accounts
     const channelName = `__keyspace@0__:${REDIS_HASH_KEY}`;
-    await this.redis
+    await this.subscriber
       .subscribe(channelName)
       .catch((e) => this.logger.error(`Subscribe to ${channelName} failed`, e));
 
     // 3. 監聽訊息（當 Redis 資料有變動時，訊息內容會是動作名稱，如 "hset", "hdel", "del"）
-    this.redis.on('message', (channel, action) => {
+    this.subscriber.on('message', (channel, action) => {
       if (channel === channelName) {
         this.logger.log(
           `Redis cache changed via action: ${action}. Refreshing local cache...`,
