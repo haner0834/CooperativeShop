@@ -60,6 +60,7 @@
     "jsonwebtoken": "^9.0.2",
     "jws": "^4.0.1",
     "nest-winston": "^1.10.2",
+    "node-html-to-image": "^5.0.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "reflect-metadata": "^0.2.2",
