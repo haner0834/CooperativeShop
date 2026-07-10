@@ -3,7 +3,7 @@ import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BadRequestError, NotFoundError } from 'src/types/error.types';
-import { ReviewStatus, ShopDraft } from '@prisma/client';
+import { ReviewStatus, Shop, ShopDraft } from '@prisma/client';
 import { InstaPostService } from 'src/insta-post/insta-post.service';
 import { ReviewResult } from '../types/review-result.types';
 import { env } from 'src/common/utils/env.utils';
@@ -111,11 +111,6 @@ export class ShopDraftReviewService {
     });
   }
 
-  private getPostContent(draft: ShopDraft): string {
-    // NOTE: Remember to implement
-    return '';
-  }
-
   async reviewDraft(
     draftId: string,
     reviewerAdminContext: AdminContext,
@@ -160,7 +155,8 @@ export class ShopDraftReviewService {
       const createShopDto = mapDraftToCreateShopDto(draftDto);
 
       if (!draft.shopId) {
-        await this.shopsService.create(createShopDto);
+        const created = await this.shopsService.create(createShopDto);
+        draftDto.shopId = created.id;
       } else {
         const mockUserPayload: UserPayload = {
           id: 'ADMIN_HAHA_PIYAN',
@@ -186,14 +182,7 @@ export class ShopDraftReviewService {
         data: { reviewStatus: 'SUCCESS', rejectReason: null },
       });
 
-      await this.instaPostService.schedulePost({
-        accountId: env('INSTA_ACCOUNT_ID'),
-        content: this.getPostContent(draftFromSnapshot),
-        mediaItems: createShopDto.images.map((image) => ({
-          type: 'image',
-          url: getImageUrl(image.fileKey),
-        })),
-      });
+      await this.instaPostService.schedulePostFromShop(draftDto);
     } else if (result === 'REJECT') {
       if (!rejectReason)
         throw new BadRequestError(
