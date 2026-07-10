@@ -1,0 +1,58 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      html {
+        background-color: #f0f0f0;
+        display: flex;
+      }
+      :root {
+        --canvas-size: 1024px;
+      }
+      body {
+        container-type: inline-size;
+
+        width: var(--canvas-size);
+        height: var(--canvas-size);
+        margin: 0;
+        padding: 4.68cqi;
+        box-sizing: border-box;
+
+        background-image: url('{{bgBase64Url}}');
+        background-size: 100% 100%;
+        background-position: center;
+        background-repeat: no-repeat;
+        overflow: clip;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+      }
+
+      .content-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 4.6cqi;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        max-width: 100%;
+        height: 100%;
+        width: 100%;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 12cqi;
+        color: #2d3748;
+        line-height: 1.2;
+        padding-bottom: 4cqi;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content-stack">
+      <h1>店名</h1>
+    </div>
+  </body>
+</html>
