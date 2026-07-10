@@ -30,6 +30,7 @@ import { ShopDraftModule } from './shop-draft/shop-draft.module';
 import { BullModule } from '@nestjs/bullmq';
 import { InstaPostModule } from './insta-post/insta-post.module';
 import { AiReviewModule } from './ai-review/ai-review.module';
+import { InstaPostImageModule } from './insta-post-image/insta-post-image.module';
 
 @Module({
   imports: [
@@ -51,13 +52,23 @@ import { AiReviewModule } from './ai-review/ai-review.module';
     AccountModule,
     MapModule,
     ShopDraftModule,
-    BullModule.forRoot({
-      connection: {
-        url: env('REDIS_URI'),
+    BullModule.forRootAsync({
+      useFactory: () => {
+        const parsed = new URL(env('REDIS_URI'));
+        return {
+          connection: {
+            host: parsed.hostname,
+            port: parseInt(parsed.port || '6379', 10),
+            username: parsed.username || undefined,
+            password: parsed.password || undefined,
+            maxRetriesPerRequest: null,
+          },
+        };
       },
     }),
     InstaPostModule,
     AiReviewModule,
+    InstaPostImageModule,
   ],
   controllers: [AppController],
   providers: [
