@@ -41,6 +41,13 @@ export interface RecordFileResult {
   userId: string | null;
 }
 
+export interface InternalUploadFileDto {
+  name: string;
+  fileKey: string;
+  mimeType: string;
+  buffer: Buffer;
+}
+
 @Injectable()
 export class StorageService {
   private readonly s3Client: S3Client;
@@ -85,7 +92,7 @@ export class StorageService {
   ): Promise<PresignedUrlWithThumbnailResult> {
     try {
       this.validateContentType(contentType, category);
-      if (fileSize) this.validateFileSize(fileSize, category);
+      if (fileSize) this.validateFileSize(fileSize, category); // NOTE: Can be attacked
 
       // main image
       const fileExtension = this.extractFileExtension(fileName);
@@ -150,6 +157,27 @@ export class StorageService {
     } catch (error) {
       throw this.handleS3Error(error);
     }
+  }
+
+  async uploadSingle(file: InternalUploadFileDto): Promise<void> {
+    this.validateContentType(file.mimeType, '');
+
+    const command = new PutObjectCommand({
+      Bucket: this.bucketName,
+      Key: file.fileKey,
+      Body: file.buffer,
+      ContentType: file.mimeType,
+    });
+
+    await this.s3Client.send(command);
+  }
+
+  async uploadBatch(
+    files: InternalUploadFileDto[],
+  ): Promise<PromiseSettledResult<void>[]> {
+    const uploadPromises = files.map((file) => this.uploadSingle(file));
+
+    return Promise.allSettled(uploadPromises);
   }
 
   async verifyFileUploaded(fileKey: string): Promise<boolean> {
@@ -246,7 +274,7 @@ export class StorageService {
   }
 
   private validateContentType(contentType: string, category: string) {
-    if (this.ALLOWED_MIME_TYPES.includes(category)) {
+    if (!this.ALLOWED_MIME_TYPES.includes(contentType)) {
       throw new BadRequestError(
         'INVALID_FILE_TYPE',
         `Invalid file type. Allowed types: ${this.ALLOWED_MIME_TYPES.join(', ')}`,
