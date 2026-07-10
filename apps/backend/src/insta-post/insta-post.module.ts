@@ -5,6 +5,8 @@ import { BullModule } from '@nestjs/bullmq';
 import { InstagramPostProcessor } from './insta-post.processor';
 import { PostPeerClient } from './postpeer.client';
 import { INSTAGRAM_POST_QUEUE } from './insta-post.constants';
+import { InstaPostImageModule } from 'src/insta-post-image/insta-post-image.module';
+import { StorageModule } from 'src/storage/storage.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { INSTAGRAM_POST_QUEUE } from './insta-post.constants';
         removeOnFail: 500,
       },
     }),
+    InstaPostImageModule,
+    StorageModule,
   ],
   controllers: [InstaPostController],
   providers: [InstaPostService, InstagramPostProcessor, PostPeerClient],
