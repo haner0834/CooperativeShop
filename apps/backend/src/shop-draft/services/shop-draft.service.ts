@@ -122,18 +122,30 @@ export class ShopDraftService {
   }
 
   // -- Create Reserve --
-  async createReserve(title: string, subtitle: string) {
+  async createReserve(title: string, subtitle: string, schoolId: string) {
     const normalizedKey = this.calculateNormalizedKey(title, subtitle);
-    const matchDraft = await this.prisma.shopDraft.findUnique({
-      where: {
-        normalizedKey: normalizedKey.fullKey,
-      },
-    });
-    if (matchDraft) {
-      throw new ConflictError(
-        'DRAFT_NORMALIZED_KEY_CONFLICT',
-        "There's already a draft with the same title + subtitle",
-      );
+
+    try {
+      return await this.prisma.shopDraft.create({
+        data: {
+          title,
+          subtitle,
+          normalizedKey: normalizedKey.fullKey,
+          stage: 'RESERVED',
+          schoolId,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictError(
+          'DRAFT_NORMALIZED_KEY_CONFLICT',
+          "There's already a draft with the same title + subtitle",
+        );
+      }
+      throw error;
     }
   }
 

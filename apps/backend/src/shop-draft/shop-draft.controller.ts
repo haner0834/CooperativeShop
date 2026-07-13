@@ -31,6 +31,8 @@ import { RequireRole } from 'src/common/decorators/require-role.decorator';
 import { AdminContext } from 'src/auth/types/admin-context.types';
 import { ShopDraftReviewService } from './services/shop-draft-review.service';
 import { ReviewDraftDto } from './dto/review-draft.dto';
+import { DraftSearchQuery } from './types/search-query.types';
+import { SearchedDraftDto } from './dto/searched-draft.dto';
 
 @Controller('shop-draft')
 export class ShopDraftController {
@@ -63,6 +65,12 @@ export class ShopDraftController {
     return plainToInstance(ShopDraftDto, drafts, {
       excludeExtraneousValues: true,
     });
+  }
+
+  @Get('search')
+  @UseGuards(JwtAccessGuard)
+  async search(@Query() query: DraftSearchQuery): Promise<SearchedDraftDto[]> {
+    return await this.shopDraftService.search(query.title, query.subtitle);
   }
 
   @Put('update-field')
