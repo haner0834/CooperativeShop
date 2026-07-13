@@ -15,8 +15,8 @@ export interface ShopDraftForReview {
   contactInfo: ContactInfo[];
   workSchedules: WorkSchedule[];
   address: string;
-  longitude: number;
-  latitude: number;
+  longitude: number | null;
+  latitude: number | null;
 
   /**
    * WARN: Prisma schema (ShopDraft) 目前沒有合約掃描檔對應欄位。
