@@ -10,6 +10,7 @@ import { Shop, ShopDraft } from '@prisma/client';
 import { InternalError } from 'src/types/error.types';
 import { ShopDraftDto } from 'src/shop-draft/dto/shop-draft.dto';
 import { env } from 'src/common/utils/env.utils';
+import { Log } from 'src/common/decorators/logger.decorator';
 
 @Injectable()
 export class InstaPostService {
@@ -57,6 +58,7 @@ export class InstaPostService {
   /**
    * 供其他模組呼叫：把一篇 IG 貼文加入發文佇列
    */
+  @Log()
   async schedulePost(dto: CreateInstagramPostDto) {
     const job = await this.queue.add('publish-instagram-post', dto, {
       jobId: `ig-${dto.accountId}-${Date.now()}`,
