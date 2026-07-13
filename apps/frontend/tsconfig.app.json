@@ -24,11 +24,11 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
+    "baseUrl": "src/*",
     "paths": {
-      "*": ["./src/*"],
-      "@shared/*": ["./src/shared/*"],
-      "@assets/*": ["./src/assets/*"],
-      "@icons": ["./src/generated/icons"]
+      "@shared/*": ["../shared/*"],
+      "@assets/*": ["../assets/*"],
+      "@icons": ["../generated/icons"]
     }
   },
   "include": ["src"]
