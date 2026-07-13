@@ -1,5 +1,13 @@
 import { ReviewStatus, ShopDraftStage } from '@prisma/client';
-import { Expose, Type } from 'class-transformer';
+import {
+  Expose,
+  plainToInstance,
+  Transform,
+  TransformationType,
+  Type,
+} from 'class-transformer';
+import { IsArray, ValidateNested } from 'class-validator';
+import { TransformPrismaJsonArray } from 'src/common/decorators/transform-prisma-json-array.decorator';
 import { ContactInfoDto, WorkScheduleDto } from 'src/shops/dto/create-shop.dto';
 
 export type Weekday =
@@ -59,10 +67,6 @@ export class ShopDraftDto {
 
   @Expose() @Type(() => Date) updatedAt: Date;
 
-  @Expose() currentVersion?: ShopDraftVersionDto | null;
-
-  @Expose() versions?: ShopDraftVersionDto[] = [];
-
   @Expose() shopId: string | null;
 
   @Expose() title: string;
@@ -73,25 +77,62 @@ export class ShopDraftDto {
 
   @Expose() description: string;
 
-  @Expose() @Type(() => ContactInfoDto) contactInfo: ContactInfoDto[];
-
   @Expose() discount: string | null;
-
-  @Expose() @Type(() => WorkScheduleDto) workSchedules: WorkScheduleDto[];
 
   @Expose() address: string;
 
-  @Expose() longitude: number;
+  @Expose() longitude: number | null;
 
-  @Expose() latitude: number;
+  @Expose() latitude: number | null;
 
   @Expose() thumbnailKey: string;
-
-  @Expose() @Type(() => SelectedImageDto) images: SelectedImageDto[];
-
-  @Expose() @Type(() => SchoolInfoDto) school: SchoolInfoDto;
 
   @Expose() stage: ShopDraftStage;
 
   @Expose() @Type(() => Date) reservedUntil: Date | null;
+
+  @Expose()
+  @Type(() => ShopDraftVersionDto)
+  currentVersion?: ShopDraftVersionDto;
+
+  @Expose()
+  @Type(() => ShopDraftVersionDto)
+  versions?: ShopDraftVersionDto[];
+
+  @Expose()
+  @TransformPrismaJsonArray(ContactInfoDto)
+  @IsArray()
+  @ValidateNested({ each: true })
+  contactInfo: ContactInfoDto[];
+
+  @Expose()
+  @TransformPrismaJsonArray(SelectedImageDto)
+  @IsArray()
+  @ValidateNested({ each: true })
+  images: SelectedImageDto[];
+
+  @Expose()
+  @TransformPrismaJsonArray(WorkScheduleDto)
+  @IsArray()
+  @ValidateNested({ each: true })
+  workSchedules: WorkScheduleDto[];
+
+  @Expose()
+  @Transform(({ obj, type }) => {
+    if (type === TransformationType.PLAIN_TO_CLASS) {
+      if (obj.school && typeof obj.school === 'object') {
+        return {
+          id: obj.school.id,
+          abbr: obj.school.abbreviation,
+        };
+      }
+
+      return {
+        id: obj.schoolId,
+        abbr: undefined,
+      };
+    }
+    return undefined;
+  })
+  school?: SchoolInfoDto;
 }
