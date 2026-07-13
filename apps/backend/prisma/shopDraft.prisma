@@ -13,19 +13,19 @@ model ShopDraft {
     title         String
     subtitle      String?
     normalizedKey String  @unique
-    description   String
+    description   String  @default("")
 
-    contactInfo Json // An array
+    contactInfo Json @default("[]") // An array
 
     discount      String?
-    workSchedules Json // array
+    workSchedules Json    @default("[]") // array
 
-    address   String
-    longitude Float
-    latitude  Float
+    address   String @default("")
+    longitude Float?
+    latitude  Float?
 
-    thumbnailKey String
-    images       Json // array
+    thumbnailKey String?
+    images       Json    @default("[]") // array
 
     schoolId String
     school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
