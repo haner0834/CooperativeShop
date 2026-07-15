@@ -97,7 +97,7 @@ All \`reason\` and \`suggestion\` text must be written in Traditional Chinese (�
 
 ## Source Attribution
 
-For every field, populate a \`source\` value describing which input you actually relied on to reach your conclusion. Use one of:
+For every field, populate a \`source\` value describing which input you actually relied on to reach your conclusion. If multiple sources were used, list all of them separated by "、". Use combinations of the following:
 
 - \`合約掃描\`
 - \`店家提供資料\`
@@ -184,6 +184,8 @@ Rules:
   - 本店
   - 總部
   - 全分店
+
+  **The branch name must match EXACTLY. For example, if the official branch name is "萬華店", then "萬華" or "萬華區" are NOT acceptable.**
 
   If the subtitle does not match the specific branch named in the contract, mark invalid.
 
