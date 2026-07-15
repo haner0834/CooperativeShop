@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import type { ShopDraft } from "../types/shop";
+import { ShopDraftDto } from "../types/shop";
 import {
   ArrowRight,
+  CircleAlert,
   Ellipsis,
   Pencil,
   PencilLine,
   Plus,
+  Search,
   Trash2,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -13,8 +15,16 @@ import { useAuth } from "../auth/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useModal } from "../widgets/ModalContext";
 import { useDevice } from "../widgets/DeviceContext";
+import { path } from "../utils/path";
+import { useAuthFetch } from "../auth/useAuthFetch";
+import { plainToInstance } from "class-transformer";
+import { useToast } from "../widgets/Toast/ToastProvider";
 
-const Navbar = () => {
+const Navbar = ({
+  setShowSearch,
+}: {
+  setShowSearch: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   return (
     <div className="navbar bg-base-100 shadow-sm z-50 fixed">
       <div className="flex-none">
@@ -26,9 +36,12 @@ const Navbar = () => {
         <h1 className="text-base font-semibold">註冊 - 草稿</h1>
       </div>
       <div className="flex-none">
-        {/* <Link className="btn btn-circle btn-ghost" to="/shops/drafts">
-          <CircleDotDashed />
-        </Link> */}
+        <button
+          className="btn btn-circle btn-ghost"
+          onClick={() => setShowSearch((prev) => !prev)}
+        >
+          <Search />
+        </button>
       </div>
     </div>
   );
@@ -49,26 +62,95 @@ const AnimatedListItem = ({ children }: { children?: React.ReactNode }) => {
   );
 };
 
+const SearchModal = () => {
+  const { authedFetch } = useAuthFetch();
+  const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
+  const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { hideModal } = useModal();
+
+  const search = async () => {
+    const response = await authedFetch(path(`/api/shop-draft`), {
+      method: "POST",
+      body: JSON.stringify({
+        title,
+        subtitle: subtitle || undefined,
+      }),
+    });
+
+    const { success, data, error } = response;
+    if (success) {
+      hideModal();
+      navigate(`/shops/register?id=${data.id}`);
+    } else {
+      const { code } = error;
+      if (code === "DRAFT_NORMALIZED_KEY_CONFLICT") {
+        setErrorMessage("該店家已被預約，請等候該預約過期");
+      } else {
+        setErrorMessage("發生未知錯誤，請稍後再試");
+      }
+    }
+  };
+
+  return (
+    <div className="flex flex-col w-full">
+      <h3 className="text-center w-full text-lg font-semibold">登記預約</h3>
+      <fieldset className="fieldset">
+        <label className="label" htmlFor="shop-title">
+          店名
+        </label>
+        <input
+          type="text"
+          id="shop-title"
+          className="input w-full"
+          placeholder="店名"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+      </fieldset>
+      <div className="w-full flex flex-col items-start">
+        <fieldset className="fieldset w-full">
+          <label className="label" htmlFor="shop-subtitle">
+            分店名
+          </label>
+          <input
+            type="text"
+            id="shop-subtitle"
+            className="input w-full"
+            placeholder="分店名"
+            value={subtitle}
+            onChange={(e) => setSubtitle(e.target.value)}
+          />
+        </fieldset>
+        <p className="text-xs opacity-50">如果沒有分店名，本欄位請留空</p>
+      </div>
+
+      <button
+        className="btn w-full btn-primary mt-4"
+        onClick={() => search()}
+        disabled={title === ""}
+      >
+        登記預約
+      </button>
+
+      {errorMessage && (
+        <p className="text-error text-xs font-medium">{errorMessage}</p>
+      )}
+    </div>
+  );
+};
+
 const ShopDrafts = () => {
-  const [drafts, setDrafts] = useState<ShopDraft[]>([]);
-  const { activeUser, hasAttemptedRestore } = useAuth();
+  const [drafts, setDrafts] = useState<ShopDraftDto[]>([]);
+  const { activeUser, activeUserRef, restorePromise, hasAttemptedRestore } =
+    useAuth();
   const navigate = useNavigate();
   const { showModal } = useModal();
   const { isMobile } = useDevice();
-
-  useEffect(() => {
-    let drafts: ShopDraft[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key?.startsWith("SHOP_DRAFT_")) {
-        const value = localStorage.getItem(key);
-        if (!value) continue;
-        drafts.push(JSON.parse(value));
-      }
-    }
-
-    setDrafts(sortDraftByDate(drafts));
-  }, []);
+  const [_, setShowSearchbar] = useState(false);
+  const { authedFetch } = useAuthFetch();
+  const { showToast } = useToast();
 
   // Force login
   useEffect(() => {
@@ -94,8 +176,31 @@ const ShopDrafts = () => {
     }
   }, [hasAttemptedRestore, activeUser]);
 
-  const getMonth = (dateISOString: string): string => {
-    const date = new Date(dateISOString);
+  useEffect(() => {
+    getDrafts();
+  }, []);
+
+  const getDrafts = async () => {
+    if (restorePromise) await restorePromise;
+    if (!activeUserRef.current) return;
+
+    const result = await authedFetch(
+      path(`/api/shop-draft?schoolAbbr=${activeUserRef.current?.schoolAbbr}`)
+    );
+
+    const { success, error } = result;
+
+    if (!success) {
+      console.error(error);
+      return;
+    }
+
+    const { data }: { data: any[] } = result;
+    const drafts = plainToInstance(ShopDraftDto, data);
+    setDrafts(drafts);
+  };
+
+  const getMonth = (date: Date): string => {
     const month = date.getMonth() + 1;
 
     const zhMonths = [
@@ -116,16 +221,9 @@ const ShopDrafts = () => {
     return zhMonths[month - 1];
   };
 
-  const getDay = (dateISOString: string): number => {
-    const date = new Date(dateISOString);
-    return date.getDate();
-  };
-
-  const getTime = (dateISOString: string): string => {
-    const date = new Date(dateISOString);
-
+  const getTime = (date: Date): string => {
     let hours = date.getHours();
-    let minutes = date.getMinutes().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
 
     const period = hours >= 12 ? "PM" : "AM";
     hours = hours % 12 || 12;
@@ -138,17 +236,23 @@ const ShopDrafts = () => {
     return key.replace("SHOP_DRAFT_", "");
   };
 
-  const sortDraftByDate = (drafts: ShopDraft[]) => {
-    return drafts.sort((a, b) => {
-      const da = new Date(a.dateISOString).getTime();
-      const db = new Date(b.dateISOString).getTime();
-      return da - db; // oldest first
+  const handleRemove = async (id: string) => {
+    const result = await authedFetch(path(`/api/shop-draft/${id}`), {
+      method: "DELETE",
     });
-  };
 
-  const handleRemove = (key: string) => {
-    localStorage.removeItem(key);
-    setDrafts((prev) => prev.filter((d) => d.key !== key));
+    const { success, error } = result;
+
+    if (!success) {
+      console.error(error);
+      showToast({
+        title: "刪除失敗",
+        icon: <CircleAlert className="text-error" />,
+      });
+      return;
+    }
+
+    setDrafts((prev) => prev.filter((d) => d.id !== id));
   };
 
   const closeDropdown = (
@@ -159,30 +263,15 @@ const ShopDrafts = () => {
   };
 
   const addDraft = () => {
-    const newDraft: ShopDraft = {
-      key: `SHOP_DRAFT_${crypto.randomUUID()}`,
-      dateISOString: new Date().toISOString(),
-      data: {
-        title: "",
-        subTitle: "",
-        description: "",
-        discount: "",
-        selectedPoint: null,
-        schoolId: activeUser?.schoolId ?? "UNKNOWN",
-        schoolAbbr: activeUser?.schoolAbbr ?? "UNKNOWN",
-        address: "",
-        images: [],
-        contactInfo: [],
-        workSchedules: [],
-        mode: "create",
-      },
-    };
-    setDrafts((prev) => [...prev, newDraft]);
+    showModal({
+      showDismissButton: true,
+      content: <SearchModal />,
+    });
   };
 
   return (
     <div className="min-h-screen flex justify-center">
-      <Navbar />
+      <Navbar setShowSearch={setShowSearchbar} />
       <main className="pt-18 min-h-screen max-w-xl w-full">
         <ul className="space-y-4 m-4">
           {drafts.length === 0 && (
@@ -219,41 +308,43 @@ const ShopDrafts = () => {
           )}
 
           <AnimatePresence initial={false}>
-            {[...drafts].reverse().map((draft) => (
-              <AnimatedListItem key={draft.key}>
+            {[...drafts].map((draft) => (
+              <AnimatedListItem key={draft.id}>
                 <Link
-                  to={`/shops/register?id=${getDraftId(draft.key)}`}
+                  to={`/shops/register?id=${getDraftId(draft.id)}`}
                   className="w-full h-29 bg-base-300 rounded-box flex overflow-clip"
                 >
                   <div className="h-full w-12 bg-neutral flex flex-col flex-none items-center justify-center text-base-100">
                     <p className="font-extrabold text-xl">
-                      {getDay(draft.dateISOString)}
+                      {draft.updatedAt.getDay()}
                     </p>
                     <p className="text-xs font-medium">
-                      {getMonth(draft.dateISOString)}
+                      {getMonth(draft.updatedAt)}
                     </p>
                   </div>
 
                   <div className="p-2 ps-4 relative w-full h-full flex">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold line-clamp-1">
-                        {draft.data.title || "未命名"}
-                      </h3>
+                      <div className="flex items-baseline gap-1 font-semibold">
+                        <h3 className="text-lg line-clamp-1">
+                          {draft.title || "未命名"}
+                        </h3>
+                        <h4 className="text-sm opacity-60">{draft.subtitle}</h4>
+                      </div>
                       <p className="opacity-60 line-clamp-2">
-                        {draft.data.description || "沒有內容"}
+                        {draft.description || "沒有內容"}
                       </p>
                     </div>
 
-                    {draft.data.images.length >= 1 &&
-                      draft.data.images[0].previewUrl && (
-                        <img
-                          src={draft.data.images[0].previewUrl}
-                          className="h-10/12 aspect-square rounded-field object-contain"
-                        />
-                      )}
+                    {draft.images.length >= 1 && draft.images[0].previewUrl && (
+                      <img
+                        src={draft.images[0].previewUrl}
+                        className="h-10/12 aspect-square rounded-field object-contain"
+                      />
+                    )}
 
                     <span className="absolute bottom-2 right-3 text-xs opacity-50">
-                      {getTime(draft.dateISOString)}
+                      {getTime(draft.updatedAt)}
                     </span>
                   </div>
                 </Link>
@@ -277,9 +368,7 @@ const ShopDrafts = () => {
                       className="dropdown-content menu bg-base-100 rounded-box z-10 w-52 p-2 shadow-sm"
                     >
                       <li>
-                        <Link
-                          to={`/shops/register?id=${getDraftId(draft.key)}`}
-                        >
+                        <Link to={`/shops/register?id=${draft.id}`}>
                           <Pencil className="w-5 h-5" />
                           編輯
                         </Link>
@@ -290,7 +379,7 @@ const ShopDrafts = () => {
                           className="text-error"
                           onClick={(e) => {
                             closeDropdown(e);
-                            handleRemove(draft.key);
+                            handleRemove(draft.id);
                           }}
                         >
                           <Trash2 className="w-5 h-5" />

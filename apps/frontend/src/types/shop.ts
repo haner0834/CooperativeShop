@@ -6,6 +6,7 @@ import type {
   WorkSchedule,
   Weekday,
 } from "./workSchedule";
+import { Type } from "class-transformer";
 
 export interface ResponseImageDto {
   fileUrl: string;
@@ -123,7 +124,6 @@ export function transformSchedules(
 
     schedule.weekdays.forEach((weekday) => {
       result.push({
-        id: crypto.randomUUID(),
         weekday,
         startMinuteOfDay,
         endMinuteOfDay,
@@ -201,6 +201,53 @@ export interface ShopDraft {
     contactInfo: ContactInfo[];
     workSchedules: WorkSchedule[];
     mode: ShopMode;
+  };
+}
+
+export type ShopDraftStage = "RESERVED" | "EDITING" | "SUBMITTED" | "ARCHIVED";
+
+export type ReviewStatus =
+  | "IDLE"
+  | "PROCESSING"
+  | "REJECT"
+  | "SUCCESS"
+  | "SUPERSEDED"
+  | "AI_REJECT";
+
+export class ShopDraftVersionDto {
+  id: string;
+  versionNo: number;
+  reviewStatus: ReviewStatus;
+  reviewerId: string;
+  @Type(() => Date) submittedAt: Date;
+  @Type(() => Date) reviewedAt: Date;
+  rejectReason?: string;
+}
+
+export class ShopDraftDto {
+  id: string;
+  @Type(() => Date) createdAt: Date;
+  @Type(() => Date) updatedAt: Date;
+  shopId: string | null;
+  title: string;
+  subtitle: string | null;
+  normalizedKey: string;
+  description: string;
+  discount: string | null;
+  address: string;
+  longitude: number | null;
+  latitude: number | null;
+  thumbnailKey: string;
+  stage: ShopDraftStage;
+  reservedUntil: Date | null;
+  currentVersion?: ShopDraftVersionDto;
+  versions?: ShopDraftVersionDto[];
+  contactInfo: ContactInfoDto[];
+  images: SelectedImage[];
+  workSchedules: WorkScheduleBackend[];
+  school: {
+    id: string;
+    abbr?: string;
   };
 }
 

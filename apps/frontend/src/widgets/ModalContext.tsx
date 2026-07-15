@@ -85,16 +85,17 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
           }`}
         >
           {/* Dismiss Button 保持在最外層，對兩種模式都有效 */}
-          <form method="dialog">
-            {modalOptions.showDismissButton && (
+
+          {modalOptions.showDismissButton && (
+            <form method="dialog">
               <button
                 className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
                 onClick={hideModal}
               >
                 ✕
               </button>
-            )}
-          </form>
+            </form>
+          )}
 
           {modalOptions.content ? (
             modalOptions.content

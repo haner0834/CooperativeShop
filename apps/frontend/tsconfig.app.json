@@ -14,8 +14,12 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
 
     "types": ["vite-plugin-svgr/client"],
+
+    "strictPropertyInitialization": false,
 
     /* Linting */
     "strict": true,
