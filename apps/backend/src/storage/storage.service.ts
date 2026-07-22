@@ -60,6 +60,7 @@ export class StorageService {
     'image/png',
     'image/gif',
     'image/webp',
+    'application/pdf',
   ];
 
   // based on bytes
@@ -67,6 +68,7 @@ export class StorageService {
     'shop-image': 3 * 1024 * 1024, // 3 MB
     'shop-thumbnail': 700 * 1024, // 100 KB
     'image-thumbnail': 500 * 1024, // 500 KB
+    'shop-contract': 3 * 1024 * 1024, // 3 MB
   } as const;
 
   constructor(private readonly prisma: PrismaService) {
@@ -84,6 +86,50 @@ export class StorageService {
   }
 
   @Log({ logReturn: false })
+  async generatePresignedUrl(
+    fileName: string,
+    contentType: string,
+    category: string,
+    fileSize?: number,
+  ): Promise<PresignedUrlResult> {
+    try {
+      this.validateContentType(contentType);
+      if (fileSize) this.validateFileSize(fileSize, category); // NOTE: Can be attacked
+
+      // main image
+      const fileExtension = this.extractFileExtension(fileName);
+      const uniqueFileName = `${crypto.randomUUID()}${fileExtension}`;
+      const fileKey = `${category}/${uniqueFileName}`;
+      const expiresIn = 10 * 60; // 10 分鐘
+
+      const mainCommand = new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: fileKey,
+        ContentType: contentType,
+        Metadata: {
+          'original-filename': encodeURIComponent(fileName),
+          'upload-timestamp': new Date().toISOString(),
+        },
+        CacheControl: 'public, max-age=31536000, immutable',
+      });
+
+      const uploadUrl = await getSignedUrl(this.s3Client, mainCommand, {
+        expiresIn,
+      });
+      const publicUrl = `${this.publicUrl}/${fileKey}`;
+
+      return {
+        uploadUrl,
+        fileKey,
+        publicUrl,
+        expiresIn,
+      };
+    } catch (error) {
+      throw this.handleS3Error(error);
+    }
+  }
+
+  @Log({ logReturn: false })
   async generatePresignedUrlWithThumbnail(
     fileName: string,
     contentType: string,
@@ -91,7 +137,7 @@ export class StorageService {
     fileSize?: number,
   ): Promise<PresignedUrlWithThumbnailResult> {
     try {
-      this.validateContentType(contentType, category);
+      this.validateContentType(contentType);
       if (fileSize) this.validateFileSize(fileSize, category); // NOTE: Can be attacked
 
       // main image
@@ -160,7 +206,7 @@ export class StorageService {
   }
 
   async uploadSingle(file: InternalUploadFileDto): Promise<void> {
-    this.validateContentType(file.mimeType, '');
+    this.validateContentType(file.mimeType);
 
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
@@ -199,11 +245,13 @@ export class StorageService {
     fileKey: string,
     category: string,
     contentType: string,
-    thumbnailKey: string,
     userId: string,
+    thumbnailKey?: string,
   ): Promise<RecordFileResult> {
     const fileUrl = this.publicUrl + '/' + fileKey;
-    const thumbnailUrl = this.publicUrl + '/' + thumbnailKey;
+    const thumbnailUrl = thumbnailKey
+      ? this.publicUrl + '/' + thumbnailKey
+      : null;
 
     return await this.prisma.fileRecord.create({
       data: {
@@ -241,8 +289,10 @@ export class StorageService {
     return JSON.parse(body);
   }
 
-  async deleteFile(fileKey: string, thumbnailKey: string) {
-    const keysToDelete = [fileKey, thumbnailKey].filter((key) => !!key);
+  async deleteFile(fileKey: string, thumbnailKey?: string) {
+    const keysToDelete = [fileKey, thumbnailKey].filter(
+      (key): key is string => !!key,
+    );
 
     const deletionPromises = keysToDelete.map((key) => {
       const command = new DeleteObjectCommand({
@@ -273,7 +323,7 @@ export class StorageService {
     }
   }
 
-  private validateContentType(contentType: string, category: string) {
+  private validateContentType(contentType: string) {
     if (!this.ALLOWED_MIME_TYPES.includes(contentType)) {
       throw new BadRequestError(
         'INVALID_FILE_TYPE',

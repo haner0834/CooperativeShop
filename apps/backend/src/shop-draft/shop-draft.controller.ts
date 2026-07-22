@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -11,18 +13,15 @@ import {
 import { ShopDraftService } from './services/shop-draft.service';
 import { ShopDraftDto } from './dto/shop-draft.dto';
 import { plainToInstance } from 'class-transformer';
-import { ShopDraftLockService } from './services/shop-draft-lock.service';
 import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
 import { EditLockToken } from './decorators/draft-lock-token.decorator';
-import { UpdateFieldDto } from './dto/update-field.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UserPayload } from 'src/auth/types/auth.types';
 import {
-  BadRequestError,
+  AuthError,
   PermissionError,
   UnauthorizedError,
 } from 'src/types/error.types';
-import { BypassJwt } from 'src/common/decorators/bypass-jwt.decorator';
 import { SubmitDraftDto } from './dto/submit-draft.dto';
 import { DraftFilterOptions } from './types/draft-filter-options.types';
 import { GetDraftOptions } from './types/get-draft-options.types';
@@ -33,11 +32,15 @@ import { ShopDraftReviewService } from './services/shop-draft-review.service';
 import { ReviewDraftDto } from './dto/review-draft.dto';
 import { DraftSearchQuery } from './types/search-query.types';
 import { SearchedDraftDto } from './dto/searched-draft.dto';
+import { CreateDraftDto } from './dto/create-draft.dto';
+import { PatchShopDraftDto } from './dto/patch-draft.dto';
+import { ShopDraftLockService } from './services/shop-draft-lock.service';
 
 @Controller('shop-draft')
 export class ShopDraftController {
   constructor(
     private readonly shopDraftService: ShopDraftService,
+    private readonly shopDraftLockService: ShopDraftLockService,
     private readonly shopDraftReviewService: ShopDraftReviewService,
   ) {}
 
@@ -52,6 +55,36 @@ export class ShopDraftController {
     return plainToInstance(ShopDraftDto, draft, {
       excludeExtraneousValues: true,
     });
+  }
+
+  @Post()
+  @UseGuards(JwtAccessGuard)
+  async create(
+    @CurrentUser() user: UserPayload | null,
+    @Body() dto: CreateDraftDto,
+  ) {
+    if (!user) throw new PermissionError();
+
+    const created = await this.shopDraftService.createReserve(
+      dto.title,
+      dto.subtitle ?? null,
+      user.schoolId,
+    );
+    return plainToInstance(ShopDraftDto, created, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAccessGuard)
+  async delete(
+    @Param('id') id: string,
+    @CurrentUser() user: UserPayload | null,
+    @CurrentAdmin() admin: AdminContext | null,
+  ) {
+    if (!user && !admin) throw new PermissionError();
+
+    await this.shopDraftService.deleteDraft(id, user?.schoolId, admin?.level);
   }
 
   @Get()
@@ -73,23 +106,19 @@ export class ShopDraftController {
     return await this.shopDraftService.search(query.title, query.subtitle);
   }
 
-  @Put('update-field')
+  @Patch()
   @UseGuards(JwtAccessGuard)
   async update(
-    @Body() dto: UpdateFieldDto,
+    @Body() dto: PatchShopDraftDto,
     @EditLockToken() token: string,
     @CurrentUser() user: UserPayload | null,
   ) {
     if (!user) throw new UnauthorizedError();
-    if (!token) throw new PermissionError();
 
-    this.shopDraftService.updateField(
-      dto.id,
-      user.id,
-      token,
-      dto.fieldName,
-      dto.value,
-    );
+    console.log('dto:', dto);
+    const { id, ...rest } = dto;
+
+    await this.shopDraftService.partialUpdate(id, user.id, token, rest);
   }
 
   @Post('submit')
@@ -101,7 +130,7 @@ export class ShopDraftController {
   ) {
     if (!user) throw new UnauthorizedError();
 
-    this.shopDraftService.submitDraft(dto.draftId, user.id, token, {
+    await this.shopDraftService.submitDraft(dto.draftId, user.id, token, {
       overwrite: dto.overwrite,
     });
   }
@@ -141,5 +170,27 @@ export class ShopDraftController {
       dto.result,
       dto.rejectReason,
     );
+  }
+
+  @Post('acquire-lock/:id')
+  @UseGuards(JwtAccessGuard)
+  async acquireLock(
+    @Param('id') draftId: string,
+    @CurrentUser() user: UserPayload | null,
+  ) {
+    if (!user) throw new PermissionError();
+
+    return await this.shopDraftLockService.acquireLock(draftId, user.id);
+  }
+
+  @Post('release-lock/:id')
+  @UseGuards(JwtAccessGuard)
+  async releaseLock(
+    @Param('id') draftId: string,
+    @CurrentUser() user: UserPayload | null,
+  ) {
+    if (!user) throw new PermissionError();
+
+    return await this.shopDraftLockService.releaseLock(draftId, user.id);
   }
 }
