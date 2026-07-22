@@ -347,7 +347,6 @@ export class ShopDraftService {
     await this.lockService.verifyAndRefreshLock(draftId, userId, lockToken);
 
     try {
-      console.log(data);
       return await this.prisma.shopDraft.update({
         where: { id: draftId },
         data: data as any,

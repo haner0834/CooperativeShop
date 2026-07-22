@@ -115,7 +115,6 @@ export class ShopDraftController {
   ) {
     if (!user) throw new UnauthorizedError();
 
-    console.log('dto:', dto);
     const { id, ...rest } = dto;
 
     await this.shopDraftService.partialUpdate(id, user.id, token, rest);
