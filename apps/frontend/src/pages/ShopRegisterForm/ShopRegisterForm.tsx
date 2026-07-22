@@ -13,13 +13,8 @@ import {
   fromContactInfoDto,
   type ContactInfoDto,
 } from "../../types/shop";
-import type { ImageDto, SelectedImage } from "../../types/selectedImage";
-import {
-  ShopDraftDto,
-  type ContactInfo,
-  type CreateShopDto,
-  type ShopMode,
-} from "../../types/shop";
+import type { SelectedImage } from "../../types/selectedImage";
+import { ShopDraftDto, type ContactInfo } from "../../types/shop";
 import type { Point } from "./ShopLocationBlock";
 import ShopDiscountBlock from "./ShopDiscountBlock";
 import { useToast } from "../../widgets/Toast/ToastProvider";
@@ -79,7 +74,6 @@ const ShopRegisterForm = () => {
     DEFAULT_WORKSCHEDULE,
   ]);
   const [editToken, setEditToken] = useState<string | null>(null);
-  const [mode, setMode] = useState<ShopMode>("create");
   const [showHint, setShowHint] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const { showToast } = useToast();
@@ -161,7 +155,6 @@ const ShopRegisterForm = () => {
         setAddress(draft.address);
         setSelectedPoint(selectedPoint);
         setContactInfo(draft.contactInfo.map(fromContactInfoDto));
-        setMode("create");
       }
     };
     a();
@@ -351,59 +344,32 @@ const ShopRegisterForm = () => {
     if (!selectedPoint || !activeUser || !address) return;
     if (images.length === 0 || images.length > 10) return;
 
-    const contactInfoDto = contactInfo.map(toContactInfoDto);
-    const imageDtos: ImageDto[] = images
-      .filter((image) => image.uploadInfo !== undefined)
-      .map((image) => ({
-        fileKey: image.uploadInfo!.fileKey,
-        thumbnailKey: image.uploadInfo!.thumbnailKey,
-      }));
-
-    const thumbnailKey = images[0].uploadInfo?.thumbnailKey;
-    if (!thumbnailKey) return;
-
     const schedules = toBackendSchedules(workSchedules);
     if (schedules.length === 0) return;
 
-    const shopDto: CreateShopDto = {
-      title,
-      subTitle: subTitle || null,
-      description,
-      contactInfo: contactInfoDto,
-      schoolId: activeUser.schoolId,
-      images: imageDtos,
-      thumbnailKey,
-      address: address,
-      longitude: selectedPoint.lng,
-      latitude: selectedPoint.lat,
-      schedules,
-      discount: discount || null,
+    const id = searchParams.get("id");
+
+    const dto = {
+      draftId: id,
     };
 
-    const shopId = searchParams.get("id");
-    const isEdit = mode === "edit";
-
-    const response = await authedFetch(
-      isEdit ? path(`/api/shops/${shopId}`) : path("/api/shops"),
-      {
-        method: isEdit ? "PATCH" : "POST",
-        body: JSON.stringify(shopDto),
-      }
-    );
+    const response = await authedFetch(path("/api/shop-draft/submit"), {
+      method: "POST",
+      body: JSON.stringify(dto),
+    });
 
     const { success, error } = response;
     if (!success) {
       showModal({
-        title: isEdit ? "更新失敗" : "上傳失敗",
+        title: "提交失敗",
         description: error.message,
         showDismissButton: true,
       });
       return;
     }
 
-    deleteCurrentDraft();
     showModal({
-      title: isEdit ? "更新成功" : "上傳成功",
+      title: "提交成功",
       buttons: [
         {
           label: "關閉",
@@ -479,7 +445,7 @@ const ShopRegisterForm = () => {
       isAvailable = false;
     }
 
-    const arrays = [contactInfo, images];
+    const arrays = [contactInfo, images, toBackendSchedules(workSchedules)];
     if (arrays.filter((t) => t.length >= 1).length != arrays.length) {
       isAvailable = false;
     }
