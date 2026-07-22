@@ -1,3 +1,4 @@
+import type { UploadedContract } from "../pages/ShopRegisterForm/ShopContractBlock";
 import type { Point } from "../pages/ShopRegisterForm/ShopLocationBlock";
 import { categoryMap } from "../utils/contactInfoMap";
 import type { ImageDto, SelectedImage } from "./selectedImage";
@@ -74,6 +75,16 @@ export interface ResponseShopDto {
   isSaved?: boolean;
 }
 
+export const fromContactInfoDto = (dto: ContactInfoDto): ContactInfo => {
+  const { content, href, ...rest } = categoryMap[dto.category];
+  return {
+    category: dto.category,
+    content: dto.content,
+    href: dto.href,
+    ...rest,
+  };
+};
+
 // 轉換函數：將後端 DTO 轉換為前端 Shop 介面
 export function transformDtoToShop(dto: ResponseShopDto): Shop {
   // 由於後端 DTO 被設計為盡可能與前端 Shop 介面保持一致，轉換操作極為簡單。
@@ -84,15 +95,7 @@ export function transformDtoToShop(dto: ResponseShopDto): Shop {
     title: dto.title,
     subTitle: dto.subTitle ?? undefined,
     description: dto.description,
-    contactInfo: dto.contactInfo.map((c) => {
-      const { content, href, ...rest } = categoryMap[c.category];
-      return {
-        category: c.category,
-        content: c.content,
-        href: c.href,
-        ...rest,
-      };
-    }),
+    contactInfo: dto.contactInfo.map(fromContactInfoDto),
     googleMapsLink: dto.googleMapsLink,
     schoolId: dto.schoolId,
     schoolAbbr: dto.schoolAbbr,
@@ -231,10 +234,10 @@ export class ShopDraftDto {
   shopId: string | null;
   title: string;
   subtitle: string | null;
-  normalizedKey: string;
   description: string;
   discount: string | null;
   address: string;
+  contract: UploadedContract | null;
   longitude: number | null;
   latitude: number | null;
   thumbnailKey: string;
