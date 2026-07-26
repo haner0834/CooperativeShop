@@ -19,6 +19,7 @@ model ShopDraft {
 
     discount      String?
     workSchedules Json    @default("[]") // array
+    contract      Json?
 
     address   String @default("")
     longitude Float?
