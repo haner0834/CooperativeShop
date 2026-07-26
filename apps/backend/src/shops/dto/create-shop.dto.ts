@@ -16,6 +16,7 @@ import { Type } from 'class-transformer';
 import { IsGoogleMapsUrl } from 'src/common/decorators/is-googlemaps-url.decorator';
 import { ContactCategory, ContactInfo } from '../types/contact-info.type';
 import { Weekday, WorkSchedule } from '../types/work-schedule.type';
+import { ContractDto } from 'src/shop-draft/dto/shop-draft.dto';
 
 export class ContactInfoDto implements ContactInfo {
   @IsEnum(ContactCategory)
@@ -84,6 +85,10 @@ export class CreateShopDto {
   @IsString()
   @IsNotEmpty()
   thumbnailKey: string;
+
+  @IsOptional()
+  @IsString()
+  contractFileKey: string;
 
   @IsOptional()
   @IsString()

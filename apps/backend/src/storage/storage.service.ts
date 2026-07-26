@@ -68,7 +68,7 @@ export class StorageService {
     'shop-image': 3 * 1024 * 1024, // 3 MB
     'shop-thumbnail': 700 * 1024, // 100 KB
     'image-thumbnail': 500 * 1024, // 500 KB
-    'shop-contract': 3 * 1024 * 1024, // 3 MB
+    'shop-contract': 3 * 1024 * 1024, // 5 MB
   } as const;
 
   constructor(private readonly prisma: PrismaService) {

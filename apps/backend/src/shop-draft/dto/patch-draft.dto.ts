@@ -13,6 +13,7 @@ export class PatchShopDraftDto extends PartialType(
     'images',
     'latitude',
     'longitude',
+    'contract',
     'thumbnailKey',
     'workSchedules',
   ]),

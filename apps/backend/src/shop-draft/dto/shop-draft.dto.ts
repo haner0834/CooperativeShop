@@ -10,6 +10,7 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsIn,
   IsNumber,
   IsOptional,
   IsString,
@@ -29,7 +30,7 @@ export type Weekday =
   | 'SUNDAY';
 
 // 定義 Status 的 Enum 或 Union 類型
-export enum ImageStatus {
+export enum FileUploadStatus {
   IDLE = 'idle',
   UPLOADING = 'uploading',
   SUCCESS = 'success',
@@ -80,7 +81,7 @@ class SelectedImageDto {
   uploadProgress: number;
 
   @Expose()
-  @IsEnum(ImageStatus)
+  @IsEnum(FileUploadStatus)
   status: 'idle' | 'uploading' | 'success' | 'error' | 'deleting';
 
   @Expose()
@@ -132,6 +133,38 @@ class SchoolInfoDto {
   @IsOptional()
   @IsString()
   abbr: string;
+}
+
+export class ContractDto {
+  @Expose()
+  @IsString()
+  fileName: string;
+
+  @Expose()
+  @IsNumber()
+  fileSize: number;
+
+  @Expose()
+  @IsEnum(FileUploadStatus)
+  status: 'idle' | 'uploading' | 'success' | 'error' | 'deleting';
+
+  @Expose()
+  @IsNumber()
+  uploadProgress: number;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  fileKey?: string;
+
+  @Expose()
+  @IsOptional()
+  @IsUrl()
+  uploadUrl?: string;
+
+  @Expose()
+  @IsOptional()
+  errorMessage?: string;
 }
 
 export class ShopDraftDto {
@@ -206,6 +239,11 @@ export class ShopDraftDto {
   @ValidateNested()
   @Type(() => ShopDraftVersionDto)
   currentVersion?: ShopDraftVersionDto;
+
+  @Expose()
+  @IsOptional()
+  @Type(() => ContractDto)
+  contract?: ContractDto;
 
   @Expose()
   @IsOptional()

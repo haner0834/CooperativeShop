@@ -32,6 +32,7 @@ export class ShopsService {
       contactInfo,
       schedules: workSchedules,
       images,
+      contractFileKey,
       ...rest
     } = createShopDto;
     const plainContactInfo = instanceToPlain(contactInfo);
@@ -77,6 +78,13 @@ export class ShopsService {
         }
       }
 
+      const contractFileRecord = await tx.fileRecord.findUnique({
+        where: { fileKey: contractFileKey },
+        select: { id: true },
+      });
+      if (!contractFileRecord)
+        throw new BadRequestError('INVALID_CONTRACT_FILE_KEY', 'fuck you');
+
       // 4. 建立商店本體
       const shop = await tx.shop.create({
         data: {
@@ -84,6 +92,7 @@ export class ShopsService {
           schedules: {},
           contactInfo: plainContactInfo,
           requestHashId: requestHashId,
+          contractFileId: contractFileRecord.id,
         },
       });
 

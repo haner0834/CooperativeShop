@@ -3,7 +3,12 @@ import { ShopDraftDto } from '../dto/shop-draft.dto';
 import { InternalError } from 'src/types/error.types';
 
 export function mapDraftToCreateShopDto(draft: ShopDraftDto): CreateShopDto {
-  if (!draft.school?.id || !draft.longitude || !draft.latitude)
+  if (
+    !draft.school?.id ||
+    !draft.longitude ||
+    !draft.latitude ||
+    !draft.contract?.fileKey
+  )
     throw new InternalError(
       'DraftDTO transformation fault: missing argument(s)',
     );
@@ -31,6 +36,7 @@ export function mapDraftToCreateShopDto(draft: ShopDraftDto): CreateShopDto {
     address: draft.address,
     longitude: draft.longitude,
     latitude: draft.latitude,
+    contractFileKey: draft.contract?.fileKey,
 
     // 欄位名稱替換
     schedules: draft.workSchedules,
