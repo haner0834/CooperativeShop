@@ -1,20 +1,24 @@
 import { Injectable, Logger, UseGuards } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
+  BadRequestError,
   ConflictError,
   InternalError,
   NotFoundError,
+  PermissionError,
 } from 'src/types/error.types';
 import { NormalizedDraftDraftKey } from '../types/normalized-draft-key.types';
 import levenshtein from 'fast-levenshtein';
 import { ShopDraftLockService } from './shop-draft-lock.service';
 import { DraftWithRelations } from '../types/draft-with-relations.types';
 import { DraftFilterOptions } from '../types/draft-filter-options.types';
-import { Prisma } from '@prisma/client';
+import { AdminLevel, Prisma } from '@prisma/client';
 import { GetDraftOptions } from '../types/get-draft-options.types';
 import { AiReviewService } from 'src/ai-review/ai-review.service';
 import { plainToInstance } from 'class-transformer';
 import { ShopDraftDto } from '../dto/shop-draft.dto';
+import { AdminService } from 'src/auth/services/admin.service';
+import { PatchShopDraftDto } from '../dto/patch-draft.dto';
 
 @Injectable()
 export class ShopDraftService {
@@ -27,7 +31,7 @@ export class ShopDraftService {
 
   private calculateNormalizedKey(
     title: string,
-    subtitle: string,
+    subtitle: string | null,
   ): NormalizedDraftDraftKey {
     const normalize = (s: string) =>
       s
@@ -122,7 +126,16 @@ export class ShopDraftService {
   }
 
   // -- Create Reserve --
-  async createReserve(title: string, subtitle: string, schoolId: string) {
+  async createReserve(
+    title: string,
+    subtitle: string | null,
+    schoolId: string,
+  ) {
+    if (title === '')
+      throw new BadRequestError(
+        'EMPTY_TITLE',
+        'big asshole the title is emoty',
+      );
     const normalizedKey = this.calculateNormalizedKey(title, subtitle);
 
     try {
@@ -133,6 +146,9 @@ export class ShopDraftService {
           normalizedKey: normalizedKey.fullKey,
           stage: 'RESERVED',
           schoolId,
+        },
+        include: {
+          school: true,
         },
       });
     } catch (error) {
@@ -147,6 +163,22 @@ export class ShopDraftService {
       }
       throw error;
     }
+  }
+
+  async deleteDraft(id: string, schoolId?: string, adminLevel?: AdminLevel) {
+    if (!schoolId && !adminLevel) throw new PermissionError();
+
+    await this.prisma.$transaction(async (tx) => {
+      const draft = await tx.shopDraft.findUnique({ where: { id } });
+
+      if (!draft) throw new NotFoundError();
+
+      if (adminLevel !== 'ORGANIZATION') {
+        if (draft.schoolId !== schoolId) throw new PermissionError();
+      }
+
+      await tx.shopDraft.delete({ where: { id } });
+    });
   }
 
   // -- Submit Draft --
@@ -173,6 +205,8 @@ export class ShopDraftService {
         );
       }
     }
+    // NOTE: Add constraint check
+    // such as images count, work schedules count, etc.
 
     await this.prisma.$transaction(async (tx) => {
       const { currentVersion, ...pureDraft } = draft;
@@ -271,6 +305,7 @@ export class ShopDraftService {
 
     // 3. 組裝查詢物件
     const query: Prisma.ShopDraftFindManyArgs = { where };
+    query.orderBy = { createdAt: 'desc' };
 
     // 如果 include 裡面有任何一個欄位被設為 true，才帶入 include 參數
     if (Object.keys(include).length > 0) {
@@ -303,20 +338,18 @@ export class ShopDraftService {
     return draft;
   }
 
-  async updateField(
+  async partialUpdate(
     draftId: string,
     userId: string,
     lockToken: string,
-    field: string,
-    value: any,
-  ): Promise<void> {
+    data: Partial<Omit<PatchShopDraftDto, 'id'>>,
+  ) {
     await this.lockService.verifyAndRefreshLock(draftId, userId, lockToken);
 
-    // 更新 draft
     try {
-      await this.prisma.shopDraft.update({
+      return await this.prisma.shopDraft.update({
         where: { id: draftId },
-        data: { [field]: value },
+        data: data as any,
       });
     } catch (error) {
       throw new InternalError('UPDATE_FAILED');

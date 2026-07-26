@@ -21,6 +21,9 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
+    "paths": {
+      "@prompts/*": ["./shared/prompts/*"]
+    },
     "noFallthroughCasesInSwitch": false
   }
 }

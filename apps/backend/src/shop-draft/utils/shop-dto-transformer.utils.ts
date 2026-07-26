@@ -1,7 +1,13 @@
 import { CreateShopDto } from 'src/shops/dto/create-shop.dto';
 import { ShopDraftDto } from '../dto/shop-draft.dto';
+import { InternalError } from 'src/types/error.types';
 
 export function mapDraftToCreateShopDto(draft: ShopDraftDto): CreateShopDto {
+  if (!draft.school?.id || !draft.longitude || !draft.latitude)
+    throw new InternalError(
+      'DraftDTO transformation fault: missing argument(s)',
+    );
+
   return {
     title: draft.title,
     subTitle: draft.subtitle ?? undefined,

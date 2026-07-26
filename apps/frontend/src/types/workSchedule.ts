@@ -8,7 +8,6 @@ export type Weekday =
   | "SUNDAY";
 
 export interface WorkScheduleBackend {
-  id: string;
   weekday: Weekday;
   startMinuteOfDay: number;
   endMinuteOfDay: number;
@@ -33,7 +32,6 @@ export function toBackendSchedules(
     const [startMinuteOfDay, endMinuteOfDay] = schedule.range;
     schedule.weekdays.forEach((weekday) => {
       result.push({
-        id: crypto.randomUUID(),
         weekday,
         startMinuteOfDay,
         endMinuteOfDay,

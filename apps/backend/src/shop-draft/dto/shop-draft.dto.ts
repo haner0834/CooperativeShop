@@ -6,7 +6,16 @@ import {
   TransformationType,
   Type,
 } from 'class-transformer';
-import { IsArray, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUrl,
+  ValidateNested,
+} from 'class-validator';
 import { TransformPrismaJsonArray } from 'src/common/decorators/transform-prisma-json-array.decorator';
 import { ContactInfoDto, WorkScheduleDto } from 'src/shops/dto/create-shop.dto';
 
@@ -19,83 +28,189 @@ export type Weekday =
   | 'SATURDAY'
   | 'SUNDAY';
 
+// 定義 Status 的 Enum 或 Union 類型
+export enum ImageStatus {
+  IDLE = 'idle',
+  UPLOADING = 'uploading',
+  SUCCESS = 'success',
+  ERROR = 'error',
+  DELETING = 'deleting',
+}
+
 class UploadInfoDto {
-  @Expose() fileKey: string;
+  @Expose()
+  @IsString()
+  fileKey: string;
 
-  @Expose() uploadUrl: string;
+  @Expose()
+  @IsUrl()
+  uploadUrl: string;
 
-  @Expose() thumbnailKey: string;
+  @Expose()
+  @IsString()
+  thumbnailKey: string;
 
-  @Expose() thumbnailUploadUrl: string;
+  @Expose()
+  @IsUrl()
+  thumbnailUploadUrl: string;
 }
 
 class SelectedImageDto {
-  @Expose() localId: string;
+  @Expose()
+  @IsString()
+  localId: string;
 
-  @Expose() previewUrl: string | null;
+  @Expose()
+  @IsOptional()
+  @IsString()
+  previewUrl: string | null;
 
-  @Expose() uploadInfo?: UploadInfoDto;
+  @Expose()
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UploadInfoDto)
+  uploadInfo?: UploadInfoDto;
 
-  @Expose() isUploading: boolean;
+  @Expose()
+  @IsBoolean()
+  isUploading: boolean;
 
-  @Expose() uploadProgress: number;
+  @Expose()
+  @IsNumber()
+  uploadProgress: number;
 
-  @Expose() status: 'idle' | 'uploading' | 'success' | 'error' | 'deleting';
+  @Expose()
+  @IsEnum(ImageStatus)
+  status: 'idle' | 'uploading' | 'success' | 'error' | 'deleting';
 
-  @Expose() errorMessage?: string;
+  @Expose()
+  @IsOptional()
+  @IsString()
+  errorMessage?: string;
 }
 
 export class ShopDraftVersionDto {
-  @Expose() id: string;
-  @Expose() versionNo: number;
-  @Expose() reviewStatus: ReviewStatus;
-  @Expose() reviewerId: string;
-  @Expose() submittedAt: Date;
-  @Expose() reviewedAt: Date;
-  @Expose() rejectReason?: string;
+  @Expose()
+  @IsString()
+  id: string;
+
+  @Expose()
+  @IsNumber()
+  versionNo: number;
+
+  @Expose()
+  @IsEnum(ReviewStatus)
+  reviewStatus: ReviewStatus;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  reviewerId: string;
+
+  @Expose()
+  @IsOptional()
+  @Type(() => Date)
+  submittedAt: Date;
+
+  @Expose()
+  @IsOptional()
+  @Type(() => Date)
+  reviewedAt: Date;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  rejectReason?: string;
 }
 
 class SchoolInfoDto {
-  @Expose() id: string;
-  @Expose() abbr: string;
+  @Expose()
+  @IsString()
+  id: string;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  abbr: string;
 }
 
 export class ShopDraftDto {
-  @Expose() id: string;
-
-  @Expose() @Type(() => Date) createdAt: Date;
-
-  @Expose() @Type(() => Date) updatedAt: Date;
-
-  @Expose() shopId: string | null;
-
-  @Expose() title: string;
-
-  @Expose() subtitle: string | null;
-
-  @Expose() normalizedKey: string;
-
-  @Expose() description: string;
-
-  @Expose() discount: string | null;
-
-  @Expose() address: string;
-
-  @Expose() longitude: number | null;
-
-  @Expose() latitude: number | null;
-
-  @Expose() thumbnailKey: string;
-
-  @Expose() stage: ShopDraftStage;
-
-  @Expose() @Type(() => Date) reservedUntil: Date | null;
+  @Expose()
+  @IsString()
+  id: string;
 
   @Expose()
+  @Type(() => Date)
+  createdAt: Date;
+
+  @Expose()
+  @Type(() => Date)
+  updatedAt: Date;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  shopId: string | null;
+
+  @Expose()
+  @IsString()
+  title: string;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  subtitle: string | null;
+
+  @Expose()
+  @IsString()
+  normalizedKey: string;
+
+  @Expose()
+  @IsString()
+  description: string;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  discount: string | null;
+
+  @Expose()
+  @IsString()
+  address: string;
+
+  @Expose()
+  @IsOptional()
+  @IsNumber()
+  longitude: number | null;
+
+  @Expose()
+  @IsOptional()
+  @IsNumber()
+  latitude: number | null;
+
+  @Expose()
+  @IsString()
+  thumbnailKey: string;
+
+  @Expose()
+  @IsEnum(ShopDraftStage)
+  stage: ShopDraftStage;
+
+  @Expose()
+  @IsOptional()
+  @Type(() => Date)
+  reservedUntil: Date | null;
+
+  @Expose()
+  @IsOptional()
+  @ValidateNested()
   @Type(() => ShopDraftVersionDto)
   currentVersion?: ShopDraftVersionDto;
 
   @Expose()
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => ShopDraftVersionDto)
   versions?: ShopDraftVersionDto[];
 
@@ -118,6 +233,9 @@ export class ShopDraftDto {
   workSchedules: WorkScheduleDto[];
 
   @Expose()
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SchoolInfoDto)
   @Transform(({ obj, type }) => {
     if (type === TransformationType.PLAIN_TO_CLASS) {
       if (obj.school && typeof obj.school === 'object') {

@@ -1,3 +1,4 @@
+import type { UploadedContract } from "../pages/ShopRegisterForm/ShopContractBlock";
 import type { Point } from "../pages/ShopRegisterForm/ShopLocationBlock";
 import { categoryMap } from "../utils/contactInfoMap";
 import type { ImageDto, SelectedImage } from "./selectedImage";
@@ -6,6 +7,7 @@ import type {
   WorkSchedule,
   Weekday,
 } from "./workSchedule";
+import { Type } from "class-transformer";
 
 export interface ResponseImageDto {
   fileUrl: string;
@@ -73,6 +75,16 @@ export interface ResponseShopDto {
   isSaved?: boolean;
 }
 
+export const fromContactInfoDto = (dto: ContactInfoDto): ContactInfo => {
+  const { content, href, ...rest } = categoryMap[dto.category];
+  return {
+    category: dto.category,
+    content: dto.content,
+    href: dto.href,
+    ...rest,
+  };
+};
+
 // 轉換函數：將後端 DTO 轉換為前端 Shop 介面
 export function transformDtoToShop(dto: ResponseShopDto): Shop {
   // 由於後端 DTO 被設計為盡可能與前端 Shop 介面保持一致，轉換操作極為簡單。
@@ -83,15 +95,7 @@ export function transformDtoToShop(dto: ResponseShopDto): Shop {
     title: dto.title,
     subTitle: dto.subTitle ?? undefined,
     description: dto.description,
-    contactInfo: dto.contactInfo.map((c) => {
-      const { content, href, ...rest } = categoryMap[c.category];
-      return {
-        category: c.category,
-        content: c.content,
-        href: c.href,
-        ...rest,
-      };
-    }),
+    contactInfo: dto.contactInfo.map(fromContactInfoDto),
     googleMapsLink: dto.googleMapsLink,
     schoolId: dto.schoolId,
     schoolAbbr: dto.schoolAbbr,
@@ -123,7 +127,6 @@ export function transformSchedules(
 
     schedule.weekdays.forEach((weekday) => {
       result.push({
-        id: crypto.randomUUID(),
         weekday,
         startMinuteOfDay,
         endMinuteOfDay,
@@ -201,6 +204,53 @@ export interface ShopDraft {
     contactInfo: ContactInfo[];
     workSchedules: WorkSchedule[];
     mode: ShopMode;
+  };
+}
+
+export type ShopDraftStage = "RESERVED" | "EDITING" | "SUBMITTED" | "ARCHIVED";
+
+export type ReviewStatus =
+  | "IDLE"
+  | "PROCESSING"
+  | "REJECT"
+  | "SUCCESS"
+  | "SUPERSEDED"
+  | "AI_REJECT";
+
+export class ShopDraftVersionDto {
+  id: string;
+  versionNo: number;
+  reviewStatus: ReviewStatus;
+  reviewerId: string;
+  @Type(() => Date) submittedAt: Date;
+  @Type(() => Date) reviewedAt: Date;
+  rejectReason?: string;
+}
+
+export class ShopDraftDto {
+  id: string;
+  @Type(() => Date) createdAt: Date;
+  @Type(() => Date) updatedAt: Date;
+  shopId: string | null;
+  title: string;
+  subtitle: string | null;
+  description: string;
+  discount: string | null;
+  address: string;
+  contract: UploadedContract | null;
+  longitude: number | null;
+  latitude: number | null;
+  thumbnailKey: string;
+  stage: ShopDraftStage;
+  reservedUntil: Date | null;
+  currentVersion?: ShopDraftVersionDto;
+  versions?: ShopDraftVersionDto[];
+  contactInfo: ContactInfoDto[];
+  images: SelectedImage[];
+  workSchedules: WorkScheduleBackend[];
+  school: {
+    id: string;
+    abbr?: string;
   };
 }
 

@@ -2,10 +2,9 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { firstValueFrom } from 'rxjs';
-
+import { prompts } from 'src/generated/prompts';
 import {
   AI_REVIEW_RESPONSE_SCHEMA,
-  AI_REVIEW_SYSTEM_PROMPT,
   DEFAULT_GEMINI_API_BASE_URL,
   DEFAULT_GEMINI_MODEL,
 } from './ai-review.constants';
@@ -74,7 +73,7 @@ export class AiReviewService {
 
     const body: Record<string, any> = {
       systemInstruction: {
-        parts: [{ text: AI_REVIEW_SYSTEM_PROMPT }],
+        parts: [{ text: prompts.AI_SHOP_REVIEW_PROMPT }],
       },
       contents: [
         {

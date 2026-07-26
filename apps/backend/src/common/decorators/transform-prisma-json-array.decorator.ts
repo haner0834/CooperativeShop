@@ -10,6 +10,8 @@ import {
  */
 export function TransformPrismaJsonArray<T>(cls: ClassConstructor<T>) {
   return Transform(({ value }) => {
+    // bcs prisma would return `null` or `[]` so `undefined` would has the only chance sent from user
+    if (value === undefined) return undefined;
     // 確保 value 存在且是陣列（防呆）
     if (!value || !Array.isArray(value)) return [];
 

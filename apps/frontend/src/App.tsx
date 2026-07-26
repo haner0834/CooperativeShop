@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import "./App.css";
 import { lazy, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
