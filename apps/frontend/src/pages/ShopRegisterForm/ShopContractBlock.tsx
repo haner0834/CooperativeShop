@@ -87,8 +87,8 @@ const ShopContractBlock = ({
           method: "POST",
           body: JSON.stringify({
             fileName: file.name,
-            contentType: "image/webp",
-            category: "shop-image",
+            contentType: "application/pdf",
+            category: "shop-contract",
             hasThumbnail: false,
             fileSize: file.size,
           }),
