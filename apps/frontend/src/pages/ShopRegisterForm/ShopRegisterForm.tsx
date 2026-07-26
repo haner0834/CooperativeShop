@@ -152,6 +152,7 @@ const ShopRegisterForm = () => {
           lng: draft.longitude ?? 0,
         };
         setWorkSchedules(fromBackendSchedules(draft.workSchedules));
+        setContract(draft.contract);
         setAddress(draft.address);
         setSelectedPoint(selectedPoint);
         setContactInfo(draft.contactInfo.map(fromContactInfoDto));
