@@ -1,4 +1,13 @@
-import { CircleAlert, CircleDotDashed, CloudUpload, Plus } from "lucide-react";
+import {
+  CircleAlert,
+  CircleDotDashed,
+  CloudAlert,
+  CloudCheck,
+  CloudSync,
+  CloudUpload,
+  Loader,
+  Plus,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import FormHeader from "./FormHeader";
@@ -34,7 +43,9 @@ import { path } from "../../utils/path";
 import ShopContractBlock, { type UploadedContract } from "./ShopContractBlock";
 import { plainToInstance } from "class-transformer";
 
-const Navbar = () => {
+type SyncStatus = "success" | "failed" | "idle" | "syncing";
+
+const Navbar = ({ syncStatus }: { syncStatus: SyncStatus }) => {
   return (
     <div className="navbar bg-base-100 shadow-sm z-50 fixed">
       <div className="flex-none">
@@ -45,7 +56,17 @@ const Navbar = () => {
       <div className="flex-1 text-center">
         <h1 className="text-base font-semibold">特約商家註冊</h1>
       </div>
-      <div className="flex-none">
+      <div className="flex-none flex gap-4 justify-center items-center">
+        {syncStatus === "syncing" ? (
+          <CloudSync />
+        ) : syncStatus === "success" ? (
+          <CloudCheck />
+        ) : syncStatus === "failed" ? (
+          <CloudAlert />
+        ) : (
+          <Loader />
+        )}
+
         <Link className="btn btn-circle btn-ghost" to="/shops/drafts">
           <CircleDotDashed />
         </Link>
@@ -88,6 +109,7 @@ const ShopRegisterForm = () => {
   });
 
   const [images, setImages] = useState<SelectedImage[]>([]); // 用 base64 URL 預覽
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
 
   // get draft data
   useEffect(() => {
@@ -238,6 +260,7 @@ const ShopRegisterForm = () => {
 
   // auto-save
   useEffect(() => {
+    setSyncStatus("idle");
     const handler = setTimeout(syncUpdatedDraft, 1500); // ← delay 1.5s
 
     return () => clearTimeout(handler); // ← Cancel the previous timer (to prevent duplicate storage).
@@ -264,6 +287,8 @@ const ShopRegisterForm = () => {
 
     const diff = getDraftDiff();
     if (!diff || Object.keys(diff).length === 0) return;
+    setSyncStatus("syncing");
+
     authedFetch(path(`/api/shop-draft`), {
       method: "PATCH",
       headers: {
@@ -273,23 +298,29 @@ const ShopRegisterForm = () => {
         id,
         ...diff,
       }),
-    }).catch(async () => {
-      try {
-        const newToken = await withLock(() => acquireEditLock(id));
-        await authedFetch(path(`/api/shop-draft`), {
-          method: "PATCH",
-          headers: {
-            "X-Edit-Lock-Token": newToken,
-          },
-          body: JSON.stringify({
-            id,
-            ...diff,
-          }),
-        });
-      } catch (e) {
-        console.error(e);
-      }
-    });
+    })
+      .then(() => {
+        setSyncStatus("success");
+      })
+      .catch(async () => {
+        try {
+          const newToken = await withLock(() => acquireEditLock(id));
+          await authedFetch(path(`/api/shop-draft`), {
+            method: "PATCH",
+            headers: {
+              "X-Edit-Lock-Token": newToken,
+            },
+            body: JSON.stringify({
+              id,
+              ...diff,
+            }),
+          });
+          setSyncStatus("success");
+        } catch (e) {
+          console.error(e);
+          setSyncStatus("failed");
+        }
+      });
   };
 
   const getDraft = async (id: string): Promise<ShopDraftDto | null> => {
@@ -427,7 +458,6 @@ const ShopRegisterForm = () => {
       const lastValue = lastSaved[key];
 
       if (!isDeepEqual(currentValue, lastValue)) {
-        console.log(key, currentValue, lastValue);
         // 這裡強制轉型確保類型符合 Partial<ShopDraftDto>
         diff[key] = currentValue as any;
       }
@@ -498,7 +528,7 @@ const ShopRegisterForm = () => {
 
   return (
     <div className="select-none md:select-auto">
-      <Navbar />
+      <Navbar syncStatus={syncStatus} />
 
       <main className="pt-18 min-h-screen bg-base-300 flex justify-center">
         <div className="max-w-xl w-full p-4 space-y-4">
