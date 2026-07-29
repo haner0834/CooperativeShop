@@ -436,6 +436,15 @@ const ShopLocationBlock = ({
       ]);
       setAddress(result?.place_name ?? "Unknown");
       setSelectedPointId("point-1");
+      setSelectedPoint((prev) => {
+        if (prev)
+          return {
+            ...prev,
+            lng,
+            lat,
+          };
+        return null;
+      });
     }
   };
 
