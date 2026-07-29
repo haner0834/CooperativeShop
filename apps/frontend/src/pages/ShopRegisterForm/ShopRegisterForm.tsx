@@ -1,10 +1,10 @@
 import {
   CircleAlert,
-  CircleDotDashed,
   CloudAlert,
   CloudCheck,
   CloudSync,
   CloudUpload,
+  List,
   Loader,
   Plus,
 } from "lucide-react";
@@ -68,7 +68,7 @@ const Navbar = ({ syncStatus }: { syncStatus: SyncStatus }) => {
         )}
 
         <Link className="btn btn-circle btn-ghost" to="/shops/drafts">
-          <CircleDotDashed />
+          <List />
         </Link>
       </div>
     </div>
