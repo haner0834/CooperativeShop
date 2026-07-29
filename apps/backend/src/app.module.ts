@@ -31,6 +31,9 @@ import { BullModule } from '@nestjs/bullmq';
 import { InstaPostModule } from './insta-post/insta-post.module';
 import { AiReviewModule } from './ai-review/ai-review.module';
 import { InstaPostImageModule } from './insta-post-image/insta-post-image.module';
+import { IdempotencyModule } from './idempotency/idempotency.module';
+import { IdempotencyInterceptor } from './idempotency/idempotency.interceptor';
+import { IdempotencyGuard } from './idempotency/idempotency.guard';
 
 @Module({
   imports: [
@@ -69,6 +72,7 @@ import { InstaPostImageModule } from './insta-post-image/insta-post-image.module
     InstaPostModule,
     AiReviewModule,
     InstaPostImageModule,
+    IdempotencyModule,
   ],
   controllers: [AppController],
   providers: [
@@ -88,12 +92,20 @@ import { InstaPostImageModule } from './insta-post-image/insta-post-image.module
       useClass: RateLimitGuard,
     },
     {
+      provide: APP_GUARD,
+      useClass: IdempotencyGuard,
+    },
+    {
       provide: APP_INTERCEPTOR,
       useClass: DeviceCookieInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,
       useClass: RiskAssessmentInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: IdempotencyInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,
