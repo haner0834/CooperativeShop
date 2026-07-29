@@ -16,6 +16,8 @@ export interface WorkScheduleBackend {
 // Seperate them because this interface match more to the
 // interaction in shop register form.
 export interface WorkSchedule {
+  isFlexible?: boolean;
+  scheduleNote?: string;
   weekdays: Weekday[];
   range: [number, number]; // 0 ~ 1440 (mins)
 }
