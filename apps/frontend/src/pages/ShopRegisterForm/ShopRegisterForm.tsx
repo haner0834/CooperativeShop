@@ -261,7 +261,13 @@ const ShopRegisterForm = () => {
   // auto-save
   useEffect(() => {
     setSyncStatus("idle");
-    const handler = setTimeout(syncUpdatedDraft, 1500); // ← delay 1.5s
+    const handler = setTimeout(() => {
+      try {
+        syncUpdatedDraft();
+      } catch (e) {
+        console.error(e);
+      }
+    }, 1500); // ← delay 1.5s
 
     return () => clearTimeout(handler); // ← Cancel the previous timer (to prevent duplicate storage).
   }, [
@@ -279,7 +285,46 @@ const ShopRegisterForm = () => {
     activeUser?.schoolAbbr,
   ]);
 
-  const syncUpdatedDraft = () => {
+  async function authedFetchWithLockToken(
+    url: string,
+    options: RequestInit = {}
+  ): Promise<any> {
+    const id = searchParams.get("id");
+    if (!id) throw new Error("Missing draft ID");
+    if (!editToken) throw new Error("Missing edit token");
+
+    const buildOptions = (token: string): RequestInit => ({
+      ...options,
+      headers: {
+        ...options?.headers,
+        "X-Edit-Lock-Token": token,
+      },
+    });
+
+    try {
+      const response = await authedFetch(url, buildOptions(editToken));
+
+      if (!response.success) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+
+      return response;
+    } catch (error) {
+      // 第一次失敗，重新取得 Token 後重試一次
+      const newToken = await withLock(() => acquireEditLock(id));
+      const retryResponse = await authedFetch(url, buildOptions(newToken));
+
+      if (!retryResponse.success) {
+        throw new Error(
+          `Retry request failed with status ${retryResponse.status}`
+        );
+      }
+
+      return retryResponse;
+    }
+  }
+
+  const syncUpdatedDraft = async () => {
     const id = searchParams.get("id");
     if (!id) return;
     if (!lastSavedDraft.current) return;
@@ -289,38 +334,20 @@ const ShopRegisterForm = () => {
     if (!diff || Object.keys(diff).length === 0) return;
     setSyncStatus("syncing");
 
-    authedFetch(path(`/api/shop-draft`), {
-      method: "PATCH",
-      headers: {
-        "X-Edit-Lock-Token": editToken,
-      },
-      body: JSON.stringify({
-        id,
-        ...diff,
-      }),
-    })
-      .then(() => {
-        setSyncStatus("success");
-      })
-      .catch(async () => {
-        try {
-          const newToken = await withLock(() => acquireEditLock(id));
-          await authedFetch(path(`/api/shop-draft`), {
-            method: "PATCH",
-            headers: {
-              "X-Edit-Lock-Token": newToken,
-            },
-            body: JSON.stringify({
-              id,
-              ...diff,
-            }),
-          });
-          setSyncStatus("success");
-        } catch (e) {
-          console.error(e);
-          setSyncStatus("failed");
-        }
+    try {
+      await authedFetchWithLockToken(path("/api/shop-draft"), {
+        method: "PATCH",
+        body: JSON.stringify({
+          id,
+          ...diff,
+        }),
       });
+
+      setSyncStatus("success");
+    } catch (e) {
+      console.error(e);
+      setSyncStatus("failed");
+    }
   };
 
   const getDraft = async (id: string): Promise<ShopDraftDto | null> => {
@@ -383,12 +410,17 @@ const ShopRegisterForm = () => {
 
     const dto = {
       draftId: id,
+      overwrite: true,
     };
 
-    const response = await authedFetch(path("/api/shop-draft/submit"), {
-      method: "POST",
-      body: JSON.stringify(dto),
-    });
+    const response = await authedFetchWithLockToken(
+      path("/api/shop-draft/submit"),
+      {
+        method: "POST",
+        body: JSON.stringify(dto),
+        idempotent: true,
+      }
+    );
 
     const { success, error } = response;
     if (!success) {
