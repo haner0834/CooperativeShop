@@ -14,8 +14,9 @@ import {
 } from './utils/ai-review.utils';
 import { AiReviewResult } from './interfaces/ai-review-result.interface';
 import { ShopDraftForReview } from './interfaces/shop-draft-for-review.interface';
-import { InternalError } from 'src/types/error.types';
+import { BadRequestError, InternalError } from 'src/types/error.types';
 import { env } from 'src/common/utils/env.utils';
+import { getImageUrl } from 'src/common/utils/get-image-url.utils';
 
 @Injectable()
 export class AiReviewService {
@@ -34,6 +35,27 @@ export class AiReviewService {
       env('GEMINI_ENABLE_SEARCH_GROUNDING', 'true') === 'true';
   }
 
+  private async downloadFileAsBuffer(fileUrl: string): Promise<Buffer> {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get(fileUrl, {
+          responseType: 'arraybuffer',
+          timeout: 30_000,
+        }),
+      );
+
+      // 將 ArrayBuffer 轉為 Node.js Buffer
+      return Buffer.from(response.data);
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      this.logger.error(
+        `從 R2 下載合約檔案失敗 (${fileUrl})`,
+        axiosError.message,
+      );
+      throw new InternalError('無法取得店鋪合約檔案');
+    }
+  }
+
   /**
    * 對一筆 ShopDraft 資料做 AI 稽核。
    */
@@ -41,7 +63,11 @@ export class AiReviewService {
     const shopInfo = buildShopInfoPayload(draft);
     const publicInfo = buildPublicInfoPayload(draft);
 
-    const contractBuffer: any = 0;
+    if (!draft.contract.fileKey)
+      throw new BadRequestError('MISSING_CONTRSCT_FILE_URL', 'fuck');
+    const contractBuffer = await this.downloadFileAsBuffer(
+      getImageUrl(draft.contract.fileKey),
+    );
 
     const requestBody = this.buildRequestBody(shopInfo, contractBuffer);
     const url = `${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`;
