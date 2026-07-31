@@ -1,3 +1,4 @@
+import { ContractDto } from 'src/shop-draft/dto/shop-draft.dto';
 import { ContactInfo } from 'src/shops/types/contact-info.type';
 import { WorkSchedule } from 'src/shops/types/work-schedule.type';
 
@@ -17,12 +18,5 @@ export interface ShopDraftForReview {
   address: string;
   longitude: number | null;
   latitude: number | null;
-
-  /**
-   * WARN: Prisma schema (ShopDraft) 目前沒有合約掃描檔對應欄位。
-   * 這裡先放一個可選欄位卡位，等合約上傳功能做好之後，
-   * 這裡應該會變成類似 contractFileKey / contractFileUrl 這種東西，
-   * 並且 AiReviewService 要改成真的把檔案內容送進 Gemini。
-   */
-  contractFileUrl?: string | null;
+  contract: ContractDto;
 }
