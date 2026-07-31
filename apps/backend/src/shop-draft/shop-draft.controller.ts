@@ -35,6 +35,7 @@ import { SearchedDraftDto } from './dto/searched-draft.dto';
 import { CreateDraftDto } from './dto/create-draft.dto';
 import { PatchShopDraftDto } from './dto/patch-draft.dto';
 import { ShopDraftLockService } from './services/shop-draft-lock.service';
+import { Idempotent } from 'src/idempotency/idempotent.decorator';
 
 @Controller('shop-draft')
 export class ShopDraftController {
@@ -121,6 +122,7 @@ export class ShopDraftController {
   }
 
   @Post('submit')
+  @Idempotent()
   @UseGuards(JwtAccessGuard)
   async submit(
     @Body() dto: SubmitDraftDto,
@@ -129,9 +131,10 @@ export class ShopDraftController {
   ) {
     if (!user) throw new UnauthorizedError();
 
-    await this.shopDraftService.submitDraft(dto.draftId, user.id, token, {
-      overwrite: dto.overwrite,
-    });
+    // await this.shopDraftService.submitDraft(dto.draftId, user.id, token, {
+    //   overwrite: dto.overwrite,
+    // });
+    console.log('hello world');
   }
 
   @Get(':id/snapshot')
