@@ -16,7 +16,7 @@ import { AdminLevel, Prisma, ShopDraft } from '@prisma/client';
 import { GetDraftOptions } from '../types/get-draft-options.types';
 import { AiReviewService } from 'src/ai-review/ai-review.service';
 import { plainToInstance } from 'class-transformer';
-import { ShopDraftDto } from '../dto/shop-draft.dto';
+import { ContractDto, ShopDraftDto } from '../dto/shop-draft.dto';
 import { AdminService } from 'src/auth/services/admin.service';
 import { PatchShopDraftDto } from '../dto/patch-draft.dto';
 
@@ -286,9 +286,15 @@ export class ShopDraftService {
       .then(async (latestDraft) => {
         if (!latestDraft || !latestDraft.currentVersionId) return;
         this.logger.error(`[AI_REVIEW] 背景預審開始`);
-        const reviewResult = await this.aiReviewService.reviewDraft(
-          plainToInstance(ShopDraftDto, latestDraft),
-        );
+
+        const contract = plainToInstance(ContractDto, latestDraft.contract);
+
+        if (!contract) throw new BadRequestError('MISSING_CONTRACT', 'fuck');
+
+        const reviewResult = await this.aiReviewService.reviewDraft({
+          ...plainToInstance(ShopDraftDto, latestDraft),
+          contract,
+        });
 
         await this.prisma.shopDraftVersion.update({
           where: { id: latestDraft.currentVersionId },
