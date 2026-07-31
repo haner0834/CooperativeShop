@@ -77,6 +77,10 @@ const WeekdaySelector = ({
     setEndTimeVal(value);
   };
 
+  // const handleRemoveStartTime = () => {};
+
+  // const handleRemoveEndTime = () => {};
+
   const toggleSelection = (weekday: Weekday) => {
     // Logic simplified: Just toggle local state, don't care about other blocks
     if (selectedWeekdays.includes(weekday)) {
@@ -139,7 +143,7 @@ const WeekdaySelector = ({
           </div>
         )}
 
-        <div className="flex w-full justify-between items-center">
+        <div className="flex w-full justify-between items-center gap-2">
           <p className="flex-1">開始時間</p>
 
           <input
@@ -148,9 +152,18 @@ const WeekdaySelector = ({
             onChange={handleStartTimeChange}
             className="input input-sm w-30"
           />
+
+          {/* {type === "FLEXIBLE" && (
+            <button
+              className="btn btn-circle btn-xs btn-ghost"
+              onClick={handleRemoveStartTime}
+            >
+              <X className="h-4"></X>
+            </button>
+          )} */}
         </div>
 
-        <div className="flex w-full justify-between items-center">
+        <div className="flex w-full justify-between items-center gap-2">
           <p className="flex-1">結束時間</p>
 
           <input
@@ -159,6 +172,15 @@ const WeekdaySelector = ({
             onChange={handleEndTimeChange}
             className="input input-sm w-30"
           />
+
+          {/* {type === "FLEXIBLE" && (
+            <button
+              className="btn btn-circle btn-xs btn-ghost"
+              onClick={handleRemoveEndTime}
+            >
+              <X className="h-4"></X>
+            </button>
+          )} */}
         </div>
       </div>
 
