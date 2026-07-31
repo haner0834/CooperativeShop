@@ -127,7 +127,7 @@ const WeekdaySelector = ({
         {type === "FLEXIBLE" && (
           <div className="flex flex-col w-full justify-between">
             <div className="w-full">
-              <p className="">彈性時段說明</p>
+              <p className="text-sm opacity-50">彈性時段說明</p>
               <input
                 type="text"
                 value={note ?? ""}
