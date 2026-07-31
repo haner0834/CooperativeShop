@@ -44,12 +44,12 @@ export class ShopDraftLockService {
         throw new NotFoundError('DRAFT');
       }
 
-      if (draft.stage === 'SUBMITTED') {
-        throw new ConflictError(
-          `CANNOT_EDIT_IN_SUBMITTED`,
-          `Cannot edit the draft when it's submitted.`,
-        );
-      }
+      // if (draft.stage === 'SUBMITTED') {
+      //   throw new ConflictError(
+      //     `CANNOT_EDIT_IN_SUBMITTED`,
+      //     `Cannot edit the draft when it's submitted.`,
+      //   );
+      // }
 
       // 轉換 draft stage
       if (draft.stage === 'RESERVED') {
