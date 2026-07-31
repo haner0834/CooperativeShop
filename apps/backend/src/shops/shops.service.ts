@@ -104,6 +104,8 @@ export class ShopsService {
             dayOfWeek: WeekdayToInt[s.weekday],
             startMinute: s.startMinuteOfDay,
             endMinute: s.endMinuteOfDay,
+            type: s.type,
+            scheduleNote: s.scheduleNote,
           })),
         });
       }
@@ -334,6 +336,8 @@ export class ShopsService {
               dayOfWeek: WeekdayToInt[s.weekday],
               startMinute: s.startMinuteOfDay,
               endMinute: s.endMinuteOfDay,
+              type: s.type,
+              scheduleNote: s.scheduleNote,
             })),
           });
         }

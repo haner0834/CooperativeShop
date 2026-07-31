@@ -3,6 +3,7 @@ import {
   ArrayMinSize,
   IsArray,
   IsEnum,
+  IsIn,
   IsLatitude,
   IsLongitude,
   IsNotEmpty,
@@ -31,6 +32,8 @@ export class ContactInfoDto implements ContactInfo {
   href: string;
 }
 
+export type WorkScheduleType = 'FLEXIBLE' | 'FIXED';
+
 export class WorkScheduleDto implements WorkSchedule {
   @IsEnum(Weekday)
   weekday: Weekday;
@@ -40,6 +43,13 @@ export class WorkScheduleDto implements WorkSchedule {
 
   @IsNumber()
   endMinuteOfDay: number;
+
+  @IsIn(['FLEXIBLE', 'FIXED'])
+  type: WorkScheduleType = 'FIXED';
+
+  @IsOptional()
+  @IsString()
+  scheduleNote: string | null;
 }
 
 export class ImageDto {

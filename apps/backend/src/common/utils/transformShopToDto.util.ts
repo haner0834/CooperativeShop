@@ -2,6 +2,7 @@ import { ResponseShopDto } from 'src/shops/dto/response-shop.dto';
 import { Weekday } from 'src/shops/types/work-schedule.type';
 import { env } from './env.utils';
 import { ShopWithRelations } from 'src/shops/types/shop-with-relations.type';
+import { WorkScheduleType } from 'src/shops/dto/create-shop.dto';
 
 function mapIntToWeekday(day: number): Weekday {
   const map = [
@@ -90,6 +91,8 @@ export function transformShopToDto(
     weekday: mapIntToWeekday(ws.dayOfWeek),
     startMinuteOfDay: ws.startMinute,
     endMinuteOfDay: ws.endMinute,
+    type: ws.type as WorkScheduleType,
+    scheduleNote: ws.scheduleNote,
   }));
 
   return {

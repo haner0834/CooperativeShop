@@ -113,6 +113,7 @@ export function transformDtoToShop(dto: ResponseShopDto): Shop {
 }
 
 export const DEFAULT_WORKSCHEDULE: WorkSchedule = {
+  type: "FIXED",
   weekdays: [],
   range: [480, 1020],
 };
@@ -127,6 +128,7 @@ export function transformSchedules(
 
     schedule.weekdays.forEach((weekday) => {
       result.push({
+        type: schedule.type,
         weekday,
         startMinuteOfDay,
         endMinuteOfDay,
