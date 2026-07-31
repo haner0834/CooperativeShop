@@ -52,5 +52,8 @@ model WorkSchedule {
     startMinute Int
     endMinute   Int
 
+    type         String  @default("FIXED") // FLEXIBLE, FIXED
+    scheduleNote String?
+
     @@index([shopId, dayOfWeek])
 }
