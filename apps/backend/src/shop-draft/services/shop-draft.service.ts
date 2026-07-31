@@ -12,7 +12,7 @@ import levenshtein from 'fast-levenshtein';
 import { ShopDraftLockService } from './shop-draft-lock.service';
 import { DraftWithRelations } from '../types/draft-with-relations.types';
 import { DraftFilterOptions } from '../types/draft-filter-options.types';
-import { AdminLevel, Prisma } from '@prisma/client';
+import { AdminLevel, Prisma, ShopDraft } from '@prisma/client';
 import { GetDraftOptions } from '../types/get-draft-options.types';
 import { AiReviewService } from 'src/ai-review/ai-review.service';
 import { plainToInstance } from 'class-transformer';
@@ -181,6 +181,40 @@ export class ShopDraftService {
     });
   }
 
+  private checkIfAvailableToSubmit(draft: DraftWithRelations) {
+    const dto = plainToInstance(ShopDraftDto, draft);
+    let isAvailable = true;
+
+    const texts = [dto.title, dto.description, dto.discount, dto.address];
+    if (texts.filter((t) => t !== '').length != texts.length) {
+      isAvailable = false;
+    }
+
+    const arrays = [dto.contactInfo, dto.images, dto.workSchedules];
+    if (arrays.filter((t) => t.length >= 1).length != arrays.length) {
+      isAvailable = false;
+    }
+
+    if (dto.images.length > 10) {
+      isAvailable = false;
+    }
+
+    if (dto.contactInfo.length > 20) {
+      isAvailable = false;
+    }
+
+    if (!dto.contract || !dto.latitude || !dto.longitude || !dto.school) {
+      isAvailable = false;
+    }
+
+    if (!isAvailable) {
+      throw new BadRequestError(
+        'INCOMPLETE_DRAFT',
+        'Fill the fucking column before submitting',
+      );
+    }
+  }
+
   // -- Submit Draft --
   async submitDraft(
     draftId: string,
@@ -205,8 +239,8 @@ export class ShopDraftService {
         );
       }
     }
-    // NOTE: Add constraint check
-    // such as images count, work schedules count, etc.
+
+    this.checkIfAvailableToSubmit(draft);
 
     await this.prisma.$transaction(async (tx) => {
       const { currentVersion, ...pureDraft } = draft;
