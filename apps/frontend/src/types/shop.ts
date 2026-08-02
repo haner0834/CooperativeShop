@@ -245,6 +245,7 @@ export class ShopDraftDto {
   thumbnailKey: string;
   stage: ShopDraftStage;
   reservedUntil: Date | null;
+  @Type(() => ShopDraftVersionDto)
   currentVersion?: ShopDraftVersionDto;
   versions?: ShopDraftVersionDto[];
   contactInfo: ContactInfoDto[];
