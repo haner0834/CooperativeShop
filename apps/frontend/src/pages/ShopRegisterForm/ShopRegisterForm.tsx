@@ -1,12 +1,17 @@
 import {
+  Ban,
+  BotOff,
+  Check,
   CircleAlert,
+  Clock3,
+  ClockArrowRight,
   CloudAlert,
   CloudCheck,
   CloudSync,
   CloudUpload,
   List,
   Loader,
-  Plus,
+  X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -20,7 +25,9 @@ import ShopWorkSchedulesBlock from "./ShopWorkSchedulesBlock";
 import {
   DEFAULT_WORKSCHEDULE,
   fromContactInfoDto,
+  ShopDraftVersionDto,
   type ContactInfoDto,
+  type ReviewStatus,
 } from "../../types/shop";
 import type { SelectedImage } from "../../types/selectedImage";
 import { ShopDraftDto, type ContactInfo } from "../../types/shop";
@@ -42,21 +49,78 @@ import { useAuthFetch } from "../../auth/useAuthFetch";
 import { path } from "../../utils/path";
 import ShopContractBlock, { type UploadedContract } from "./ShopContractBlock";
 import { plainToInstance } from "class-transformer";
+import RejectReasonBlock from "./RejectReasonBlock";
 
 type SyncStatus = "success" | "failed" | "idle" | "syncing";
+
+export const getStatusColor = (status: ReviewStatus): string => {
+  switch (status) {
+    case "IDLE":
+      return "bg-gray-500";
+    case "PROCESSING":
+      return "bg-info";
+    case "REJECT":
+      return "bg-error";
+    case "SUCCESS":
+      return "bg-success";
+    case "SUPERSEDED":
+      return "bg-base-300";
+    case "AI_REJECT":
+      return "bg-amber-300";
+    default:
+      return "";
+  }
+};
+
+export const getStatusText = (status: ReviewStatus): string => {
+  switch (status) {
+    case "IDLE":
+      return "待審核";
+    case "PROCESSING":
+      return "審核中";
+    case "REJECT":
+      return "審核未通過";
+    case "SUCCESS":
+      return "提交成功";
+    case "SUPERSEDED":
+      return "已取消";
+    case "AI_REJECT":
+      return "未通過 AI 審核";
+    default:
+      return "";
+  }
+};
+
+export const StatusIcon = ({ status }: { status: ReviewStatus }) => {
+  return (
+    <div
+      className={`h-6 w-6 rounded-full flex justify-center items-center text-center ${getStatusColor(
+        status
+      )}`}
+    >
+      {status === "AI_REJECT" ? (
+        <BotOff className="w-4 h-4 text-base-100" />
+      ) : status === "IDLE" ? (
+        <Clock3 className="w-4 h-4 text-base-100" />
+      ) : status === "PROCESSING" ? (
+        <ClockArrowRight className="w-4 h-4 text-base-100" />
+      ) : status === "REJECT" ? (
+        <X className="w-4 h-4 text-base-100" />
+      ) : status === "SUCCESS" ? (
+        <Check className="w-4 h-4 text-base-100" />
+      ) : status === "SUPERSEDED" ? (
+        <Ban className="w-4 h-4 text-base-content" />
+      ) : (
+        <></>
+      )}
+    </div>
+  );
+};
 
 const Navbar = ({ syncStatus }: { syncStatus: SyncStatus }) => {
   return (
     <div className="navbar bg-base-100 shadow-sm z-50 fixed">
-      <div className="flex-none">
-        <Link to="/shops/register" className="btn btn-circle btn-ghost">
-          <Plus />
-        </Link>
-      </div>
-      <div className="flex-1 text-center">
-        <h1 className="text-base font-semibold">特約商家註冊</h1>
-      </div>
-      <div className="flex-none flex gap-4 justify-center items-center">
+      <div className="flex-none ms-2">
         {syncStatus === "syncing" ? (
           <CloudSync />
         ) : syncStatus === "success" ? (
@@ -66,8 +130,12 @@ const Navbar = ({ syncStatus }: { syncStatus: SyncStatus }) => {
         ) : (
           <Loader />
         )}
-
-        <Link className="btn btn-circle btn-ghost" to="/shops/drafts">
+      </div>
+      <div className="flex-1 text-center">
+        <h1 className="text-base font-semibold">特約商家註冊</h1>
+      </div>
+      <div className="flex-none flex gap-4 justify-center items-center">
+        <Link className="btn btn-square btn-ghost" to="/shops/drafts">
           <List />
         </Link>
       </div>
@@ -97,6 +165,8 @@ const ShopRegisterForm = () => {
   const [editToken, setEditToken] = useState<string | null>(null);
   const [showHint, setShowHint] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [currentVersion, setCurrentVersion] =
+    useState<ShopDraftVersionDto | null>(null);
   const { showToast } = useToast();
   const { showModal } = useModal();
   const navigate = useNavigate();
@@ -177,6 +247,11 @@ const ShopRegisterForm = () => {
         setContract(draft.contract);
         setAddress(draft.address);
         setSelectedPoint(selectedPoint);
+        setCurrentVersion(
+          draft.currentVersion
+            ? plainToInstance(ShopDraftVersionDto, draft.currentVersion)
+            : null
+        );
         setContactInfo(draft.contactInfo.map(fromContactInfoDto));
       }
     };
@@ -235,7 +310,17 @@ const ShopRegisterForm = () => {
           lockRef.current.id = id;
         }
       } catch (error) {
-        console.error("取得編輯鎖失敗:", error);
+        showModal({
+          title: "該草稿正在被其他人編輯",
+          description: "請稍後再試",
+          buttons: [
+            {
+              label: "離開",
+              role: "primary",
+              style: "btn-primary",
+            },
+          ],
+        });
       }
     });
 
@@ -351,8 +436,12 @@ const ShopRegisterForm = () => {
   };
 
   const getDraft = async (id: string): Promise<ShopDraftDto | null> => {
-    const apiUrl = path(`/api/shop-draft/${id}`);
-    const result = await authedFetch(apiUrl, { method: "GET" });
+    const apiUrl = new URL(path(`/api/shop-draft/${id}`));
+    apiUrl.searchParams.append("versions", "true");
+    apiUrl.searchParams.append("schools", "true");
+    apiUrl.searchParams.append("currentVersion", "true");
+
+    const result = await authedFetch(apiUrl.toString(), { method: "GET" });
     const { success, data, error } = result;
     if (!success) {
       console.error(error);
@@ -513,6 +602,10 @@ const ShopRegisterForm = () => {
       isAvailable = false;
     }
 
+    if (!contract) {
+      isAvailable = false;
+    }
+
     if (hasWorkScheduleOverlap(workSchedules)) {
       isAvailable = false;
     }
@@ -565,6 +658,10 @@ const ShopRegisterForm = () => {
       <main className="pt-18 min-h-screen bg-base-300 flex justify-center">
         <div className="max-w-xl w-full p-4 space-y-4">
           <FormHeader />
+
+          {currentVersion?.rejectReason && (
+            <RejectReasonBlock reason={currentVersion.rejectReason} />
+          )}
 
           <ShopTitleBlock
             title={title}
