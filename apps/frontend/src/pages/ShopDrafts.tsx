@@ -90,7 +90,7 @@ const SearchModal = () => {
     } else {
       const { code } = error;
       if (code === "DRAFT_NORMALIZED_KEY_CONFLICT") {
-        setErrorMessage("該店家已被預約，請等候該預約過期");
+        setErrorMessage("該店家已被預約或登記");
       } else {
         setErrorMessage("發生未知錯誤，請稍後再試");
       }
@@ -137,6 +137,7 @@ const SearchModal = () => {
       >
         登記預約
       </button>
+      <p className="text-xs opacity-50">一旦送出，店名、分店名便不可修改</p>
 
       {errorMessage && (
         <p className="text-error text-xs font-medium">{errorMessage}</p>
