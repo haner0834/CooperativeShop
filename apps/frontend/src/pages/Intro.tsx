@@ -5,7 +5,7 @@ import {
 } from "../widgets/NavbarButtonsContext";
 import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
 import Logo from "@shared/app-icons/logo.jpg";
-import { Instagram, Github, Frog, WangAvatar } from "@icons";
+import { Instagram, Github, Frog, WangAvatar, Lotus } from "@icons";
 import Marquee from "../widgets/Marquee";
 import {
   motion,
@@ -775,6 +775,240 @@ function BrokenSponsor() {
   );
 }
 
+const ChenSiChi = () => {
+  return (
+    <div
+      className="
+    group
+    relative
+    flex items-center gap-2
+    opacity-80
+    transition-all duration-500
+
+    hover:scale-[3.5]
+    hover:rotate-[25deg]
+    hover:skew-x-12
+    hover:animate-spin
+  "
+    >
+      {/* 彩虹核爆 */}
+      <div
+        className="
+      absolute
+      -inset-10
+      rounded-[999px]
+
+      bg-linear-to-r
+      from-red-500
+      via-fuchsia-500
+      to-lime-400
+
+      blur-3xl
+      opacity-80
+      animate-spin
+      mix-blend-screen
+    "
+      />
+
+      {/* 第二層光暈 */}
+      <div
+        className="
+      absolute
+      -inset-4
+      rounded-3xl
+      border
+      border-white/20
+
+      animate-ping
+      blur-md
+    "
+      />
+
+      {/* 爆炸 emoji */}
+      {[...Array(24)].map((_, i) => (
+        <span
+          key={i}
+          className="
+        absolute
+        left-6 top-6
+
+        text-xl
+        opacity-0
+
+        group-hover:opacity-100
+        group-hover:animate-particle
+      "
+          style={{
+            // @ts-ignore
+            "--angle": `${i * 15}deg`,
+            "--delay": `${i * 40}ms`,
+          }}
+        >
+          🪷
+        </span>
+      ))}
+
+      {/* Avatar */}
+      <div
+        className="
+      relative
+
+      w-12
+      h-12
+
+      rounded-2xl
+      overflow-hidden
+
+      border
+      border-black/20
+
+      shadow-[0_0_40px_rgba(0,255,120,.8)]
+
+      animate-frog-chaos
+
+      group-hover:animate-spin
+    "
+      >
+        {/* 主圖 */}
+        <Lotus
+          className="
+        w-full
+        h-full
+        object-cover
+
+        animate-wiggle
+
+        group-hover:scale-[1.6]
+      "
+        />
+
+        {/* RGB Ghost */}
+        {[...Array(5)].map((_, i) => (
+          <Lotus
+            key={i}
+            className="
+          absolute
+          inset-0
+
+          w-full
+          h-full
+          object-cover
+
+          opacity-30
+          blur-[2px]
+
+          mix-blend-screen
+
+          animate-spin
+        "
+            style={{
+              transform: `translate(${(i - 2) * 3}px, ${(i - 2) * 2}px)`,
+              animationDelay: `${i * 60}ms`,
+            }}
+          />
+        ))}
+
+        {/* 彩虹邊框 */}
+        <div
+          className="
+        absolute
+        inset-0
+
+        rounded-2xl
+
+        border-4
+
+        border-transparent
+
+        bg-linear-to-r
+        from-red-500
+        via-yellow-400
+        to-fuchsia-500
+
+        animate-spin
+
+        mix-blend-overlay
+      "
+        />
+      </div>
+
+      {/* 文字 */}
+      <div className="relative flex flex-col">
+        {/* supported by */}
+        <span
+          className="
+        text-xs
+        tracking-[0.3em]
+
+        opacity-70
+
+        animate-fade
+
+        group-hover:animate-text-lag-strong
+      "
+        >
+          supported by
+        </span>
+
+        {/* 名字 */}
+        <p
+          className="
+        relative
+
+        text-lg
+        font-black
+
+        bg-linear-to-r
+        from-lime-300
+        via-fuchsia-500
+        to-red-500
+
+        bg-clip-text
+        text-transparent
+
+        drop-shadow-[0_0_20px_rgba(0,255,150,.8)]
+
+        animate-text-wobble-strong
+
+        group-hover:tracking-[0.2em]
+      "
+        >
+          陳思淇
+        </p>
+
+        {/* Glitch Ghost */}
+        {[...Array(4)].map((_, i) => (
+          <p
+            key={i}
+            className="
+          absolute
+          left-0
+          top-4
+
+          text-lg
+          font-black
+
+          opacity-20
+
+          blur-[1px]
+
+          animate-spin
+
+          pointer-events-none
+        "
+            style={{
+              transform: `translate(${i * 2}px,${i}px)`,
+              animationDelay: `${i * 70}ms`,
+            }}
+          >
+            陳思淇
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const Footer = () => {
   return (
     <footer className="bg-base-100 border-t border-base-200">
@@ -861,6 +1095,8 @@ const Footer = () => {
               <p className="text-lg font-bold">嘎嘎嘎</p>
             </div>
           </div>
+
+          <ChenSiChi />
 
           <div className="flex items-center gap-2 opacity-80">
             <div className="w-12 h-12 rounded-2xl bg-base-100 border  border-black/20">
