@@ -362,12 +362,15 @@ const ShopWorkSchedulesBlock = ({
                   </button>
 
                   <div className="flex-1" />
-                  <button
-                    onClick={() => openModal(i)}
-                    className="btn btn-sm btn-square btn-ghost"
-                  >
-                    <Ellipsis />
-                  </button>
+                  {workSchedule.type === "FLEXIBLE" && (
+                    <span
+                      className={`badge badge-sm badge-soft font-semibold ${
+                        !workSchedule.scheduleNote ? "badge-error" : ""
+                      }`}
+                    >
+                      {workSchedule.scheduleNote ?? "缺少彈性時段說明"}
+                    </span>
+                  )}
 
                   {/* Overlap Warning Badge */}
                   {hasOverlap && (
@@ -390,6 +393,13 @@ const ShopWorkSchedulesBlock = ({
                       <Trash className="w-4 h-4" />
                     </button>
                   )}
+
+                  <button
+                    onClick={() => openModal(i)}
+                    className="btn btn-sm btn-square btn-ghost"
+                  >
+                    <Ellipsis />
+                  </button>
                 </div>
 
                 <p className="flex-1 text-sm font-mono">
