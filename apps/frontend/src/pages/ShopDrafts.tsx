@@ -19,6 +19,10 @@ import { path } from "../utils/path";
 import { useAuthFetch } from "../auth/useAuthFetch";
 import { plainToInstance } from "class-transformer";
 import { useToast } from "../widgets/Toast/ToastProvider";
+import {
+  getStatusColor,
+  getStatusText,
+} from "./ShopRegisterForm/ShopRegisterForm";
 
 const Navbar = ({
   setShowSearch,
@@ -185,7 +189,9 @@ const ShopDrafts = () => {
     if (!activeUserRef.current) return;
 
     const result = await authedFetch(
-      path(`/api/shop-draft?schoolAbbr=${activeUserRef.current?.schoolAbbr}`)
+      path(
+        `/api/shop-draft?schoolAbbr=${activeUserRef.current?.schoolAbbr}&versions=true&currentVersion=true`
+      )
     );
 
     const { success, error } = result;
@@ -200,35 +206,12 @@ const ShopDrafts = () => {
     setDrafts(drafts);
   };
 
-  const getMonth = (date: Date): string => {
-    const month = date.getMonth() + 1;
+  const getFormattedDate = (date: Date): string => {
+    const year = date.getFullYear() - 2000;
+    const month = date.getMonth();
+    const day = date.getDay();
 
-    const zhMonths = [
-      "一月",
-      "二月",
-      "三月",
-      "四月",
-      "五月",
-      "六月",
-      "七月",
-      "八月",
-      "九月",
-      "十月",
-      "十一月",
-      "十二月",
-    ];
-
-    return zhMonths[month - 1];
-  };
-
-  const getTime = (date: Date): string => {
-    let hours = date.getHours();
-    const minutes = date.getMinutes().toString().padStart(2, "0");
-
-    const period = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12 || 12;
-
-    return `${hours}:${minutes} ${period}`;
+    return `${year}/${month}/${day}`;
   };
 
   const getDraftId = (key: string): string => {
@@ -270,7 +253,7 @@ const ShopDrafts = () => {
   };
 
   return (
-    <div className="min-h-screen flex justify-center">
+    <div className="min-h-screen flex justify-center bg-base-300">
       <Navbar setShowSearch={setShowSearchbar} />
       <main className="pt-18 min-h-screen max-w-xl w-full">
         <ul className="space-y-4 m-4">
@@ -301,7 +284,7 @@ const ShopDrafts = () => {
                 } rounded-full`}
                 to={`/shops/filtered/school?schoolAbbr=${activeUser.schoolAbbr}`}
               >
-                查看已簽約店家（本校）
+                查看已提交店家（本校）
                 <ArrowRight className="ms-2" />
               </Link>
             </div>
@@ -312,40 +295,60 @@ const ShopDrafts = () => {
               <AnimatedListItem key={draft.id}>
                 <Link
                   to={`/shops/register?id=${getDraftId(draft.id)}`}
-                  className="w-full h-29 bg-base-300 rounded-box flex overflow-clip"
+                  className="overflow-clip"
                 >
-                  <div className="h-full w-12 bg-neutral flex flex-col flex-none items-center justify-center text-base-100">
-                    <p className="font-extrabold text-xl">
-                      {draft.updatedAt.getDay()}
-                    </p>
-                    <p className="text-xs font-medium">
-                      {getMonth(draft.updatedAt)}
-                    </p>
-                  </div>
+                  <div className="w-full bg-base-100 rounded-box p-4 shadow">
+                    <div className="flex gap-4">
+                      {draft.images[0].previewUrl && (
+                        <img
+                          src={draft.images[0].previewUrl}
+                          className="w-30 h-30 aspect-square rounded-field"
+                        />
+                      )}
 
-                  <div className="p-2 ps-4 relative w-full h-full flex">
-                    <div className="flex-1">
-                      <div className="flex items-baseline gap-1 font-semibold">
-                        <h3 className="text-lg line-clamp-1">
-                          {draft.title || "未命名"}
-                        </h3>
-                        <h4 className="text-sm opacity-60">{draft.subtitle}</h4>
+                      <div className="flex flex-col gap-2 flex-1">
+                        <div className="flex items-baseline gap-1 font-semibold">
+                          <h3 className="text-lg line-clamp-1">
+                            {draft.title || "未命名"}
+                          </h3>
+                          <h4 className="text-sm opacity-60">
+                            {draft.subtitle}
+                          </h4>
+                        </div>
+
+                        <p className="flex-1 line-clamp-3">
+                          {draft.description}
+                        </p>
+
+                        {draft.currentVersion ? (
+                          <div className="flex flex-col sm:items-center space-x-2 sm:flex-row items-start">
+                            <div className="flex items-center space-x-2">
+                              <div
+                                className={`w-3 h-3 rounded-full ${getStatusColor(
+                                  draft.currentVersion.reviewStatus
+                                )}`}
+                              />
+                              <p className="text-xs opacity-40">
+                                {getStatusText(
+                                  draft.currentVersion.reviewStatus
+                                )}
+                              </p>
+                            </div>
+
+                            <p className="text-xs opacity-40">
+                              {getFormattedDate(
+                                draft.currentVersion.submittedAt
+                              )}{" "}
+                              提交
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-xs opacity-40">
+                            {getFormattedDate(draft.updatedAt)}
+                          </p>
+                        )}
                       </div>
-                      <p className="opacity-60 line-clamp-2">
-                        {draft.description || "沒有內容"}
-                      </p>
                     </div>
-
-                    {draft.images.length >= 1 && draft.images[0].previewUrl && (
-                      <img
-                        src={draft.images[0].previewUrl}
-                        className="h-10/12 aspect-square rounded-field object-contain"
-                      />
-                    )}
-
-                    <span className="absolute bottom-2 right-3 text-xs opacity-50">
-                      {getTime(draft.updatedAt)}
-                    </span>
                   </div>
                 </Link>
 
@@ -354,13 +357,13 @@ const ShopDrafts = () => {
                     <div
                       tabIndex={0}
                       role="button"
-                      className="btn btn-circle btn-sm"
+                      className="btn btn-circle btn-ghost"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                       }}
                     >
-                      <Ellipsis className="w-4 h-4" />
+                      <Ellipsis className="w-5 h-5" />
                     </div>
 
                     <ul
