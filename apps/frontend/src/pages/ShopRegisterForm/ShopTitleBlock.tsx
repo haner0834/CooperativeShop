@@ -13,7 +13,7 @@ const ShopTitleBlock = ({
     <QuestionBlock
       title="店家名稱"
       description="店名、分店名已由最初預約的資料決定，若要修改請新增其他草稿。"
-      status={title ? "ok" : "required"}
+      status={null}
       hint="尚未填寫店家名稱"
       showHint={showHint}
     >

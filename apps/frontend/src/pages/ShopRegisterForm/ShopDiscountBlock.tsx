@@ -16,7 +16,7 @@ const ShopDiscountBlock = ({
       title="折扣"
       status={discount ? "ok" : "optional"}
       hint="確定沒有折扣？"
-      description="商家給的折扣內容。"
+      description="商家給的折扣內容。 **請按照合約書中的折扣內容一字不漏的抄寫，請勿擅自更改優惠內容。**"
       showHint={showHint}
     >
       <AdaptiveTextArea

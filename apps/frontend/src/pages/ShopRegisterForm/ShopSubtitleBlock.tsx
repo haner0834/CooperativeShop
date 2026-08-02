@@ -11,7 +11,7 @@ const ShopSubtitleBlock = ({
     <QuestionBlock
       title="分店名"
       description="店名、分店名已由最初預約的資料決定，若要修改請新增其他草稿。"
-      status="optional"
+      status={null}
     >
       <div
         className="p-2 rounded-field bg-base-200 w-full tooltip tooltip-bottom"

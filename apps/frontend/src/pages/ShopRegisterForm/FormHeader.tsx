@@ -9,7 +9,7 @@ const FormHeader = () => {
           aria-label="optional question"
           className="status status-info"
         ></div>{" "}
-        代表的是非必填問題，而{" "}
+        代表非必填問題，而{" "}
         <div
           aria-label="required question"
           className="status status-error"
