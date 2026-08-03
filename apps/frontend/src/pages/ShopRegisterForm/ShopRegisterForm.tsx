@@ -150,6 +150,8 @@ interface EditLockRef {
   queue: Promise<void>;
 }
 
+type DraftViewMode = "edit" | "edit_after_submit";
+
 const ShopRegisterForm = () => {
   const [title, setTitle] = useState("");
   const [subTitle, setSubTitle] = useState("");
@@ -181,9 +183,7 @@ const ShopRegisterForm = () => {
   const { goBack } = usePathHistory();
   const [images, setImages] = useState<SelectedImage[]>([]); // 用 base64 URL 預覽
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
-  const [viewMode, setViewMode] = useState<"edit" | "edit_after_submit">(
-    "edit"
-  );
+  const [viewMode, setViewMode] = useState<DraftViewMode>("edit");
 
   // get draft data
   useEffect(() => {
