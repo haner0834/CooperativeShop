@@ -50,6 +50,7 @@ import { path } from "../../utils/path";
 import ShopContractBlock, { type UploadedContract } from "./ShopContractBlock";
 import { plainToInstance } from "class-transformer";
 import RejectReasonBlock from "./RejectReasonBlock";
+import { usePathHistory } from "../../contexts/PathHistoryContext";
 
 type SyncStatus = "success" | "failed" | "idle" | "syncing";
 
@@ -177,9 +178,12 @@ const ShopRegisterForm = () => {
     generation: 0,
     queue: Promise.resolve(), // 序列化 acquire/release,避免平行競態
   });
-
+  const { goBack } = usePathHistory();
   const [images, setImages] = useState<SelectedImage[]>([]); // 用 base64 URL 預覽
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
+  const [viewMode, setViewMode] = useState<"edit" | "edit_after_submit">(
+    "edit"
+  );
 
   // get draft data
   useEffect(() => {
@@ -210,17 +214,39 @@ const ShopRegisterForm = () => {
                 },
               },
               {
-                label: "關閉並刪除草稿",
+                label: "離開",
                 style: "btn-error",
                 role: "primary",
                 onClick: () => {
-                  deleteCurrentDraft();
                   navigate("/shops/drafts", { replace: true });
                 },
               },
             ],
           });
           return;
+        }
+
+        if (draft.stage === "SUBMITTED") {
+          showModal({
+            title: "此草稿已提交",
+            description: "若仍需編輯，所有變更在再次提交前皆不會同步至雲端。",
+            buttons: [
+              {
+                label: "仍要編輯",
+                onClick: () => {
+                  setViewMode("edit_after_submit");
+                },
+              },
+              {
+                label: "離開",
+                role: "primary",
+                style: "btn-primary",
+                onClick: () => {
+                  goBack("/shops/drafts");
+                },
+              },
+            ],
+          });
         }
 
         setTitle(draft.title);
@@ -287,7 +313,7 @@ const ShopRegisterForm = () => {
       }
     };
     a();
-  }, [activeUser]);
+  }, [activeUser, hasAttemptedRestore]);
 
   // edit lock token
   useEffect(() => {
@@ -309,7 +335,11 @@ const ShopRegisterForm = () => {
         } else {
           lockRef.current.id = id;
         }
-      } catch (error) {
+      } catch (error: any) {
+        if (error.message === "NO_SESSION") {
+          // authorization, let force-login handle
+          return;
+        }
         showModal({
           title: "該草稿正在被其他人編輯",
           description: "請稍後再試",
@@ -345,6 +375,8 @@ const ShopRegisterForm = () => {
 
   // auto-save
   useEffect(() => {
+    if (viewMode !== "edit") return;
+
     setSyncStatus("idle");
     const handler = setTimeout(() => {
       try {
@@ -476,18 +508,6 @@ const ShopRegisterForm = () => {
     await authedFetch(url, { method: "POST", keepalive: true });
   };
 
-  const deleteCurrentDraft = () => {
-    const draftId = searchParams.get("id");
-    if (!draftId) {
-      showToast({ title: "缺少 Draft ID" });
-      throw new Error("Fuck you");
-    }
-
-    const key = `SHOP_DRAFT_${draftId}`;
-
-    localStorage.removeItem(key);
-  };
-
   const submit = async () => {
     if (!selectedPoint || !activeUser || !address) return;
     if (images.length === 0 || images.length > 10) return;
@@ -591,6 +611,9 @@ const ShopRegisterForm = () => {
   };
 
   const handleSubmit = async () => {
+    if (viewMode === "edit_after_submit") {
+      await syncUpdatedDraft();
+    }
     let isAvailable = true;
     const texts = [title, description, discount, address];
     if (texts.filter((t) => t !== "").length != texts.length) {
