@@ -156,6 +156,10 @@ const ShopDrafts = () => {
   const [_, setShowSearchbar] = useState(false);
   const { authedFetch } = useAuthFetch();
   const { showToast } = useToast();
+  const [fetchState, setFetchState] = useState<
+    "loading" | "success" | "failed" | "idle"
+  >("idle");
+  const [errorCode, setErrorCode] = useState<string | null>(null);
 
   // Force login
   useEffect(() => {
@@ -189,6 +193,7 @@ const ShopDrafts = () => {
     if (restorePromise) await restorePromise;
     if (!activeUserRef.current) return;
 
+    setFetchState("loading");
     const result = await authedFetch(
       path(
         `/api/shop-draft?schoolAbbr=${activeUserRef.current?.schoolAbbr}&versions=true&currentVersion=true`
@@ -199,12 +204,15 @@ const ShopDrafts = () => {
 
     if (!success) {
       console.error(error);
+      setFetchState("failed");
+      setErrorCode(error.code);
       return;
     }
 
     const { data }: { data: any[] } = result;
     const drafts = plainToInstance(ShopDraftDto, data);
     setDrafts(drafts);
+    setFetchState("success");
   };
 
   const getFormattedDate = (date: Date): string => {
@@ -258,7 +266,21 @@ const ShopDrafts = () => {
       <Navbar setShowSearch={setShowSearchbar} />
       <main className="pt-18 min-h-screen max-w-xl w-full">
         <ul className="space-y-4 m-4">
-          {drafts.length === 0 && (
+          {activeUser && (
+            <div className="flex flex-col items-center">
+              <Link
+                className={`btn btn-neutral btn-soft ${
+                  isMobile ? "w-full" : "btn-wide"
+                } rounded-full`}
+                to={`/shops/filtered/school?schoolAbbr=${activeUser.schoolAbbr}`}
+              >
+                查看已提交店家（本校）
+                <ArrowRight className="ms-2" />
+              </Link>
+            </div>
+          )}
+
+          {drafts.length === 0 && fetchState === "success" ? (
             <AnimatedListItem>
               <div className="flex flex-col  justify-center items-center">
                 <div className="flex items-center">
@@ -275,20 +297,33 @@ const ShopDrafts = () => {
                 </button>
               </div>
             </AnimatedListItem>
-          )}
-
-          {activeUser && (
-            <div className="flex flex-col items-center">
-              <Link
-                className={`btn btn-neutral btn-soft ${
-                  isMobile ? "w-full" : "btn-wide"
-                } rounded-full`}
-                to={`/shops/filtered/school?schoolAbbr=${activeUser.schoolAbbr}`}
-              >
-                查看已提交店家（本校）
-                <ArrowRight className="ms-2" />
-              </Link>
+          ) : fetchState === "failed" ? (
+            <div className="flex flex-col gap-2 w-full justify-center items-center">
+              <CircleAlert className="w-10 h-10 text-error" />
+              <h2 className="text-lg font-bold">無法取得草稿</h2>
+              <p className="">請檢查網路狀態或稍後再試。錯誤碼：{errorCode}</p>
             </div>
+          ) : fetchState === "loading" ? (
+            [1, 2, 3, 4].map((i) => {
+              return (
+                <div
+                  className="bg-base-100 rounded-box p-4 flex gap-4"
+                  key={`SKELETON_${i}`}
+                >
+                  <div className="w-30 h-30 rounded-field skeleton" />
+
+                  <div className="flex flex-col gap-2">
+                    <div className="w-20 h-6 rounded-field skeleton" />
+
+                    <div className="w-50 flex-1 rounded-field skeleton" />
+
+                    <div className="w-20 h-3 rounded-field skeleton" />
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <></>
           )}
 
           <AnimatePresence initial={false}>
