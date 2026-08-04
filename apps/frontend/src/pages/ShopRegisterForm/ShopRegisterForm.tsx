@@ -598,7 +598,9 @@ const ShopRegisterForm = () => {
     return JSON.stringify(a) === JSON.stringify(b);
   };
 
-  const getDraftDiff = (): Partial<ShopDraftDto> | null => {
+  const getDraftDiff = (
+    updateLatest: boolean = true
+  ): Partial<ShopDraftDto> | null => {
     if (!lastSavedDraft.current) return null;
 
     const currentDraft: ShopDraftDto = {
@@ -636,8 +638,9 @@ const ShopRegisterForm = () => {
       }
     });
 
-    // 比對完成後，更新 lastSavedDraft 為最新的 state
-    lastSavedDraft.current = currentDraft;
+    if (updateLatest) {
+      lastSavedDraft.current = currentDraft;
+    }
 
     return diff;
   };
@@ -707,8 +710,8 @@ const ShopRegisterForm = () => {
   };
 
   const showLeaveHint = (): boolean => {
-    const diff = getDraftDiff();
-    const hasChanged = !diff || Object.keys(diff).length === 0;
+    const diff = getDraftDiff(false);
+    const hasChanged = Object.keys(diff ?? {}).length > 0;
     return viewMode === "edit_after_submit" && hasChanged;
   };
 
