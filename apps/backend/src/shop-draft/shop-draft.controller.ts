@@ -131,9 +131,9 @@ export class ShopDraftController {
   ) {
     if (!user) throw new UnauthorizedError();
 
-    // await this.shopDraftService.submitDraft(dto.draftId, user.id, token, {
-    //   overwrite: dto.overwrite,
-    // });
+    await this.shopDraftService.submitDraft(dto.draftId, user.id, token, {
+      overwrite: dto.overwrite,
+    });
     console.log('hello world');
   }
 

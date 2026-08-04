@@ -2,9 +2,8 @@
  * 單一欄位審核結果來源標籤。
  *
  * NOTE: 這是模型「自報」的來源說明，不是外部可查證的引用（citation）。
- * 若之後要接 Google Search Grounding，實際的可查證來源會在
- * response.candidates[0].groundingMetadata 裡，跟這個欄位是兩件事，
- * 目前 parseResponse 尚未處理 groundingMetadata（見 ai-review.service.ts 的 WARN 註記）。
+ * 真正可查證的來源存在 ShopDraft.aiGroundingSources（見
+ * ai-review-grounding-source.interface.ts），跟這個欄位是兩件事。
  */
 export type AiReviewSource =
   | '合約掃描'
@@ -28,7 +27,7 @@ export type AiReviewField =
   | 'discount'
   | 'contactInfo'
   | 'location'
-  | 'contractScan'
+  | 'contract'
   | 'workSchedules';
 
 export interface AiReviewResult {
@@ -39,11 +38,11 @@ export interface AiReviewResult {
   contactInfo: AiReviewFieldResult;
   location: AiReviewFieldResult;
   /**
-   * WARN: ShopDraft 目前尚無合約掃描檔欄位，這個欄位在合約功能上線前
-   * 幾乎必然是 isValid=false 且 source='無法查證'（因為 contract payload 永遠是 null）。
-   * 這是預期行為，不是 bug。
+   * 對齊 ShopDraft.contract（合約掃描檔）本身，取代原本的 contractScan。
+   * draft.contract 沒有 fileKey 時，這欄必然是 isValid=false 且
+   * source='無法查證'（因為根本沒有檔案可以審）。
    */
-  contractScan: AiReviewFieldResult;
+  contract: AiReviewFieldResult;
   workSchedules: AiReviewFieldResult;
   isPassed: boolean;
   summary: string;

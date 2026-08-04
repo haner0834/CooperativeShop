@@ -282,6 +282,7 @@ export class ShopDraftService {
     this.prisma.shopDraft
       .findUnique({
         where: { id: draftId },
+        include: { currentVersion: true },
       })
       .then(async (latestDraft) => {
         if (!latestDraft || !latestDraft.currentVersionId) return;
@@ -291,10 +292,9 @@ export class ShopDraftService {
 
         if (!contract) throw new BadRequestError('MISSING_CONTRACT', 'fuck');
 
-        const reviewResult = await this.aiReviewService.reviewDraft({
-          ...plainToInstance(ShopDraftDto, latestDraft),
-          contract,
-        });
+        const reviewResult = await this.aiReviewService.reviewDraft(
+          plainToInstance(ShopDraftDto, latestDraft),
+        );
 
         await this.prisma.shopDraftVersion.update({
           where: { id: latestDraft.currentVersionId },

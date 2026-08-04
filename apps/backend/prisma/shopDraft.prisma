@@ -31,6 +31,8 @@ model ShopDraft {
     schoolId String
     school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
+    aiGroundingSources Json?
+
     stage         ShopDraftStage
     reservedUntil DateTime?
 

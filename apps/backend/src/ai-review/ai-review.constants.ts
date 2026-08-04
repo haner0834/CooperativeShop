@@ -32,7 +32,8 @@ export const AI_REVIEW_RESPONSE_SCHEMA = {
     discount: fieldResultSchema,
     contactInfo: fieldResultSchema,
     location: fieldResultSchema,
-    contractScan: fieldResultSchema,
+    // NOTE: 原本叫 contractScan，改名對齊 ShopDraft.contract 欄位命名。
+    contract: fieldResultSchema,
     workSchedules: fieldResultSchema,
     isPassed: { type: 'boolean' },
     summary: { type: 'string' },
@@ -45,7 +46,7 @@ export const AI_REVIEW_RESPONSE_SCHEMA = {
         discount: { type: 'string' },
         contactInfo: { type: 'string' },
         location: { type: 'string' },
-        contractScan: { type: 'string' },
+        contract: { type: 'string' },
         workSchedules: { type: 'string' },
       },
     },
@@ -57,7 +58,7 @@ export const AI_REVIEW_RESPONSE_SCHEMA = {
     'discount',
     'contactInfo',
     'location',
-    'contractScan',
+    'contract',
     'workSchedules',
     'isPassed',
     'summary',
@@ -68,3 +69,7 @@ export const AI_REVIEW_RESPONSE_SCHEMA = {
 export const DEFAULT_GEMINI_MODEL = 'gemini-3.5-flash';
 export const DEFAULT_GEMINI_API_BASE_URL =
   'https://generativelanguage.googleapis.com/v1beta';
+
+// 第二次以後的審核改走免費專案的 quota，預設沿用同一顆模型，
+// 但保留 GEMINI_FREE_MODEL 環境變數可覆寫，以防免費專案只開放特定模型。
+export const DEFAULT_GEMINI_FREE_MODEL = DEFAULT_GEMINI_MODEL;

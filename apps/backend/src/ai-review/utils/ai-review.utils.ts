@@ -1,4 +1,5 @@
-import { ShopDraftForReview } from '../interfaces/shop-draft-for-review.interface';
+import { ShopDraftDto } from 'src/shop-draft/dto/shop-draft.dto';
+import { AiReviewGroundingSource } from '../interfaces/ai-review-grounding-source.interface';
 
 /**
  * WorkScheduleDto 用「一天中的第幾分鐘」(0-1439) 存時間，
@@ -19,37 +20,75 @@ function minuteOfDayToHHMM(minuteOfDay: number): string {
  * NOTE: 欄位命名刻意維持跟 ShopDraft 一致（address/longitude/latitude 併成 location），
  * 讓 prompt 端的 Rule 5 (Location) 可以直接吃到完整地址資訊。
  */
-export function buildShopInfoPayload(draft: ShopDraftForReview) {
+export function buildShopInfoPayload(draft: ShopDraftDto) {
   return {
     title: draft.title,
     subtitle: draft.subtitle ?? '',
     description: draft.description,
     discount: draft.discount ?? null,
-    contactInfo: (draft.contactInfo ?? []).map((contact) => ({
-      category: contact.category,
-      content: contact.content,
-      href: contact.href,
-    })),
+    contactInfo: draft.contactInfo ?? [],
     location: {
       address: draft.address,
       longitude: draft.longitude,
       latitude: draft.latitude,
     },
-    // WARN: 彈性營業時間（售完為止等）目前沒有任何欄位可以標記，
-    // 每一筆都會被當成固定時段送出，AI 只能照固定時段的規則去比對。
     workSchedules: (draft.workSchedules ?? []).map((schedule) => ({
       weekday: schedule.weekday,
       startTime: minuteOfDayToHHMM(schedule.startMinuteOfDay),
       endTime: minuteOfDayToHHMM(schedule.endMinuteOfDay),
+      type: schedule.type,
+      scheduleNote: schedule.scheduleNote ?? null,
     })),
   };
 }
 
 /**
- * NOTE: 目前沒有串接任何公開資訊蒐集流程（例如 Google Search Grounding），
- * 固定回傳 null。若要串接，記得回應會多出 groundingMetadata，
- * 需要另外解析，不要塞進這個欄位裡。
+ * 組出送給 Gemini 的 public_info payload。
+ *
+ * - 第一次審核（sources 是空陣列）：回傳 null，並改用 googleSearch tool
+ *   讓 Gemini 自己去查，查完的結果由 extractGroundingSources 存起來。
+ * - 第二次以後：不再啟用 googleSearch（省錢），改把上次存好的來源清單
+ *   直接餵給模型當作既有的公開資訊依據。
  */
-export function buildPublicInfoPayload(_draft: ShopDraftForReview): null {
-  return null;
+export function buildPublicInfoPayload(
+  sources: AiReviewGroundingSource[],
+): { knownSources: AiReviewGroundingSource[] } | null {
+  if (!sources.length) return null;
+
+  return { knownSources: sources };
+}
+
+/**
+ * 從 Gemini generateContent 的回應中，把這次 googleSearch grounding
+ * 找到的來源整理成 AiReviewGroundingSource[]，準備存進
+ * ShopDraft.aiGroundingSources。
+ *
+ * NOTE: groundingChunks 只有 uri/title，沒有內文摘要，
+ * 所以「重複使用」的效果是讓 Gemini 知道上次查到哪些頁面，
+ * 而不是完整重播上次搜尋到的內容。
+ */
+export function extractGroundingSources(
+  geminiResponseData: any,
+): AiReviewGroundingSource[] {
+  const chunks =
+    geminiResponseData?.candidates?.[0]?.groundingMetadata?.groundingChunks ??
+    [];
+
+  const sources: AiReviewGroundingSource[] = chunks
+    .map((chunk: any) => ({
+      uri: chunk?.web?.uri,
+      title: chunk?.web?.title,
+    }))
+    .filter((source: AiReviewGroundingSource) => !!source.uri);
+
+  // 用 uri 去重，避免同一個來源被列好幾次
+  const deduped = new Map(sources.map((source) => [source.uri, source]));
+  return Array.from(deduped.values());
+}
+
+export function extractWebSearchQueries(geminiResponseData: any): string[] {
+  return (
+    geminiResponseData?.candidates?.[0]?.groundingMetadata?.webSearchQueries ??
+    []
+  );
 }
