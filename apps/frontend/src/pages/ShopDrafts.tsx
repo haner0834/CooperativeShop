@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { ShopDraftDto } from "../types/shop";
 import {
-  ArrowRight,
   CircleAlert,
   Ellipsis,
   Pencil,
@@ -266,20 +265,6 @@ const ShopDrafts = () => {
       <Navbar setShowSearch={setShowSearchbar} />
       <main className="pt-18 min-h-screen max-w-xl w-full">
         <ul className="space-y-4 m-4">
-          {activeUser && (
-            <div className="flex flex-col items-center">
-              <Link
-                className={`btn btn-neutral btn-soft ${
-                  isMobile ? "w-full" : "btn-wide"
-                } rounded-full`}
-                to={`/shops/filtered/school?schoolAbbr=${activeUser.schoolAbbr}`}
-              >
-                查看已提交店家（本校）
-                <ArrowRight className="ms-2" />
-              </Link>
-            </div>
-          )}
-
           {drafts.length === 0 && fetchState === "success" ? (
             <AnimatedListItem>
               <div className="flex flex-col  justify-center items-center">
