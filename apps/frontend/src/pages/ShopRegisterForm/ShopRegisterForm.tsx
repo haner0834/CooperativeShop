@@ -118,7 +118,33 @@ export const StatusIcon = ({ status }: { status: ReviewStatus }) => {
   );
 };
 
-const Navbar = ({ syncStatus }: { syncStatus: SyncStatus }) => {
+const Navbar = ({
+  syncStatus,
+  showLeaveHint,
+}: {
+  syncStatus: SyncStatus;
+  showLeaveHint: boolean;
+}) => {
+  const { showModal } = useModal();
+  const navigate = useNavigate();
+
+  const showHintModal = () => {
+    showModal({
+      title: "尚有未保存的內容，確認離開？",
+      buttons: [
+        {
+          label: "取消",
+        },
+        {
+          label: "離開",
+          role: "error",
+          style: "btn-error",
+          onClick: () => navigate("/shops/drafts"),
+        },
+      ],
+    });
+  };
+
   return (
     <div className="navbar bg-base-100 shadow-sm z-50 fixed">
       <div className="flex-none ms-2">
@@ -136,9 +162,15 @@ const Navbar = ({ syncStatus }: { syncStatus: SyncStatus }) => {
         <h1 className="text-base font-semibold">特約商家註冊</h1>
       </div>
       <div className="flex-none flex gap-4 justify-center items-center">
-        <Link className="btn btn-square btn-ghost" to="/shops/drafts">
-          <List />
-        </Link>
+        {showLeaveHint ? (
+          <button className="btn btn-square btn-ghost" onClick={showHintModal}>
+            <List />
+          </button>
+        ) : (
+          <Link className="btn btn-square btn-ghost" to="/shops/drafts">
+            <List />
+          </Link>
+        )}
       </div>
     </div>
   );
@@ -571,11 +603,11 @@ const ShopRegisterForm = () => {
 
     const currentDraft: ShopDraftDto = {
       ...lastSavedDraft.current,
-      title,
-      subtitle: subTitle,
-      description,
-      discount,
-      address,
+      title: title.trim(),
+      subtitle: subTitle.trim(),
+      description: description.trim(),
+      discount: discount.trim(),
+      address: address.trim(),
       images,
       latitude: selectedPoint?.lat ?? null,
       longitude: selectedPoint?.lng ?? null,
@@ -674,9 +706,15 @@ const ShopRegisterForm = () => {
     }
   };
 
+  const showLeaveHint = (): boolean => {
+    const diff = getDraftDiff();
+    const hasChanged = !diff || Object.keys(diff).length === 0;
+    return viewMode === "edit_after_submit" && hasChanged;
+  };
+
   return (
     <div className="select-none md:select-auto">
-      <Navbar syncStatus={syncStatus} />
+      <Navbar syncStatus={syncStatus} showLeaveHint={showLeaveHint()} />
 
       <main className="pt-18 min-h-screen bg-base-300 flex justify-center">
         <div className="max-w-xl w-full p-4 space-y-4">
