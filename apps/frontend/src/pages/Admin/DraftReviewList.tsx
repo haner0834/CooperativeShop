@@ -102,6 +102,7 @@ const DraftReviewList = () => {
         <SegmentedControl
           value={statusFilter}
           onChange={setStatusFilter}
+          className="mx-2"
           options={[
             { label: "待審", value: "IDLE" },
             { label: "通過", value: "SUCCESS" },
