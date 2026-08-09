@@ -8,6 +8,7 @@ import {
 import type { Redis } from 'ioredis';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AdminContext } from '../types/admin-context.types';
+import { AdminListItem } from '../types/admin-auth.types';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import { AdminLevel } from '@prisma/client';
 
@@ -158,6 +159,45 @@ export class AdminService implements OnModuleInit, OnModuleDestroy {
     });
 
     await this.invalidateAccount(accountId);
+  }
+
+  /** 給 admin console 「成員列表」頁用，回傳所有 admin（含停用的） */
+  async listAdmins(): Promise<AdminListItem[]> {
+    const accounts = await this.prisma.account.findMany({
+      where: { role: 'ADMIN' },
+      select: {
+        id: true,
+        admin: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            level: true,
+            schoolId: true,
+            isActive: true,
+            lastLoginAt: true,
+            createAt: true,
+          },
+        },
+      },
+    });
+
+    return accounts
+      .filter((a): a is typeof a & { admin: NonNullable<typeof a.admin> } =>
+        Boolean(a.admin),
+      )
+      .map((a) => ({
+        accountId: a.id,
+        adminId: a.admin.id,
+        name: a.admin.name,
+        email: a.admin.email,
+        level: a.admin.level,
+        schoolId: a.admin.schoolId,
+        isActive: a.admin.isActive,
+        lastLoginAt: a.admin.lastLoginAt,
+        createAt: a.admin.createAt,
+      }))
+      .sort((x, y) => y.createAt.getTime() - x.createAt.getTime());
   }
 
   private async warmUp(): Promise<void> {

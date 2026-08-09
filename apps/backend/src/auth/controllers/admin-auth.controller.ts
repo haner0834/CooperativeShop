@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import express from 'express';
 import { AdminAuthService } from '../services/admin-auth.service';
+import { AdminService } from '../services/admin.service';
 import { AdminAuthMeta } from '../types/admin-auth.types';
 import { JwtAdminGuard } from '../guards/jwt-admin.guard';
 import { JwtAdminRefreshGuard } from '../guards/jwt-admin-refresh.guard';
@@ -41,7 +42,10 @@ const adminHttpOnlyCookieOptions = {
 @Controller('auth/admin')
 @RateLimit({ uid: 20, did: 20, global: 100, isolateScope: 'auth:admin' })
 export class AdminAuthController {
-  constructor(private readonly adminAuthService: AdminAuthService) {}
+  constructor(
+    private readonly adminAuthService: AdminAuthService,
+    private readonly adminService: AdminService,
+  ) {}
 
   private setAdminRefreshCookie(
     res: express.Response,
@@ -148,7 +152,7 @@ export class AdminAuthController {
 
   @Post('logout')
   @UseGuards(JwtAdminRefreshGuard)
-  @RateLimit({ uid: 5, did: 0, global: 20, isolateScope: 'auth:admin-logout' })
+  @RateLimit({ uid: 5, did: 5, global: 20, isolateScope: 'auth:admin-logout' })
   @HttpCode(HttpStatus.OK)
   async logout(
     @Req() req: express.Request,
@@ -175,7 +179,7 @@ export class AdminAuthController {
   @UseGuards(JwtAdminGuard)
   @RateLimit({
     uid: 20,
-    did: 0,
+    did: 20,
     global: 100,
     isolateScope: 'auth:admin-invite',
   })
@@ -202,6 +206,85 @@ export class AdminAuthController {
 
     // 前端自己組連結（例如 `${ADMIN_CONSOLE_URL}/invite/${token}`），
     return invite;
+  }
+
+  // ================= 成員管理 =================
+
+  @Get('members')
+  @UseGuards(JwtAdminGuard)
+  @RateLimit({
+    uid: 30,
+    did: 30,
+    global: 150,
+    isolateScope: 'auth:admin-members',
+  })
+  async listMembers() {
+    return this.adminService.listAdmins();
+  }
+
+  @Post('members/:accountId/deactivate')
+  @UseGuards(JwtAdminGuard)
+  @RateLimit({
+    uid: 20,
+    did: 20,
+    global: 100,
+    isolateScope: 'auth:admin-members',
+  })
+  @HttpCode(HttpStatus.OK)
+  async deactivateMember(
+    @Param('accountId') accountId: string,
+    @CurrentAdmin() admin: AdminContext,
+  ) {
+    if (accountId === admin.accountId) {
+      throw new BadRequestError(
+        'CANNOT_DEACTIVATE_SELF',
+        'You cannot deactivate your own account.',
+      );
+    }
+    await this.adminService.deactivateAdmin(accountId);
+    return { message: 'Admin deactivated.' };
+  }
+
+  @Post('members/:accountId/reactivate')
+  @UseGuards(JwtAdminGuard)
+  @RateLimit({
+    uid: 20,
+    did: 20,
+    global: 100,
+    isolateScope: 'auth:admin-members',
+  })
+  @HttpCode(HttpStatus.OK)
+  async reactivateMember(@Param('accountId') accountId: string) {
+    await this.adminService.reactivateAdmin(accountId);
+    return { message: 'Admin reactivated.' };
+  }
+
+  // ================= 邀請連結 =================
+
+  @Get('invites')
+  @UseGuards(JwtAdminGuard)
+  @RateLimit({
+    uid: 30,
+    did: 30,
+    global: 150,
+    isolateScope: 'auth:admin-invite',
+  })
+  async listInvites() {
+    return this.adminAuthService.listPendingInvites();
+  }
+
+  @Post('invites/:id/revoke')
+  @UseGuards(JwtAdminGuard)
+  @RateLimit({
+    uid: 20,
+    did: 20,
+    global: 100,
+    isolateScope: 'auth:admin-invite',
+  })
+  @HttpCode(HttpStatus.OK)
+  async revokeInvite(@Param('id') id: string) {
+    await this.adminAuthService.revokeInvite(id);
+    return { message: 'Invite revoked.' };
   }
 
   @Get('invites/:token')

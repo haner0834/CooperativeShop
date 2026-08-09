@@ -11,6 +11,7 @@ import {
   AdminAuthMeta,
   AdminInviteInfo,
   AdminPayload,
+  PendingInvite,
 } from '../types/admin-auth.types';
 import {
   AppError,
@@ -337,6 +338,52 @@ export class AdminAuthService {
     await this.adminService.invalidateAccount(account.id);
 
     return this.issueSession(account.id, admin, deviceId, meta);
+  }
+
+  /** 給 admin console 顯示還沒被接受、也還沒過期的邀請連結列表 */
+  async listPendingInvites(): Promise<PendingInvite[]> {
+    const invites = await this.prisma.adminInvite.findMany({
+      where: { acceptedAt: null, expiresAt: { gt: new Date() } },
+      select: {
+        id: true,
+        email: true,
+        level: true,
+        schoolId: true,
+        expiresAt: true,
+        createAt: true,
+        invitedBy: { select: { name: true } },
+      },
+      orderBy: { createAt: 'desc' },
+    });
+
+    return invites.map((i) => ({
+      id: i.id,
+      email: i.email,
+      level: i.level,
+      schoolId: i.schoolId,
+      expiresAt: i.expiresAt,
+      createAt: i.createAt,
+      invitedByName: i.invitedBy.name,
+    }));
+  }
+
+  /** 撤銷一個還沒被接受的邀請連結，讓連結直接失效 */
+  async revokeInvite(id: string): Promise<void> {
+    const invite = await this.prisma.adminInvite.findUnique({
+      where: { id },
+      select: { acceptedAt: true },
+    });
+
+    if (!invite) return; // 已經不存在，視為成功
+    if (invite.acceptedAt) {
+      throw new AppError(
+        'INVITE_ALREADY_ACCEPTED',
+        'This invite has already been accepted and cannot be revoked.',
+        409,
+      );
+    }
+
+    await this.prisma.adminInvite.delete({ where: { id } });
   }
 
   private async findValidInvite(token: string) {

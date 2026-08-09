@@ -74,5 +74,9 @@
   "DRAFT_NORMALIZED_KEY_CONFLICT": {
     "message": "該店家已被其他人預約",
     "devNote": "There's already a draft with the same title + subtitle"
+  },
+  "ADMIN_EXISTS": {
+    "message": "該 email 已被其他管理員使用",
+    "devNote": "An admin with this email already exists."
   }
 }

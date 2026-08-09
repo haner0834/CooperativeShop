@@ -10,6 +10,12 @@ import { AuthProvider } from "./auth/AuthContext";
 import AdminProtectedGate from "./auth/admin-auth/AdminProtectedGate";
 import AdminLogin from "./pages/Admin/AdminLogin";
 import { ModalProvider } from "./widgets/ModalContext";
+const AdminMembersConsole = lazy(
+  () => import("./pages/Admin/AdminMembersConsole")
+);
+const AdminInviteAcceptPage = lazy(
+  () => import("./pages/Admin/AdminInviteAccept")
+);
 const DraftReviewList = lazy(() => import("./pages/Admin/DraftReviewList"));
 const DraftReview = lazy(() => import("./pages/Admin/DraftReview/DraftReview"));
 const FilteredShops = lazy(() => import("./pages/CategorizedShops"));
@@ -114,9 +120,11 @@ function App() {
 
       <Route path="/admin" element={<AdminAuthLayout />}>
         <Route path="login" element={<AdminLogin />} />
+        <Route path="invite/:token" element={<AdminInviteAcceptPage />} />
 
         <Route element={<AdminProtectedGate />}>
           <Route path="draft-review-list" element={<DraftReviewList />} />
+          <Route path="auth-console" element={<AdminMembersConsole />} />
           <Route index element={<AdminDashboard />} />
           <Route path="draft-review/:id" element={<DraftReview />} />
         </Route>

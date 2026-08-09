@@ -39,3 +39,25 @@ export interface AdminInviteInfo {
   level: AdminLevel;
   schoolId: string | null;
 }
+
+export interface AdminListItem {
+  accountId: string;
+  adminId: string;
+  name: string;
+  email: string;
+  level: AdminLevel;
+  schoolId: string | null;
+  isActive: boolean;
+  lastLoginAt: Date | null;
+  createAt: Date;
+}
+
+export interface PendingInvite {
+  id: string;
+  email: string;
+  level: AdminLevel;
+  schoolId: string | null;
+  expiresAt: Date;
+  createAt: Date;
+  invitedByName: string;
+}
