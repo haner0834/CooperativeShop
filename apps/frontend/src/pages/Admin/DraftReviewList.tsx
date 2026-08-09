@@ -1,6 +1,6 @@
 import { plainToInstance } from "class-transformer";
 import { AnimatePresence } from "framer-motion";
-import { CircleAlert, CircleX } from "lucide-react";
+import { CircleAlert, CircleX, House } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ShopDraftDto, type ShopDraftStage } from "../../types/shop";
@@ -22,7 +22,11 @@ const Navbar = ({}: {}) => {
       <div className="flex-1 text-center">
         <h1 className="text-base font-semibold">Drafts to Review</h1>
       </div>
-      <div className="flex-1 flex me-2 gap-4 justify-end items-center"></div>
+      <div className="flex-1 flex me-2 gap-4 justify-end items-center">
+        <Link to="/admin" className="btn btn-square btn-ghost">
+          <House />
+        </Link>
+      </div>
     </div>
   );
 };
