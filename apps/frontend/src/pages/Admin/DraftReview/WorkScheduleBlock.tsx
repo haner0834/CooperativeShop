@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { ShopDraftDto } from "../../../types/shop";
 import { WorkScheduleDisplay } from "../../ShopDetail";
 import FieldBlockWithAiReviewResult from "./FieldBlockWithAiReviewResult";
+import { SegmentedControl } from "../../../widgets/SegmentedControl";
 
 const WorkScheduleBlock = ({ draft }: { draft: ShopDraftDto }) => {
   const [viewMode, setViewMode] = useState<"group" | "list">("group");
@@ -24,28 +25,14 @@ const WorkScheduleBlock = ({ draft }: { draft: ShopDraftDto }) => {
       <div className="flex flex-col gap-2">
         <span className="opacity-50">營業時間</span>
 
-        <div className="flex space-x-1 p-1 bg-base-300 rounded-xl">
-          <button
-            onClick={() => setViewMode("group")}
-            className={
-              viewMode === "group"
-                ? "btn flex-1 bg-base-100"
-                : "flex-1 text-sm px-4"
-            }
-          >
-            Group
-          </button>
-          <button
-            onClick={() => setViewMode("list")}
-            className={
-              viewMode === "list"
-                ? "btn flex-1 bg-base-100"
-                : "flex-1 text-sm px-4"
-            }
-          >
-            List
-          </button>
-        </div>
+        <SegmentedControl
+          value={viewMode}
+          onChange={setViewMode}
+          options={[
+            { label: "Group", value: "group" },
+            { label: "List", value: "list" },
+          ]}
+        />
 
         {viewMode === "group" ? (
           <WorkScheduleDisplay workSchedules={draft.workSchedules} />

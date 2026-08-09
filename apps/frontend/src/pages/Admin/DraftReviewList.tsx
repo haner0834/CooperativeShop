@@ -13,6 +13,7 @@ import { AnimatedListItem } from "../ShopDrafts";
 import { useAdminAuthFetch } from "../../auth/admin-auth/useAdminAuthFetch";
 import { useAdminAuth } from "../../auth/admin-auth/AdminAuthContext";
 import SchoolIcon from "../../widgets/SchoolIcon";
+import { SegmentedControl } from "../../widgets/SegmentedControl";
 
 const Navbar = ({}: {}) => {
   return (
@@ -49,10 +50,13 @@ const DraftReviewList = () => {
     "loading" | "success" | "failed" | "idle"
   >("idle");
   const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<
+    "IDLE" | "REJECT" | "SUCCESS"
+  >("IDLE");
 
   useEffect(() => {
     getDrafts();
-  }, []);
+  }, [statusFilter]);
 
   const getDrafts = async () => {
     if (restorePromise) await restorePromise;
@@ -60,7 +64,7 @@ const DraftReviewList = () => {
     setFetchState("loading");
     const result = await adminAuthedFetch(
       path(
-        `/api/admin/shop-draft?reviewStatus=IDLE&versions=true&currentVersion=true&school=true`
+        `/api/admin/shop-draft?reviewStatus=${statusFilter}&versions=true&currentVersion=true&school=true`
       )
     );
 
@@ -91,6 +95,15 @@ const DraftReviewList = () => {
     <div className="min-h-screen flex justify-center bg-base-300">
       <Navbar />
       <main className="pt-18 min-h-screen max-w-xl w-full">
+        <SegmentedControl
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={[
+            { label: "待審", value: "IDLE" },
+            { label: "通過", value: "SUCCESS" },
+            { label: "拒絕", value: "REJECT" },
+          ]}
+        />
         <ul className="space-y-4 m-4">
           {drafts.length === 0 && fetchState === "success" ? (
             <AnimatedListItem>
