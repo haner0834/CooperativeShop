@@ -68,6 +68,8 @@ export const getStatusColor = (status: ReviewStatus): string => {
       return "bg-base-300";
     case "AI_REJECT":
       return "bg-amber-300";
+    case "AI_APPROVED":
+      return "bg-success";
     default:
       return "";
   }
@@ -87,6 +89,8 @@ export const getStatusText = (status: ReviewStatus): string => {
       return "已取消";
     case "AI_REJECT":
       return "未通過 AI 審核";
+    case "AI_APPROVED":
+      return "已通過 AI 審核";
     default:
       return "";
   }
@@ -502,7 +506,7 @@ const ShopRegisterForm = () => {
   const getDraft = async (id: string): Promise<ShopDraftDto | null> => {
     const apiUrl = new URL(path(`/api/shop-draft/${id}`));
     apiUrl.searchParams.append("versions", "true");
-    apiUrl.searchParams.append("schools", "true");
+    apiUrl.searchParams.append("school", "true");
     apiUrl.searchParams.append("currentVersion", "true");
 
     const result = await authedFetch(apiUrl.toString(), { method: "GET" });

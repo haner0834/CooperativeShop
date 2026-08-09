@@ -44,32 +44,42 @@ enum ShopDraftStage {
     EDITING
     SUBMITTED
     ARCHIVED
+    APPROVED
 }
 
 model ShopDraftVersion {
-    id             String       @id @default(cuid())
-    draftId        String
-    draft          ShopDraft    @relation(fields: [draftId], references: [id], onDelete: Cascade)
-    versionNo      Int
-    snapshot       Json
+    id        String    @id @default(cuid())
+    draftId   String
+    draft     ShopDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+    versionNo Int
+    snapshot  Json
+
+    aiReviewStatus AiReviewStatus @default(PENDING)
     aiReviewResult Json?
-    reviewStatus   ReviewStatus
-    rejectReason   String?
-    reviewerId     String?
-    reviewer       Admin?       @relation(fields: [reviewerId], references: [id])
-    submittedAt    DateTime
-    reviewedAt     DateTime?
+    aiReviewedAt   DateTime?
+
+    reviewStatus ReviewStatus @default(IDLE)
+    rejectReason String?
+    reviewerId   String?
+    reviewer     Admin?       @relation(fields: [reviewerId], references: [id])
+
+    submittedAt DateTime
+    reviewedAt  DateTime?
 
     currentFor ShopDraft? @relation("CurrentVersion")
 
     @@unique([draftId, versionNo])
 }
 
+enum AiReviewStatus {
+    PENDING
+    APPROVED
+    REJECTED
+}
+
 enum ReviewStatus {
     IDLE
-    PROCESSING
     REJECT
     SUCCESS
     SUPERSEDED
-    AI_REJECT
 }

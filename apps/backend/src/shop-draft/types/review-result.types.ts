@@ -1,1 +1,1 @@
-export type ReviewResult = 'SUCCESS' | 'REJECT';
+export type ReviewResult = 'APPROVE' | 'REJECT';

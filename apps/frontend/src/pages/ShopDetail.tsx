@@ -30,7 +30,7 @@ import Sidebar from "../widgets/Sidebar";
 import { SidebarContent } from "../widgets/SidebarContent";
 import { useDevice } from "../widgets/DeviceContext";
 import { useToast } from "../widgets/Toast/ToastProvider";
-import { type Weekday } from "../types/workSchedule";
+import { type Weekday, type WorkScheduleBackend } from "../types/workSchedule";
 import { formatWeekdays } from "../utils/formatWeekdays";
 import { buildHref, ContactCategoryIcon } from "../utils/contactInfoMap";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
@@ -240,6 +240,102 @@ const ContactInfoSheet = ({ contactInfo }: { contactInfo: ContactInfo[] }) => {
   );
 };
 
+export const WorkScheduleDisplay = ({
+  workSchedules,
+}: {
+  workSchedules: WorkScheduleBackend[];
+}) => {
+  if (!workSchedules || workSchedules.length === 0) return null;
+
+  // 1. Group intervals by Weekday
+  // Map<Weekday, Array<[start, end]>>
+  const dayMap = new Map<Weekday, Array<[number, number]>>();
+
+  workSchedules.forEach((sch) => {
+    if (!dayMap.has(sch.weekday)) {
+      dayMap.set(sch.weekday, []);
+    }
+    dayMap.get(sch.weekday)!.push([sch.startMinuteOfDay, sch.endMinuteOfDay]);
+  });
+
+  // 2. Sort intervals for each day to ensure consistency
+  dayMap.forEach((ranges) => {
+    ranges.sort((a, b) => a[0] - b[0]);
+  });
+
+  // 3. Group Weekdays by identical schedule signatures
+  // Signature example: "540-720,840-1020"
+  const groupedSchedules = new Map<
+    string,
+    { days: Weekday[]; ranges: Array<[number, number]> }
+  >();
+
+  dayMap.forEach((ranges, day) => {
+    const signature = ranges.map((r) => `${r[0]}-${r[1]}`).join(",");
+
+    if (!groupedSchedules.has(signature)) {
+      groupedSchedules.set(signature, { days: [], ranges });
+    }
+    groupedSchedules.get(signature)!.days.push(day);
+  });
+
+  const currentWeekday = getCurrentWeekday();
+  // Convert Map to Array for rendering and sort by weekday order roughly (optional, but good for UI)
+  const displayGroups = Array.from(groupedSchedules.values()).sort((a, b) => {
+    // Simple sort by first day in the group
+    const idxA = weekdayOrder.indexOf(a.days[0]);
+    const idxB = weekdayOrder.indexOf(b.days[0]);
+    return idxA - idxB;
+  });
+
+  return (
+    <div className="space-y-4">
+      {displayGroups.map((group, idx) => {
+        const isToday = group.days.includes(currentWeekday);
+
+        return (
+          <div
+            key={idx}
+            className={`flex flex-col sm:flex-row gap-3 sm:gap-6 p-4 rounded-2xl transition-all ${
+              isToday
+                ? "bg-primary/5 border border-primary/10"
+                : "bg-base-100 border border-base-200/50 hover:border-base-300"
+            }`}
+          >
+            {/* Left Column: Weekdays */}
+            <div className="w-full sm:w-24 flex-shrink-0 flex items-center justify-between sm:justify-start">
+              <span
+                className={`font-medium ${
+                  isToday ? "text-primary" : "text-base-content/70"
+                }`}
+              >
+                {formatWeekdays(group.days)}
+              </span>
+              {isToday && (
+                <span className="sm:hidden badge badge-xs badge-primary badge-soft">
+                  Today
+                </span>
+              )}
+            </div>
+
+            {/* Right Column: Time Blocks (Stack vertically if multiple slots) */}
+            <div className="flex-1 w-full flex flex-col gap-2 justify-center">
+              {group.ranges.map((range, rangeIdx) => (
+                <MinimalRangeBlock
+                  key={`range-${idx}-${rangeIdx}`}
+                  startMinOfDay={range[0]}
+                  endMinOfDay={range[1]}
+                  isToday={isToday}
+                />
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 // --- Main Components ---
 
 export const ShopDetailContent = ({
@@ -392,105 +488,15 @@ export const ShopDetailContent = ({
       </div>
     );
 
-  const renderSchedule = () => {
-    if (!shop?.workSchedules || shop.workSchedules.length === 0) return null;
-
-    // 1. Group intervals by Weekday
-    // Map<Weekday, Array<[start, end]>>
-    const dayMap = new Map<Weekday, Array<[number, number]>>();
-
-    shop.workSchedules.forEach((sch) => {
-      if (!dayMap.has(sch.weekday)) {
-        dayMap.set(sch.weekday, []);
-      }
-      dayMap.get(sch.weekday)!.push([sch.startMinuteOfDay, sch.endMinuteOfDay]);
-    });
-
-    // 2. Sort intervals for each day to ensure consistency
-    dayMap.forEach((ranges) => {
-      ranges.sort((a, b) => a[0] - b[0]);
-    });
-
-    // 3. Group Weekdays by identical schedule signatures
-    // Signature example: "540-720,840-1020"
-    const groupedSchedules = new Map<
-      string,
-      { days: Weekday[]; ranges: Array<[number, number]> }
-    >();
-
-    dayMap.forEach((ranges, day) => {
-      const signature = ranges.map((r) => `${r[0]}-${r[1]}`).join(",");
-
-      if (!groupedSchedules.has(signature)) {
-        groupedSchedules.set(signature, { days: [], ranges });
-      }
-      groupedSchedules.get(signature)!.days.push(day);
-    });
-
-    const currentWeekday = getCurrentWeekday();
-    // Convert Map to Array for rendering and sort by weekday order roughly (optional, but good for UI)
-    const displayGroups = Array.from(groupedSchedules.values()).sort((a, b) => {
-      // Simple sort by first day in the group
-      const idxA = weekdayOrder.indexOf(a.days[0]);
-      const idxB = weekdayOrder.indexOf(b.days[0]);
-      return idxA - idxB;
-    });
-
-    return (
-      <div className="space-y-4">
-        <PageMeta {...routesMeta.shopDetail(shop.title, shop.thumbnailLink)} />
-        {displayGroups.map((group, idx) => {
-          const isToday = group.days.includes(currentWeekday);
-
-          return (
-            <div
-              key={idx}
-              className={`flex flex-col sm:flex-row gap-3 sm:gap-6 p-4 rounded-2xl transition-all ${
-                isToday
-                  ? "bg-primary/5 border border-primary/10"
-                  : "bg-base-100 border border-base-200/50 hover:border-base-300"
-              }`}
-            >
-              {/* Left Column: Weekdays */}
-              <div className="w-full sm:w-24 flex-shrink-0 flex items-center justify-between sm:justify-start">
-                <span
-                  className={`font-medium ${
-                    isToday ? "text-primary" : "text-base-content/70"
-                  }`}
-                >
-                  {formatWeekdays(group.days)}
-                </span>
-                {isToday && (
-                  <span className="sm:hidden badge badge-xs badge-primary badge-soft">
-                    Today
-                  </span>
-                )}
-              </div>
-
-              {/* Right Column: Time Blocks (Stack vertically if multiple slots) */}
-              <div className="flex-1 w-full flex flex-col gap-2 justify-center">
-                {group.ranges.map((range, rangeIdx) => (
-                  <MinimalRangeBlock
-                    key={`range-${idx}-${rangeIdx}`}
-                    startMinOfDay={range[0]}
-                    endMinOfDay={range[1]}
-                    isToday={isToday}
-                  />
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
   return (
     <article
       className="min-h-screen bg-base-50/50"
       itemScope
       itemType="https://schema.org/Store"
     >
+      {shop && (
+        <PageMeta {...routesMeta.shopDetail(shop.title, shop.thumbnailLink)} />
+      )}
       {/* 1. Header / Navigation (Sticky, blurred) */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-4 h-16 flex items-center justify-between bg-base-100 border-b border-base-300">
         <div className="flex items-center gap-3">
@@ -716,7 +722,7 @@ export const ShopDetailContent = ({
                 </span>
               )}
             </div>
-            {renderSchedule()}
+            <WorkScheduleDisplay workSchedules={shop?.workSchedules ?? []} />
           </section>
           {/* Mobile Bottom Action Bar (Fixed) */}
           <div className="lg:hidden h-20" /> {/* Spacer */}

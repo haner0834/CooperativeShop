@@ -77,6 +77,7 @@ export class AiReviewService {
     const groundingSnapshot = await this.getGroundingSnapshot(draft.id);
     const useGrounding = !groundingSnapshot && this.enableSearchGrounding;
     const publicInfo = buildPublicInfoPayload(groundingSnapshot?.sources ?? []);
+    console.log('useGrounding:', useGrounding);
 
     const contractBuffer = await this.downloadFileAsBuffer(
       getImageUrl(draft.contract!.fileKey!),
@@ -91,7 +92,10 @@ export class AiReviewService {
     const { url, headers } = this.resolveRequestTarget(useGrounding);
 
     const responseData = await this.callGemini(url, requestBody, headers);
-    const result = this.parseResponse(responseData);
+    const result = this.sanitizeUnverifiedSources(
+      this.parseResponse(responseData),
+      responseData,
+    );
 
     if (useGrounding) {
       await this.saveGroundingSnapshot(draft.id, responseData);
@@ -254,7 +258,7 @@ export class AiReviewService {
   ): Promise<unknown> {
     try {
       const response = await firstValueFrom(
-        this.httpService.post(url, body, { timeout: 60_000, headers }),
+        this.httpService.post(url, body, { timeout: 120_000, headers }),
       );
       return response.data;
     } catch (error) {
@@ -267,6 +271,38 @@ export class AiReviewService {
       );
       throw new InternalError('AI 審核服務暫時無法使用，請稍後再試');
     }
+  }
+
+  private sanitizeUnverifiedSources(
+    result: AiReviewResult,
+    responseData: unknown,
+  ): AiReviewResult {
+    const hasRealGrounding = extractGroundingSources(responseData).length > 0;
+
+    if (hasRealGrounding) return result;
+
+    const publicSourceLabels = [
+      'Google Maps',
+      '官方網站',
+      '官方社群',
+      '其他公開資訊',
+    ];
+
+    for (const key of Object.keys(result)) {
+      const field = (result as any)[key];
+      if (
+        field &&
+        typeof field === 'object' &&
+        'source' in field &&
+        publicSourceLabels.some((label) => field.source?.includes(label))
+      ) {
+        field.source = '無法查證';
+        field.isValid = false;
+        field.reason = `${field.reason}(系統偵測：本次未取得即時公開資訊佐證，已自動修正來源標註)`;
+      }
+    }
+
+    return result;
   }
 
   private parseResponse(data: any): AiReviewResult {

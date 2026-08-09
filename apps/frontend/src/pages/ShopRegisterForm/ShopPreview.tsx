@@ -6,8 +6,7 @@ import { ShopDetailContent } from "../ShopDetail";
 import { plainToInstance } from "class-transformer";
 import { path } from "../../utils/path";
 import { useAuthFetch } from "../../auth/useAuthFetch";
-
-const R2_PUBLIC_URL = "https://image.cooperativeshops.org";
+import { R2_PUBLIC_URL } from "../../utils/get-image-url.utils";
 
 const ShopPreview = () => {
   const [shop, setShop] = useState<Shop | null>(null);

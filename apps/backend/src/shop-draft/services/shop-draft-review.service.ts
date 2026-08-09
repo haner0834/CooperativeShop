@@ -2,8 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { BadRequestError, NotFoundError } from 'src/types/error.types';
-import { ReviewStatus, Shop, ShopDraft } from '@prisma/client';
+import {
+  BadRequestError,
+  InternalError,
+  NotFoundError,
+} from 'src/types/error.types';
+import { Prisma, ReviewStatus, Shop, ShopDraft } from '@prisma/client';
 import { InstaPostService } from 'src/insta-post/insta-post.service';
 import { ReviewResult } from '../types/review-result.types';
 import { env } from 'src/common/utils/env.utils';
@@ -14,6 +18,7 @@ import { ShopsService } from 'src/shops/shops.service';
 import { UserPayload } from 'src/auth/types/auth.types';
 import { AdminContext } from 'src/auth/types/admin-context.types';
 import { getImageUrl } from 'src/common/utils/get-image-url.utils';
+import { DraftWithRelations } from '../types/draft-with-relations.types';
 
 @Injectable()
 export class ShopDraftReviewService {
@@ -24,13 +29,10 @@ export class ShopDraftReviewService {
     @InjectRedis() private readonly redis: Redis,
   ) {}
 
-  async getReviewSnapshot(
-    draftId: string,
-    reviewerId: string,
-  ): Promise<ShopDraft> {
+  async getReviewSnapshot(draftId: string): Promise<DraftWithRelations> {
     const draft = await this.prisma.shopDraft.findUnique({
       where: { id: draftId },
-      include: { currentVersion: true, versions: true },
+      include: { currentVersion: true, versions: true, school: true },
     });
 
     if (!draft) throw new NotFoundError('DRAFT');
@@ -42,73 +44,29 @@ export class ShopDraftReviewService {
       );
     }
 
-    const { currentVersion, versions, ...rest } = draft;
+    const { currentVersion, versions, aiGroundingSources, school, ...rest } =
+      draft;
 
-    const reviewStatus = currentVersion.reviewStatus;
-    if (reviewStatus !== 'IDLE' && reviewStatus !== 'PROCESSING') {
-      // they may close the app then request it again.
-      // it's also allowed that reviewing same draft with different person,
-      // as long as they are org admin.
-      // but what if race condition? do i need to make another lock for this?
-      // here i think i don't need to implement another lock,
-      // because it could simply do a reviewer id lock,
-      // wich means only same admin id(reviewer id) can regain data
-      // if they want to change reviewer, they need to cancel it first
-      // and that there're 2 org admins so the probability of race condition is fucking low
-
+    // 只有兩個 org admin，不再鎖定 reviewer。
+    // 任何 admin 都能在送出審核結果前隨時拿 snapshot，
+    // reviewer 是誰要等到真正送出審核結果 (reviewDraft) 時才決定。
+    if (currentVersion.reviewStatus !== 'IDLE') {
       throw new BadRequestError(
-        'DRAFT_REVIEWD_OR_REVIEWING',
-        'Target draft has been reviewed or being reviewed.',
+        'DRAFT_REVIEWD',
+        'Target draft has already been reviewed.',
       );
     }
 
-    if (
-      reviewStatus === 'PROCESSING' &&
-      currentVersion.reviewerId !== null &&
-      currentVersion.reviewerId !== reviewerId
-    ) {
-      throw new BadRequestError(
-        'REVIEWER_MISMATCH',
-        'Bruh. cancel it first ok?',
-      );
-    }
-
-    await this.prisma.shopDraftVersion.update({
-      where: { id: currentVersion.id },
-      data: { reviewedAt: new Date(), reviewerId, reviewStatus: 'PROCESSING' },
-    });
-
-    const snapshot = JSON.parse(String(currentVersion.snapshot));
-
-    currentVersion.reviewStatus = 'PROCESSING';
-    currentVersion.reviewerId = reviewerId;
-    currentVersion.reviewedAt = new Date();
+    const snapshot = currentVersion.snapshot as unknown as DraftWithRelations;
+    if (!snapshot) throw new InternalError('Snapshot not found.');
 
     snapshot.currentVersion = currentVersion;
     snapshot.versions = versions;
+    snapshot.school = school;
+    // because ai grounding source is saved after snapshot was created
+    snapshot.aiGroundingSources = aiGroundingSources;
 
     return snapshot;
-  }
-
-  async cencelReview(draftId: string, reviewerId: string) {
-    const draft = await this.prisma.shopDraft.findUnique({
-      where: { id: draftId },
-      include: { currentVersion: true, versions: true },
-    });
-
-    if (!draft) throw new NotFoundError('DRAFT');
-
-    if (!draft.currentVersion || draft.versions.length === 0) {
-      throw new BadRequestError(
-        'NO_SUBMISSION_RECORD',
-        'No submission record found. Try another draft.',
-      );
-    }
-
-    await this.prisma.shopDraftVersion.update({
-      where: { id: draft.currentVersion.id },
-      data: { reviewedAt: null, reviewerId: null, reviewStatus: 'IDLE' },
-    });
   }
 
   async reviewDraft(
@@ -131,23 +89,19 @@ export class ShopDraftReviewService {
       );
     }
 
-    if (draft.currentVersion.reviewerId !== reviewerAdminContext.adminId) {
-      throw new BadRequestError('REVIEWER_MISMATCH', 'Reviewer Mismatch.');
-    }
-
     const status = draft.currentVersion.reviewStatus;
-    if (status !== 'IDLE' && status !== 'PROCESSING') {
+    if (status !== 'IDLE') {
       throw new BadRequestError(
         'ALREADY_REVIEWED',
         'This draft has already been reviewed.',
       );
     }
 
-    if (result === 'SUCCESS') {
+    const reviewerId = reviewerAdminContext.adminId;
+
+    if (result === 'APPROVE') {
       // upsert shop
-      const draftFromSnapshot = JSON.parse(
-        String(draft.currentVersion.snapshot),
-      );
+      const draftFromSnapshot = draft.currentVersion.snapshot;
       const draftDto = plainToInstance(ShopDraftDto, draftFromSnapshot, {
         excludeExtraneousValues: true,
       });
@@ -179,7 +133,17 @@ export class ShopDraftReviewService {
 
       await this.prisma.shopDraftVersion.update({
         where: { id: draft.currentVersion.id },
-        data: { reviewStatus: 'SUCCESS', rejectReason: null },
+        data: {
+          reviewStatus: 'SUCCESS',
+          rejectReason: null,
+          reviewerId,
+          reviewedAt: new Date(),
+        },
+      });
+
+      await this.prisma.shopDraft.update({
+        where: { id: draft.id },
+        data: { stage: 'APPROVED' },
       });
 
       await this.instaPostService.schedulePostFromShop(draftDto);
@@ -192,7 +156,12 @@ export class ShopDraftReviewService {
 
       await this.prisma.shopDraftVersion.update({
         where: { id: draft.currentVersion.id },
-        data: { reviewStatus: 'REJECT', rejectReason },
+        data: {
+          reviewStatus: 'REJECT',
+          rejectReason,
+          reviewerId,
+          reviewedAt: new Date(),
+        },
       });
     }
   }

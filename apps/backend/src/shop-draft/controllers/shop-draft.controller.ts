@@ -6,35 +6,27 @@ import {
   Param,
   Patch,
   Post,
-  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ShopDraftService } from './services/shop-draft.service';
-import { ShopDraftDto } from './dto/shop-draft.dto';
+import { ShopDraftService } from '../services/shop-draft.service';
+import { ShopDraftDto } from '../dto/shop-draft.dto';
 import { plainToInstance } from 'class-transformer';
 import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
-import { EditLockToken } from './decorators/draft-lock-token.decorator';
+import { EditLockToken } from '../decorators/draft-lock-token.decorator';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UserPayload } from 'src/auth/types/auth.types';
-import {
-  AuthError,
-  PermissionError,
-  UnauthorizedError,
-} from 'src/types/error.types';
-import { SubmitDraftDto } from './dto/submit-draft.dto';
-import { DraftFilterOptions } from './types/draft-filter-options.types';
-import { GetDraftOptions } from './types/get-draft-options.types';
+import { PermissionError, UnauthorizedError } from 'src/types/error.types';
+import { SubmitDraftDto } from '../dto/submit-draft.dto';
+import { DraftFilterOptions } from '../types/draft-filter-options.types';
+import { GetDraftOptions } from '../types/get-draft-options.types';
 import { CurrentAdmin } from 'src/common/decorators/current-admin.decorator';
-import { RequireRole } from 'src/common/decorators/require-role.decorator';
 import { AdminContext } from 'src/auth/types/admin-context.types';
-import { ShopDraftReviewService } from './services/shop-draft-review.service';
-import { ReviewDraftDto } from './dto/review-draft.dto';
-import { DraftSearchQuery } from './types/search-query.types';
-import { SearchedDraftDto } from './dto/searched-draft.dto';
-import { CreateDraftDto } from './dto/create-draft.dto';
-import { PatchShopDraftDto } from './dto/patch-draft.dto';
-import { ShopDraftLockService } from './services/shop-draft-lock.service';
+import { DraftSearchQuery } from '../types/search-query.types';
+import { SearchedDraftDto } from '../dto/searched-draft.dto';
+import { CreateDraftDto } from '../dto/create-draft.dto';
+import { PatchShopDraftDto } from '../dto/patch-draft.dto';
+import { ShopDraftLockService } from '../services/shop-draft-lock.service';
 import { Idempotent } from 'src/idempotency/idempotent.decorator';
 
 @Controller('shop-draft')
@@ -42,7 +34,6 @@ export class ShopDraftController {
   constructor(
     private readonly shopDraftService: ShopDraftService,
     private readonly shopDraftLockService: ShopDraftLockService,
-    private readonly shopDraftReviewService: ShopDraftReviewService,
   ) {}
 
   @Get(':id')
@@ -134,44 +125,6 @@ export class ShopDraftController {
     await this.shopDraftService.submitDraft(dto.draftId, user.id, token, {
       overwrite: dto.overwrite,
     });
-    console.log('hello world');
-  }
-
-  @Get(':id/snapshot')
-  @UseGuards(JwtAccessGuard)
-  @RequireRole('ADMIN', 'ORGANIZATION')
-  async getDraftSnapshot(
-    @Param('id') draftId: string,
-    @CurrentAdmin() admin: AdminContext | null,
-  ) {
-    if (!admin) throw new PermissionError();
-
-    const snapshot = await this.shopDraftReviewService.getReviewSnapshot(
-      draftId,
-      admin.adminId,
-    );
-
-    return plainToInstance(ShopDraftDto, snapshot, {
-      excludeExtraneousValues: true,
-    });
-  }
-
-  @Post(':id/review')
-  @UseGuards(JwtAccessGuard)
-  @RequireRole('ADMIN', 'ORGANIZATION')
-  async reviewDraft(
-    @Param('id') draftId: string,
-    @Body() dto: ReviewDraftDto,
-    @CurrentAdmin() admin: AdminContext | null,
-  ) {
-    if (!admin) throw new PermissionError();
-
-    await this.shopDraftReviewService.reviewDraft(
-      draftId,
-      admin,
-      dto.result,
-      dto.rejectReason,
-    );
   }
 
   @Post('acquire-lock/:id')

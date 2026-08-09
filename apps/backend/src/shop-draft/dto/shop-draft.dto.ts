@@ -1,4 +1,4 @@
-import { ReviewStatus, ShopDraftStage } from '@prisma/client';
+import { ReviewStatus, ShopDraftStage, AiReviewStatus } from '@prisma/client';
 import {
   Expose,
   plainToInstance,
@@ -17,6 +17,7 @@ import {
   IsUrl,
   ValidateNested,
 } from 'class-validator';
+import type { AiReviewResult } from 'src/ai-review/interfaces/ai-review-result.interface';
 import { TransformPrismaJsonArray } from 'src/common/decorators/transform-prisma-json-array.decorator';
 import { ContactInfoDto, WorkScheduleDto } from 'src/shops/dto/create-shop.dto';
 
@@ -104,6 +105,17 @@ export class ShopDraftVersionDto {
   reviewStatus: ReviewStatus;
 
   @Expose()
+  @IsEnum(AiReviewStatus)
+  aiReviewStatus?: AiReviewStatus;
+
+  @Expose()
+  @Type(() => Date)
+  aiReviewedAt?: Date;
+
+  @Expose()
+  aiReviewResult?: AiReviewResult;
+
+  @Expose()
   @IsOptional()
   @IsString()
   reviewerId: string;
@@ -133,6 +145,9 @@ class SchoolInfoDto {
   @IsOptional()
   @IsString()
   abbr: string;
+
+  @Expose()
+  name: string;
 }
 
 export class ContractDto {
@@ -197,6 +212,9 @@ export class ShopDraftDto {
   @Expose()
   @IsString()
   normalizedKey: string;
+
+  @Expose()
+  aiGroundingSources: string;
 
   @Expose()
   @IsString()
@@ -280,12 +298,14 @@ export class ShopDraftDto {
         return {
           id: obj.school.id,
           abbr: obj.school.abbreviation,
+          name: obj.school.name,
         };
       }
 
       return {
         id: obj.schoolId,
         abbr: undefined,
+        name: undefined,
       };
     }
     return undefined;

@@ -1,8 +1,9 @@
 import { IsIn, IsOptional, IsString } from 'class-validator';
+import { type ReviewResult } from '../types/review-result.types';
 
 export class ReviewDraftDto {
-  @IsIn(['SUCCESS', 'REJECT'])
-  result: 'SUCCESS' | 'REJECT';
+  @IsIn(['APPROVE', 'REJECT'])
+  result: ReviewResult;
 
   @IsString()
   @IsOptional()

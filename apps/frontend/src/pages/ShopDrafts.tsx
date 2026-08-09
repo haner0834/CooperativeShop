@@ -22,6 +22,7 @@ import {
   getStatusColor,
   getStatusText,
 } from "./ShopRegisterForm/ShopRegisterForm";
+import { getErrorMessage } from "../utils/errors";
 
 const Navbar = ({
   setShowSearch,
@@ -50,7 +51,11 @@ const Navbar = ({
   );
 };
 
-const AnimatedListItem = ({ children }: { children?: React.ReactNode }) => {
+export const AnimatedListItem = ({
+  children,
+}: {
+  children?: React.ReactNode;
+}) => {
   return (
     <motion.li
       className="relative"
@@ -222,11 +227,6 @@ const ShopDrafts = () => {
     return `${year}/${month}/${day}`;
   };
 
-  const getDraftId = (key: string): string => {
-    if (!key) return "";
-    return key.replace("SHOP_DRAFT_", "");
-  };
-
   const handleRemove = async (id: string) => {
     const result = await authedFetch(path(`/api/shop-draft/${id}`), {
       method: "DELETE",
@@ -286,7 +286,10 @@ const ShopDrafts = () => {
             <div className="flex flex-col gap-2 w-full justify-center items-center">
               <CircleAlert className="w-10 h-10 text-error" />
               <h2 className="text-lg font-bold">無法取得草稿</h2>
-              <p className="">請檢查網路狀態或稍後再試。錯誤碼：{errorCode}</p>
+              <p className="">
+                請檢查網路狀態或稍後再試。錯誤：
+                {errorCode ? getErrorMessage(errorCode as any) : "未知錯誤"}
+              </p>
             </div>
           ) : fetchState === "loading" ? (
             [1, 2, 3, 4].map((i) => {
@@ -315,7 +318,7 @@ const ShopDrafts = () => {
             {[...drafts].map((draft) => (
               <AnimatedListItem key={draft.id}>
                 <Link
-                  to={`/shops/register?id=${getDraftId(draft.id)}`}
+                  to={`/shops/register?id=${draft.id}`}
                   className="overflow-clip"
                 >
                   <div className="w-full bg-base-100 rounded-box p-4 shadow">

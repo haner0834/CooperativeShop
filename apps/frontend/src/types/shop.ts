@@ -1,6 +1,7 @@
 import type { UploadedContract } from "../pages/ShopRegisterForm/ShopContractBlock";
 import type { Point } from "../pages/ShopRegisterForm/ShopLocationBlock";
 import { categoryMap } from "../utils/contactInfoMap";
+import type { AiReviewResult } from "./ai-review-result";
 import type { ImageDto, SelectedImage } from "./selectedImage";
 import type {
   WorkScheduleBackend,
@@ -209,7 +210,12 @@ export interface ShopDraft {
   };
 }
 
-export type ShopDraftStage = "RESERVED" | "EDITING" | "SUBMITTED" | "ARCHIVED";
+export type ShopDraftStage =
+  | "RESERVED"
+  | "EDITING"
+  | "SUBMITTED"
+  | "ARCHIVED"
+  | "APPROVED";
 
 export type ReviewStatus =
   | "IDLE"
@@ -217,7 +223,10 @@ export type ReviewStatus =
   | "REJECT"
   | "SUCCESS"
   | "SUPERSEDED"
-  | "AI_REJECT";
+  | "AI_REJECT"
+  | "AI_APPROVED";
+
+export type AiReviewStatus = "APPROVED" | "PENDING" | "REJECTED";
 
 export class ShopDraftVersionDto {
   id: string;
@@ -227,6 +236,27 @@ export class ShopDraftVersionDto {
   @Type(() => Date) submittedAt: Date;
   @Type(() => Date) reviewedAt: Date;
   rejectReason?: string;
+  aiReviewStatus?: AiReviewStatus;
+  @Type(() => Date)
+  aiReviewedAt?: Date;
+  aiReviewResult?: AiReviewResult;
+}
+
+export class AiReviewGroundingSource {
+  uri: string;
+  title: string;
+}
+
+/**
+ * 存進 ShopDraft.aiGroundingSources 的完整快照。
+ * 除了來源清單外，順便記錄當初的搜尋關鍵字與擷取時間，
+ * 方便之後除錯／人工檢視「AI 當初到底查了什麼」。
+ */
+export class AiReviewGroundingSnapshot {
+  fetchedAt: string; // ISO timestamp
+  webSearchQueries: string[];
+  @Type(() => AiReviewGroundingSource)
+  sources: AiReviewGroundingSource[];
 }
 
 export class ShopDraftDto {
@@ -244,6 +274,8 @@ export class ShopDraftDto {
   latitude: number | null;
   thumbnailKey: string;
   stage: ShopDraftStage;
+  @Type(() => AiReviewGroundingSnapshot)
+  aiGroundingSources: AiReviewGroundingSnapshot;
   reservedUntil: Date | null;
   @Type(() => ShopDraftVersionDto)
   currentVersion?: ShopDraftVersionDto;
@@ -254,6 +286,7 @@ export class ShopDraftDto {
   school: {
     id: string;
     abbr?: string;
+    name?: string;
   };
 }
 

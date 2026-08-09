@@ -13,5 +13,7 @@ model School {
 
     drafts ShopDraft[]
 
+    adminInvites AdminInvite[]
+
     @@index([abbreviation])
 }

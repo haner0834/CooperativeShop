@@ -1,4 +1,4 @@
-// src/auth/admin/admin.service.ts
+// src/auth/services/admin.service.ts
 import {
   Injectable,
   Logger,
@@ -9,6 +9,7 @@ import type { Redis } from 'ioredis';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AdminContext } from '../types/admin-context.types';
 import { InjectRedis } from '@nestjs-modules/ioredis';
+import { AdminLevel } from '@prisma/client';
 
 const REDIS_HASH_KEY = 'admin:active_accounts';
 const SAFETY_REFRESH_INTERVAL_MS = 60_000; // 保底輪詢，容忍最多 1 分鐘落差
@@ -97,6 +98,66 @@ export class AdminService implements OnModuleInit, OnModuleDestroy {
         .hdel(REDIS_HASH_KEY, accountId)
         .catch((e) => this.logger.warn('Delete from redis hash failed', e));
     }
+  }
+
+  /**
+   * 停用一個 admin（不刪除資料，只是關閉權限）。
+   * 呼叫完會立刻讓所有 process 的快取失效，guard 下一次請求就會擋下來。
+   */
+  async deactivateAdmin(accountId: string): Promise<void> {
+    const account = await this.prisma.account.findUnique({
+      where: { id: accountId },
+      select: { adminId: true },
+    });
+    if (!account?.adminId) return;
+
+    await this.prisma.admin.update({
+      where: { id: account.adminId },
+      data: { isActive: false },
+    });
+
+    await this.invalidateAccount(accountId);
+  }
+
+  /**
+   * 重新啟用一個先前被停用的 admin。
+   */
+  async reactivateAdmin(accountId: string): Promise<void> {
+    const account = await this.prisma.account.findUnique({
+      where: { id: accountId },
+      select: { adminId: true },
+    });
+    if (!account?.adminId) return;
+
+    await this.prisma.admin.update({
+      where: { id: account.adminId },
+      data: { isActive: true },
+    });
+
+    await this.invalidateAccount(accountId);
+  }
+
+  /**
+   * 調整 admin 的 level（目前系統只會用到 ORGANIZATION，
+   * 但方法先做好，school level admin 上線時可以直接用）。
+   */
+  async updateAdminLevel(
+    accountId: string,
+    level: AdminLevel,
+    schoolId: string | null = null,
+  ): Promise<void> {
+    const account = await this.prisma.account.findUnique({
+      where: { id: accountId },
+      select: { adminId: true },
+    });
+    if (!account?.adminId) return;
+
+    await this.prisma.admin.update({
+      where: { id: account.adminId },
+      data: { level, schoolId },
+    });
+
+    await this.invalidateAccount(accountId);
   }
 
   private async warmUp(): Promise<void> {

@@ -300,7 +300,8 @@ export class ShopDraftService {
           where: { id: latestDraft.currentVersionId },
           data: {
             aiReviewResult: reviewResult as unknown as Prisma.InputJsonValue,
-            reviewStatus: reviewResult.isPassed ? 'IDLE' : 'AI_REJECT',
+            aiReviewStatus: reviewResult.isPassed ? 'APPROVED' : 'REJECTED',
+            aiReviewedAt: new Date(),
           },
         });
       })
@@ -328,7 +329,7 @@ export class ShopDraftService {
     filters: DraftFilterOptions,
     options?: GetDraftOptions,
   ): Promise<DraftWithRelations[]> {
-    const { stage, schoolAbbr } = filters;
+    const { stage, schoolAbbr, reviewStatus } = filters;
 
     const where: Prisma.ShopDraftWhereInput = {};
     if (stage) {
@@ -338,6 +339,9 @@ export class ShopDraftService {
       where.school = {
         abbreviation: schoolAbbr,
       };
+    }
+    if (reviewStatus) {
+      where.currentVersion = { reviewStatus };
     }
 
     // 2. 動態構建關聯查詢 (Include)
