@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { CircleUser, NotepadText, School } from "lucide-react";
+import { CircleUser, NotepadText } from "lucide-react";
 
 const Navbar = ({}: {}) => {
   return (
@@ -35,12 +35,12 @@ const AdminDashboard = () => {
               商家資料審查
             </Link>
           </li>
-          <li>
+          {/* <li>
             <Link to="/admin/school-console">
               <School />
               School Console
             </Link>
-          </li>
+          </li> */}
         </ul>
       </main>
     </div>
