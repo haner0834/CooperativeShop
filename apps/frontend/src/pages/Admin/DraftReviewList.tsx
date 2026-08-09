@@ -20,7 +20,7 @@ const Navbar = ({}: {}) => {
     <div className="navbar bg-base-100 shadow-sm z-50 fixed">
       <div className="flex-1 ms-2"></div>
       <div className="flex-1 text-center">
-        <h1 className="text-base font-semibold">Drafts to Review</h1>
+        <h1 className="text-base font-semibold">商家資料審查</h1>
       </div>
       <div className="flex-1 flex me-2 gap-4 justify-end items-center">
         <Link to="/admin" className="btn btn-square btn-ghost">

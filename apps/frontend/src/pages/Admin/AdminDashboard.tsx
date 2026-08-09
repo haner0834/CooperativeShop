@@ -32,7 +32,7 @@ const AdminDashboard = () => {
           <li>
             <Link to="/admin/draft-review-list">
               <NotepadText />
-              Drafts Review
+              商家資料審查
             </Link>
           </li>
           <li>
