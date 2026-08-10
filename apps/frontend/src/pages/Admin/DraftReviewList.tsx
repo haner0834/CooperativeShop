@@ -89,8 +89,8 @@ const DraftReviewList = () => {
 
   const getFormattedDate = (date: Date): string => {
     const year = date.getFullYear() - 2000;
-    const month = date.getMonth();
-    const day = date.getDay();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
 
     return `${year}/${month}/${day}`;
   };
