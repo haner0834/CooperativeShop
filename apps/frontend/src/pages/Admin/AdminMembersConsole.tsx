@@ -366,20 +366,20 @@ const AdminMembersConsole = () => {
 
       <nav className="navbar bg-base-100 fixed top-0 z-50 shadow-xs px-3">
         <div className="navbar-start space-x-4">
-          <Link to="/admin" className="btn btn-square btn-ghost">
-            <House />
-          </Link>
-        </div>
-        <div className="navbar-center">
-          <h3 className="font-semibold">成員管理</h3>
-        </div>
-        <div className="navbar-end">
           <button
             className="btn btn-square btn-ghost"
             onClick={openCreateInviteModal}
           >
             <UserPlus size={22} />
           </button>
+        </div>
+        <div className="navbar-center">
+          <h3 className="font-semibold">成員管理</h3>
+        </div>
+        <div className="navbar-end">
+          <Link to="/admin" className="btn btn-square btn-ghost">
+            <House />
+          </Link>
         </div>
       </nav>
 
