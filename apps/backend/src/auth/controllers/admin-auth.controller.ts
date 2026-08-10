@@ -29,6 +29,7 @@ import { BadRequestError, UnauthorizedError } from 'src/types/error.types';
 import { RateLimit } from 'src/rate-limit/rate-limit.decorator';
 import { DeviceId } from 'src/device-id/device-id.decorator';
 import { type DeviceIdResult } from 'src/device-id/types/device-id-result';
+import { AdminOnly } from 'src/common/decorators/admin-only.decorator';
 
 // 刻意跟學生端的 cookie 分開：不同名字 + 不同 path，
 // 避免同網域下兩份 refresh token cookie 互相覆蓋或送錯 endpoint。
@@ -176,10 +177,10 @@ export class AdminAuthController {
   // ================= 邀請連結 =================
 
   @Post('invites')
-  @UseGuards(JwtAdminGuard)
+  @AdminOnly()
   @RateLimit({
     uid: 20,
-    did: 20,
+    did: 0,
     global: 100,
     isolateScope: 'auth:admin-invite',
   })
@@ -211,10 +212,10 @@ export class AdminAuthController {
   // ================= 成員管理 =================
 
   @Get('members')
-  @UseGuards(JwtAdminGuard)
+  @AdminOnly()
   @RateLimit({
     uid: 30,
-    did: 30,
+    did: 0,
     global: 150,
     isolateScope: 'auth:admin-members',
   })
@@ -223,10 +224,10 @@ export class AdminAuthController {
   }
 
   @Post('members/:accountId/deactivate')
-  @UseGuards(JwtAdminGuard)
+  @AdminOnly()
   @RateLimit({
     uid: 20,
-    did: 20,
+    did: 0,
     global: 100,
     isolateScope: 'auth:admin-members',
   })
@@ -246,10 +247,10 @@ export class AdminAuthController {
   }
 
   @Post('members/:accountId/reactivate')
-  @UseGuards(JwtAdminGuard)
+  @AdminOnly()
   @RateLimit({
     uid: 20,
-    did: 20,
+    did: 0,
     global: 100,
     isolateScope: 'auth:admin-members',
   })
@@ -262,10 +263,10 @@ export class AdminAuthController {
   // ================= 邀請連結 =================
 
   @Get('invites')
-  @UseGuards(JwtAdminGuard)
+  @AdminOnly()
   @RateLimit({
     uid: 30,
-    did: 30,
+    did: 0,
     global: 150,
     isolateScope: 'auth:admin-invite',
   })
@@ -274,10 +275,10 @@ export class AdminAuthController {
   }
 
   @Post('invites/:id/revoke')
-  @UseGuards(JwtAdminGuard)
+  @AdminOnly()
   @RateLimit({
     uid: 20,
-    did: 20,
+    did: 0,
     global: 100,
     isolateScope: 'auth:admin-invite',
   })
