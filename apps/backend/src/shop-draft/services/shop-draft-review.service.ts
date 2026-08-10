@@ -47,16 +47,6 @@ export class ShopDraftReviewService {
     const { currentVersion, versions, aiGroundingSources, school, ...rest } =
       draft;
 
-    // 只有兩個 org admin，不再鎖定 reviewer。
-    // 任何 admin 都能在送出審核結果前隨時拿 snapshot，
-    // reviewer 是誰要等到真正送出審核結果 (reviewDraft) 時才決定。
-    if (currentVersion.reviewStatus !== 'IDLE') {
-      throw new BadRequestError(
-        'DRAFT_REVIEWD',
-        'Target draft has already been reviewed.',
-      );
-    }
-
     const snapshot = currentVersion.snapshot as unknown as DraftWithRelations;
     if (!snapshot) throw new InternalError('Snapshot not found.');
 
