@@ -104,11 +104,13 @@ const MetadataBlock = ({ draft }: { draft: ShopDraftDto }) => {
           </span>
         </div>
 
-        <div className="border border-base-300 w-full p-4 rounded-field">
-          <p className="text-center font-bold">
-            商家資訊已審核完畢，無法再次提交審核結果
-          </p>
-        </div>
+        {version?.reviewStatus !== "IDLE" && (
+          <div className="border border-base-300 w-full p-4 rounded-field">
+            <p className="text-center font-bold">
+              商家資訊已審核完畢，無法再次提交審核結果
+            </p>
+          </div>
+        )}
 
         <div className="divider my-0" />
 
