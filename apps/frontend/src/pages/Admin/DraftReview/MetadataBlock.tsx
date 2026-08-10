@@ -14,15 +14,15 @@ const MetadataBlock = ({ draft }: { draft: ShopDraftDto }) => {
 
   const reviewStatusConfig = {
     APPROVED: {
-      label: "審核通過",
+      label: "提交內容與公開資訊相符",
       className: "badge-success",
     },
     REJECTED: {
-      label: "未通過審核",
+      label: "提交內容與公開資訊不符",
       className: "badge-error",
     },
     default: {
-      label: "尚未審核",
+      label: "尚未檢查",
       className: "badge-ghost",
     },
   };
@@ -104,13 +104,19 @@ const MetadataBlock = ({ draft }: { draft: ShopDraftDto }) => {
           </span>
         </div>
 
+        <div className="border border-base-300 w-full p-4 rounded-field">
+          <p className="text-center font-bold">
+            商家資訊已審核完畢，無法再次提交審核結果
+          </p>
+        </div>
+
         <div className="divider my-0" />
 
         {/* Review Status */}
         <div className="flex items-center justify-between gap-4">
           <span className="text-sm font-medium">AI 分析</span>
 
-          <span className={`badge badge-sm ${status.className}`}>
+          <span className={`badge badge-sm badge-soft ${status.className}`}>
             {status.label}
           </span>
         </div>
@@ -129,8 +135,10 @@ const MetadataBlock = ({ draft }: { draft: ShopDraftDto }) => {
           </button>
         </div>
 
+        <div className="divider my-0" />
+
         {/* Timestamps */}
-        <div className="grid grid-cols-1 gap-3 border-t border-base-content/10 pt-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-0.5">
             <span className="text-xs opacity-50">提交時間</span>
             <span className="text-sm">
@@ -144,6 +152,15 @@ const MetadataBlock = ({ draft }: { draft: ShopDraftDto }) => {
               {formatDateTime(version?.aiReviewedAt)}
             </span>
           </div>
+
+          {version?.reviewStatus !== "IDLE" && (
+            <div className="flex flex-col gap-0.5 sm:text-right">
+              <span className="text-xs opacity-50">審核時間</span>
+              <span className="text-sm">
+                {formatDateTime(version?.reviewedAt)}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </Block>

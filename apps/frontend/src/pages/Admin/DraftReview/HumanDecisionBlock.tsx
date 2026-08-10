@@ -1,16 +1,19 @@
 import type { Dispatch } from "react";
 import Block from "./Block";
+import type { ShopDraftDto } from "../../../types/shop";
 
 const HumanDecisionBlock = ({
   isApproved,
   setIsApproved,
   rejectReason,
   setRejectReason,
+  draft,
 }: {
   isApproved: boolean | undefined;
   setIsApproved: Dispatch<React.SetStateAction<boolean | undefined>>;
   rejectReason: string;
   setRejectReason: Dispatch<React.SetStateAction<string>>;
+  draft: ShopDraftDto;
 }) => {
   return (
     <Block>
@@ -19,6 +22,7 @@ const HumanDecisionBlock = ({
       <div className="flex space-x-1 p-1 bg-base-300 rounded-xl">
         <button
           onClick={() => setIsApproved(false)}
+          disabled={draft.currentVersion?.reviewStatus !== "IDLE"}
           className={
             isApproved === false
               ? "btn flex-1 btn-error"
@@ -29,6 +33,7 @@ const HumanDecisionBlock = ({
         </button>
         <button
           onClick={() => setIsApproved(true)}
+          disabled={draft.currentVersion?.reviewStatus !== "IDLE"}
           className={
             isApproved === true
               ? "btn flex-1 btn-success"
@@ -46,6 +51,7 @@ const HumanDecisionBlock = ({
           <input
             type="text"
             value={rejectReason}
+            disabled={draft.currentVersion?.reviewStatus !== "IDLE"}
             onChange={(e) => setRejectReason(e.target.value)}
             placeholder="Reject Reason"
             className="input w-full"

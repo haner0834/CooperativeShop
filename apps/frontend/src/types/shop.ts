@@ -217,14 +217,7 @@ export type ShopDraftStage =
   | "ARCHIVED"
   | "APPROVED";
 
-export type ReviewStatus =
-  | "IDLE"
-  | "PROCESSING"
-  | "REJECT"
-  | "SUCCESS"
-  | "SUPERSEDED"
-  | "AI_REJECT"
-  | "AI_APPROVED";
+export type ReviewStatus = "IDLE" | "REJECT" | "SUCCESS" | "SUPERSEDED";
 
 export type AiReviewStatus = "APPROVED" | "PENDING" | "REJECTED";
 

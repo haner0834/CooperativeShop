@@ -54,6 +54,14 @@ const DraftReview = () => {
         return;
       }
       setDraft(draft);
+
+      if (
+        draft.currentVersion &&
+        draft.currentVersion.reviewStatus !== "IDLE"
+      ) {
+        setIsApproved(draft.currentVersion.reviewStatus === "SUCCESS");
+        setRejectReason(draft.currentVersion.rejectReason ?? "");
+      }
     };
     a();
   }, [draftId]);
@@ -158,23 +166,26 @@ const DraftReview = () => {
               </span>
 
               <div className="divider text-base-content/40 font-medium">
-                Data AI Didn't Review
+                Unreviewed Content
               </div>
 
               <ImagesBlock images={draft.images} />
 
-              <div className="divider text-base-content/40 font-medium">
-                Human Review
-              </div>
+              <div className="divider text-base-content/40 font-medium"></div>
 
               <HumanDecisionBlock
                 isApproved={isApproved}
                 setIsApproved={setIsApproved}
                 rejectReason={rejectReason}
                 setRejectReason={setRejectReason}
+                draft={draft}
               />
 
-              <button className="btn btn-primary w-full" onClick={handleSubmit}>
+              <button
+                className="btn btn-primary w-full"
+                disabled={draft.currentVersion?.reviewStatus !== "IDLE"}
+                onClick={handleSubmit}
+              >
                 送出
               </button>
             </>

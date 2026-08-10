@@ -1,10 +1,8 @@
 import {
   Ban,
-  BotOff,
   Check,
   CircleAlert,
   Clock3,
-  ClockArrowRight,
   CloudAlert,
   CloudCheck,
   CloudSync,
@@ -58,18 +56,14 @@ export const getStatusColor = (status: ReviewStatus): string => {
   switch (status) {
     case "IDLE":
       return "bg-gray-500";
-    case "PROCESSING":
-      return "bg-info";
+
     case "REJECT":
       return "bg-error";
     case "SUCCESS":
       return "bg-success";
     case "SUPERSEDED":
       return "bg-base-300";
-    case "AI_REJECT":
-      return "bg-amber-300";
-    case "AI_APPROVED":
-      return "bg-success";
+
     default:
       return "";
   }
@@ -79,18 +73,12 @@ export const getStatusText = (status: ReviewStatus): string => {
   switch (status) {
     case "IDLE":
       return "待審核";
-    case "PROCESSING":
-      return "審核中";
     case "REJECT":
       return "審核未通過";
     case "SUCCESS":
       return "提交成功";
     case "SUPERSEDED":
       return "已取消";
-    case "AI_REJECT":
-      return "未通過 AI 審核";
-    case "AI_APPROVED":
-      return "已通過 AI 審核";
     default:
       return "";
   }
@@ -103,12 +91,8 @@ export const StatusIcon = ({ status }: { status: ReviewStatus }) => {
         status
       )}`}
     >
-      {status === "AI_REJECT" ? (
-        <BotOff className="w-4 h-4 text-base-100" />
-      ) : status === "IDLE" ? (
+      {status === "IDLE" ? (
         <Clock3 className="w-4 h-4 text-base-100" />
-      ) : status === "PROCESSING" ? (
-        <ClockArrowRight className="w-4 h-4 text-base-100" />
       ) : status === "REJECT" ? (
         <X className="w-4 h-4 text-base-100" />
       ) : status === "SUCCESS" ? (
