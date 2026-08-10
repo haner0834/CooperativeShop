@@ -31,6 +31,7 @@ export class RateLimitService {
   async checkAccess(
     ip: string,
     userId: string | null,
+    adminId: string | null,
     deviceId: string | null,
     trustLevel: TrustLevel,
     limitConfig?: RateLimitConfig,
@@ -65,12 +66,19 @@ export class RateLimitService {
       }
     }
 
-    // 3. 決定 Target Key (針對 User 或 Device 的個別限制)
+    // 3. 決定 Target Key (針對 User / Admin / Device 的個別限制)
     let targetKey = `rl:ip:${ip}:anon${scope}`;
     let targetLimit = 20; // Default anonymous limit inside the scope
 
     if (userId) {
       targetKey = `rl:user:${userId}${scope}`;
+      targetLimit = limitConfig?.uid ?? 300;
+    } else if (adminId) {
+      // Admin 用獨立的 key namespace，不跟學生共用配額 bucket——
+      // 就算 id 剛好撞在一起 (理論上 cuid 幾乎不可能)，也不會互相干擾額度。
+      // 每支 admin route 本來就會各自標 isolateScope + uid，
+      // 所以這裡沿用同一個 limitConfig.uid 就夠用，不用再開一組新的設定欄位。
+      targetKey = `rl:admin:${adminId}${scope}`;
       targetLimit = limitConfig?.uid ?? 300;
     } else if (deviceId) {
       targetKey = `rl:did:${deviceId}${scope}`;
