@@ -10,8 +10,8 @@ import {
   Clock,
   Link2,
   Trash2,
-  Crown,
   House,
+  User,
 } from "lucide-react";
 import { useAdminAuth } from "../../auth/admin-auth/AdminAuthContext";
 import { useAdminAuthFetch } from "../../auth/admin-auth/useAdminAuthFetch";
@@ -470,7 +470,7 @@ const AdminMembersConsole = () => {
                       className="border border-base-300 rounded-field p-3 flex items-center gap-3"
                     >
                       <div className="w-9 h-9 rounded-lg bg-base-200 flex items-center justify-center shrink-0">
-                        {isSelf ? <Crown size={16} /> : <Users size={16} />}
+                        <User size={16} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
