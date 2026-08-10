@@ -30,7 +30,11 @@ import Sidebar from "../widgets/Sidebar";
 import { SidebarContent } from "../widgets/SidebarContent";
 import { useDevice } from "../widgets/DeviceContext";
 import { useToast } from "../widgets/Toast/ToastProvider";
-import { type Weekday, type WorkScheduleBackend } from "../types/workSchedule";
+import {
+  type Weekday,
+  type WorkScheduleBackend,
+  type WorkScheduleType,
+} from "../types/workSchedule";
 import { formatWeekdays } from "../utils/formatWeekdays";
 import { buildHref, ContactCategoryIcon } from "../utils/contactInfoMap";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
@@ -119,10 +123,14 @@ const MinimalRangeBlock = ({
   startMinOfDay,
   endMinOfDay,
   isToday,
+  type,
+  scheduleNote,
 }: {
   startMinOfDay: number;
   endMinOfDay: number;
   isToday: boolean;
+  type: WorkScheduleType;
+  scheduleNote?: string;
 }) => {
   const total = 1440;
   const startPct = (startMinOfDay / total) * 100;
@@ -143,9 +151,16 @@ const MinimalRangeBlock = ({
   return (
     <div className="flex flex-col w-full group">
       {/* Time Labels */}
-      <div className="flex justify-between text-xs text-base-content/40 mb-1 font-mono">
+      <div className="flex justify-between items-center text-xs text-base-content/40 mb-1 font-mono">
         <span>{formatTime(startMinOfDay)}</span>
-        <span>{formatTime(endMinOfDay)}</span>
+        <div className="flex items-center gap-1.5">
+          {type === "FLEXIBLE" && (
+            <span className="badge badge-xs badge-soft font-sans normal-case">
+              彈性
+            </span>
+          )}
+          <span>{formatTime(endMinOfDay)}</span>
+        </div>
       </div>
 
       {/* Bar Container */}
@@ -170,10 +185,16 @@ const MinimalRangeBlock = ({
           />
         )}
       </div>
+
+      {/* Schedule Note (only rendered if present, doesn't affect layout when absent) */}
+      {scheduleNote && (
+        <span className="text-xs text-base-content/40 mt-1 truncate">
+          {scheduleNote}
+        </span>
+      )}
     </div>
   );
 };
-
 const ContactInfoSheet = ({ contactInfo }: { contactInfo: ContactInfo[] }) => {
   const { showToast } = useToast();
 
@@ -240,6 +261,13 @@ const ContactInfoSheet = ({ contactInfo }: { contactInfo: ContactInfo[] }) => {
   );
 };
 
+interface ScheduleRange {
+  start: number;
+  end: number;
+  type: WorkScheduleType;
+  scheduleNote?: string;
+}
+
 export const WorkScheduleDisplay = ({
   workSchedules,
 }: {
@@ -248,31 +276,39 @@ export const WorkScheduleDisplay = ({
   if (!workSchedules || workSchedules.length === 0) return null;
 
   // 1. Group intervals by Weekday
-  // Map<Weekday, Array<[start, end]>>
-  const dayMap = new Map<Weekday, Array<[number, number]>>();
-
+  // Map<Weekday, Array<ScheduleRange>>
+  const dayMap = new Map<Weekday, ScheduleRange[]>();
   workSchedules.forEach((sch) => {
     if (!dayMap.has(sch.weekday)) {
       dayMap.set(sch.weekday, []);
     }
-    dayMap.get(sch.weekday)!.push([sch.startMinuteOfDay, sch.endMinuteOfDay]);
+    dayMap.get(sch.weekday)!.push({
+      start: sch.startMinuteOfDay,
+      end: sch.endMinuteOfDay,
+      type: sch.type,
+      scheduleNote: sch.scheduleNote,
+    });
   });
 
   // 2. Sort intervals for each day to ensure consistency
   dayMap.forEach((ranges) => {
-    ranges.sort((a, b) => a[0] - b[0]);
+    ranges.sort((a, b) => a.start - b.start);
   });
 
   // 3. Group Weekdays by identical schedule signatures
-  // Signature example: "540-720,840-1020"
+  // Signature 現在把 type / scheduleNote 也納入，避免時間相同但內容不同被誤合併
+  // e.g. "540-720|FIXED|,840-1020|FLEXIBLE|售完為止"
   const groupedSchedules = new Map<
     string,
-    { days: Weekday[]; ranges: Array<[number, number]> }
+    {
+      days: Weekday[];
+      ranges: ScheduleRange[];
+    }
   >();
-
   dayMap.forEach((ranges, day) => {
-    const signature = ranges.map((r) => `${r[0]}-${r[1]}`).join(",");
-
+    const signature = ranges
+      .map((r) => `${r.start}-${r.end}|${r.type}|${r.scheduleNote ?? ""}`)
+      .join(",");
     if (!groupedSchedules.has(signature)) {
       groupedSchedules.set(signature, { days: [], ranges });
     }
@@ -280,9 +316,9 @@ export const WorkScheduleDisplay = ({
   });
 
   const currentWeekday = getCurrentWeekday();
+
   // Convert Map to Array for rendering and sort by weekday order roughly (optional, but good for UI)
   const displayGroups = Array.from(groupedSchedules.values()).sort((a, b) => {
-    // Simple sort by first day in the group
     const idxA = weekdayOrder.indexOf(a.days[0]);
     const idxB = weekdayOrder.indexOf(b.days[0]);
     return idxA - idxB;
@@ -292,7 +328,6 @@ export const WorkScheduleDisplay = ({
     <div className="space-y-4">
       {displayGroups.map((group, idx) => {
         const isToday = group.days.includes(currentWeekday);
-
         return (
           <div
             key={idx}
@@ -317,15 +352,16 @@ export const WorkScheduleDisplay = ({
                 </span>
               )}
             </div>
-
             {/* Right Column: Time Blocks (Stack vertically if multiple slots) */}
             <div className="flex-1 w-full flex flex-col gap-2 justify-center">
               {group.ranges.map((range, rangeIdx) => (
                 <MinimalRangeBlock
                   key={`range-${idx}-${rangeIdx}`}
-                  startMinOfDay={range[0]}
-                  endMinOfDay={range[1]}
+                  startMinOfDay={range.start}
+                  endMinOfDay={range.end}
                   isToday={isToday}
+                  type={range.type ?? "FIXED"}
+                  scheduleNote={range.scheduleNote}
                 />
               ))}
             </div>
