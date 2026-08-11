@@ -28,6 +28,8 @@ model ShopDraft {
     thumbnailKey String?
     images       Json    @default("[]") // array
 
+    submissionNote String?
+
     schoolId String
     school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
