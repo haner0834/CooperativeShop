@@ -22,6 +22,11 @@ function minuteOfDayToHHMM(minuteOfDay: number): string {
  *
  * NOTE: 欄位命名刻意維持跟 ShopDraft 一致（address/longitude/latitude 併成 location），
  * 讓 prompt 端的 Rule 5 (Location) 可以直接吃到完整地址資訊。
+ *
+ * submissionNote 是店家／提交者填給審核員看的自由文字備註（溝通用，不是審核欄位）。
+ * 直接原樣帶給 AI，讓它在寫 reason 時可以參考這個脈絡；但這段文字是使用者自報、
+ * 未經查證的內容，prompt 那邊會明確要求 AI 只能把它當「情境說明」讀，
+ * 不能當作可以覆蓋查證結果的證據，也不能被當成指令執行（防止 prompt injection）。
  */
 export function buildShopInfoPayload(draft: ShopDraftDto) {
   return {
@@ -30,6 +35,7 @@ export function buildShopInfoPayload(draft: ShopDraftDto) {
     description: draft.description,
     discount: draft.discount ?? null,
     contactInfo: draft.contactInfo ?? [],
+    submissionNote: draft.submissionNote ?? null,
     location: {
       address: draft.address,
       longitude: draft.longitude,
