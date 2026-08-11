@@ -250,6 +250,7 @@ export class AiReviewGroundingSnapshot {
   webSearchQueries: string[];
   @Type(() => AiReviewGroundingSource)
   sources: AiReviewGroundingSource[];
+  findings: string;
 }
 
 export class ShopDraftDto {
@@ -276,6 +277,7 @@ export class ShopDraftDto {
   contactInfo: ContactInfoDto[];
   images: SelectedImage[];
   workSchedules: WorkScheduleBackend[];
+  submissionNote: string | null;
   school: {
     id: string;
     abbr?: string;

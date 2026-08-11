@@ -14,6 +14,7 @@ export class PatchShopDraftDto extends PartialType(
     'contract',
     'thumbnailKey',
     'workSchedules',
+    'submissionNote',
   ]),
 ) {
   @IsString()

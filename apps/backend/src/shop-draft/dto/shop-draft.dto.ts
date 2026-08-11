@@ -290,6 +290,11 @@ export class ShopDraftDto {
 
   @Expose()
   @IsOptional()
+  @IsString()
+  submissionNote: string | null;
+
+  @Expose()
+  @IsOptional()
   @ValidateNested()
   @Type(() => SchoolInfoDto)
   @Transform(({ obj, type }) => {
