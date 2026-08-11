@@ -23,7 +23,7 @@ const fieldResultSchema = {
   required: ['isValid', 'reason', 'source'],
 };
 
-export const AI_REVIEW_RESPONSE_SCHEMA = {
+const AI_REVIEW_JSON_SCHEMA = {
   type: 'object',
   properties: {
     title: fieldResultSchema,
@@ -32,7 +32,6 @@ export const AI_REVIEW_RESPONSE_SCHEMA = {
     discount: fieldResultSchema,
     contactInfo: fieldResultSchema,
     location: fieldResultSchema,
-    // NOTE: 原本叫 contractScan，改名對齊 ShopDraft.contract 欄位命名。
     contract: fieldResultSchema,
     workSchedules: fieldResultSchema,
     isPassed: { type: 'boolean' },
@@ -66,7 +65,22 @@ export const AI_REVIEW_RESPONSE_SCHEMA = {
   ],
 };
 
+/**
+ * Interactions API 用結構化輸出的 response_format（取代 generateContent
+ * 舊版 generationConfig.responseMimeType / responseSchema）。
+ * 參考：https://ai.google.dev/gemini-api/docs/migrate-to-interactions#structured-output
+ */
+export const AI_REVIEW_RESPONSE_FORMAT = [
+  {
+    type: 'text',
+    mime_type: 'application/json',
+    schema: AI_REVIEW_JSON_SCHEMA,
+  },
+];
+
 export const DEFAULT_GEMINI_MODEL = 'gemini-3.5-flash';
+// NOTE: Interactions API 端點是 `${baseUrl}/interactions`（同一顆 v1beta base），
+// 不再是 `${baseUrl}/models/{model}:generateContent`。
 export const DEFAULT_GEMINI_API_BASE_URL =
   'https://generativelanguage.googleapis.com/v1beta';
 

@@ -6,7 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { prompts } from 'src/generated/prompts';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
-  AI_REVIEW_RESPONSE_SCHEMA,
+  AI_REVIEW_RESPONSE_FORMAT,
   DEFAULT_GEMINI_API_BASE_URL,
   DEFAULT_GEMINI_FREE_MODEL,
   DEFAULT_GEMINI_MODEL,
@@ -15,6 +15,7 @@ import {
   buildPublicInfoPayload,
   buildShopInfoPayload,
   extractGroundingSources,
+  extractModelOutputText,
   extractWebSearchQueries,
 } from './utils/ai-review.utils';
 import { AiReviewResult } from './interfaces/ai-review-result.interface';
@@ -23,20 +24,18 @@ import { ShopDraftDto } from 'src/shop-draft/dto/shop-draft.dto';
 import { BadRequestError, InternalError } from 'src/types/error.types';
 import { env } from 'src/common/utils/env.utils';
 import { getImageUrl } from 'src/common/utils/get-image-url.utils';
-
-interface RequestTarget {
-  url: string;
-  headers?: Record<string, string>;
-}
+import { promises as fs } from 'fs';
 
 @Injectable()
 export class AiReviewService {
-  // 第一次審核用：有開 googleSearch grounding 的正式專案，比較貴。
+  private readonly logger = new Logger(AiReviewService.name);
+
+  // Step 1（grounding-only）用：需要開 googleSearch，走有掛正式帳單的專案。
   private readonly apiKey: string;
   private readonly model: string;
 
-  // 第二次以後用：免費層級專案，不掛 googleSearch，靠上次存好的
-  // grounding 來源當作 public_info context。
+  // Step 2（正式審核，只要 JSON，不搜尋）用：不再需要 googleSearch 權限，
+  // 所以「每一次」審核都可以走免費專案，不只是第二次以後。
   private readonly freeApiKey: string;
   private readonly freeProjectNumber: string;
   private readonly freeModel: string;
@@ -63,10 +62,15 @@ export class AiReviewService {
   /**
    * 對一筆 ShopDraft 資料做 AI 稽核。
    *
-   * - 這個 draft 從沒被 grounding 過 -> 用正式專案 + googleSearch，
-   *   查完把來源存進 ShopDraft.aiGroundingSources。
-   * - 已經有存過的 grounding 來源 -> 用免費專案，不開 googleSearch，
-   *   直接把存好的來源餵給模型，省下 grounding 費用。
+   * 拆成兩次獨立的 Gemini 呼叫，刻意不在同一次請求裡同時開
+   * `google_search` tool 跟 `response_format`：
+   *
+   * - Step 1（僅限這個 draft 從沒 grounding 過時才呼叫）：
+   *   純搜尋，不帶 schema，換取穩定的 annotations/citation，
+   *   查完存進 ShopDraft.aiGroundingSources。
+   * - Step 2（每次都呼叫）：不掛 google_search，只要求結構化 JSON，
+   *   吃 shop_info + 合約 PDF + （若有）Step 1 存好的 public_info，
+   *   產出真正的審核結果。
    *
    * 審核結果一律寫回 draft.currentVersion.aiReviewResult。
    */
@@ -74,32 +78,28 @@ export class AiReviewService {
     this.assertReviewable(draft);
 
     const shopInfo = buildShopInfoPayload(draft);
-    const groundingSnapshot = await this.getGroundingSnapshot(draft.id);
-    const useGrounding = !groundingSnapshot && this.enableSearchGrounding;
-    const publicInfo = buildPublicInfoPayload(groundingSnapshot?.sources ?? []);
-    console.log('useGrounding:', useGrounding);
+
+    let groundingSnapshot = await this.getGroundingSnapshot(draft.id);
+    if (!groundingSnapshot && this.enableSearchGrounding) {
+      groundingSnapshot = await this.runGroundingStep(shopInfo);
+      if (groundingSnapshot) {
+        await this.saveGroundingSnapshot(draft.id, groundingSnapshot);
+      }
+    }
+
+    const hasRealGrounding = !!groundingSnapshot?.sources?.length;
+    const publicInfo = buildPublicInfoPayload(groundingSnapshot);
 
     const contractBuffer = await this.downloadFileAsBuffer(
       getImageUrl(draft.contract!.fileKey!),
     );
 
-    const requestBody = this.buildRequestBody(
+    const result = await this.runReviewStep(
       shopInfo,
       publicInfo,
       contractBuffer,
-      useGrounding,
+      hasRealGrounding,
     );
-    const { url, headers } = this.resolveRequestTarget(useGrounding);
-
-    const responseData = await this.callGemini(url, requestBody, headers);
-    const result = this.sanitizeUnverifiedSources(
-      this.parseResponse(responseData),
-      responseData,
-    );
-
-    if (useGrounding) {
-      await this.saveGroundingSnapshot(draft.id, responseData);
-    }
 
     await this.saveReviewResult(draft.currentVersion!.id, result);
 
@@ -136,22 +136,84 @@ export class AiReviewService {
     return snapshot;
   }
 
-  private async saveGroundingSnapshot(
-    draftId: string,
-    responseData: unknown,
-  ): Promise<void> {
-    const sources = extractGroundingSources(responseData);
+  /**
+   * Step 1：grounding-only 呼叫。
+   *
+   * 刻意不帶 `response_format`——一旦跟 `google_search` 同時出現，
+   * Interactions API 的 annotations（新版）／generateContent 的
+   * groundingMetadata（舊版）很容易整包回空的，這是 Gemini 目前有
+   * 已知回報的行為，不是我們呼叫方式錯。這次呼叫也不需要附合約 PDF，
+   * 跟合約審核無關，可以省下這次的 PDF token。
+   *
+   * 這裡沒有一定會拿到來源：可能是這次真的沒查到公開資訊，也可能是
+   * Gemini 端 grounding metadata 本身偶爾異常（跟有沒有開 schema 無關）。
+   * 兩種情況都直接回 null、不存 snapshot，讓下一次審核重新嘗試 grounding，
+   * 而不是把「沒查到」跟「查到但空」混為一談、卡死在錯誤狀態。
+   */
+  private async runGroundingStep(
+    shopInfo: unknown,
+  ): Promise<AiReviewGroundingSnapshot | null> {
+    console.log('grounding step triggered');
+    const url = `${this.baseUrl}/interactions`;
 
-    // 這次 googleSearch 沒查到任何東西的話別存空快照，
-    // 讓下一次審核還是會再嘗試 grounding，而不是永遠停在「沒有公開資訊」。
-    if (!sources.length) return;
-
-    const snapshot: AiReviewGroundingSnapshot = {
-      fetchedAt: new Date().toISOString(),
-      webSearchQueries: extractWebSearchQueries(responseData),
-      sources,
+    const body: Record<string, unknown> = {
+      model: this.model,
+      system_instruction: prompts.AI_SHOP_GROUNDING_PROMPT,
+      input: [
+        {
+          type: 'text',
+          text: JSON.stringify({ shop_info: shopInfo }),
+        },
+      ],
+      tools: [{ type: 'google_search' }],
+      generation_config: {
+        temperature: 0.2,
+      },
+      store: false,
     };
 
+    const responseData = await this.callGemini(url, body, {
+      'x-goog-api-key': this.apiKey,
+    });
+
+    await fs.writeFile(
+      `./results/groundings/${new Date().toISOString()}.json`,
+      JSON.stringify(responseData, null, 2),
+      'utf-8',
+    );
+
+    const sources = extractGroundingSources(responseData);
+
+    if (!sources.length) {
+      this.logger.warn(
+        'Grounding 呼叫沒有拿到任何 annotation/citation（可能是這次沒查到公開資訊，' +
+          '也可能是 Gemini grounding metadata 異常），本次不存 snapshot，下次審核會重新嘗試。',
+      );
+      return null;
+    }
+
+    const findings = extractModelOutputText(responseData);
+
+    if (!findings) {
+      this.logger.warn(
+        '有拿到 annotation/citation 但抓不到 model_output 文字，snapshot 缺少 findings，' +
+          '本次不存 snapshot，下次審核會重新嘗試。',
+      );
+      return null;
+    }
+
+    return {
+      fetchedAt: new Date().toISOString(),
+      webSearchQueries: extractWebSearchQueries(responseData),
+      findings,
+      sources,
+    };
+  }
+
+  private async saveGroundingSnapshot(
+    draftId: string,
+    snapshot: AiReviewGroundingSnapshot,
+  ): Promise<void> {
     await this.prisma.shopDraft.update({
       where: { id: draftId },
       data: {
@@ -172,18 +234,58 @@ export class AiReviewService {
     });
   }
 
-  private resolveRequestTarget(useGrounding: boolean): RequestTarget {
-    if (useGrounding) {
-      return {
-        url: `${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`,
-      };
-    }
+  /**
+   * Step 2：正式審核呼叫。不掛 `google_search`，只要求結構化 JSON。
+   * 因為不搜尋，一律可以走免費專案（不再只有「第二次以後」才走免費）。
+   */
+  private async runReviewStep(
+    shopInfo: unknown,
+    publicInfo: unknown,
+    contractBuffer: Buffer,
+    hasRealGrounding: boolean,
+  ): Promise<AiReviewResult> {
+    console.log('Review step triggered');
+    const url = `${this.baseUrl}/interactions`;
 
-    return {
-      url: `${this.baseUrl}/models/${this.freeModel}:generateContent?key=${this.freeApiKey}`,
-      // 免費專案用這個 header 把用量掛到指定的 project number 上。
-      headers: { 'x-goog-user-project': this.freeProjectNumber },
+    const input: any[] = [
+      {
+        type: 'text',
+        text: JSON.stringify({
+          shop_info: shopInfo,
+          public_info: publicInfo,
+        }),
+      },
+      {
+        type: 'document',
+        mime_type: 'application/pdf',
+        data: contractBuffer.toString('base64'),
+      },
+    ];
+
+    const body: Record<string, unknown> = {
+      model: this.freeModel,
+      system_instruction: prompts.AI_SHOP_REVIEW_PROMPT,
+      input,
+      response_format: AI_REVIEW_RESPONSE_FORMAT,
+      generation_config: {
+        temperature: 0.2,
+      },
+      store: false,
     };
+
+    const responseData = await this.callGemini(url, body, {
+      'x-goog-api-key': this.freeApiKey,
+      'x-goog-user-project': this.freeProjectNumber,
+    });
+
+    await fs.writeFile(
+      `./results/reviews/${new Date().toISOString()}.json`,
+      JSON.stringify(responseData, null, 2),
+      'utf-8',
+    );
+
+    const result = this.parseResponse(responseData);
+    return this.sanitizeUnverifiedSources(result, hasRealGrounding);
   }
 
   private async downloadFileAsBuffer(fileUrl: string): Promise<Buffer> {
@@ -204,53 +306,6 @@ export class AiReviewService {
     }
   }
 
-  private buildRequestBody(
-    shopInfo: unknown,
-    publicInfo: unknown,
-    contractBuffer: Buffer,
-    useGrounding: boolean,
-  ): Record<string, unknown> {
-    const parts: any[] = [
-      {
-        text: JSON.stringify({
-          shop_info: shopInfo,
-          public_info: publicInfo,
-        }),
-      },
-      {
-        inlineData: {
-          mimeType: 'application/pdf',
-          data: contractBuffer.toString('base64'),
-        },
-      },
-    ];
-
-    const body: Record<string, any> = {
-      systemInstruction: {
-        parts: [{ text: prompts.AI_SHOP_REVIEW_PROMPT }],
-      },
-      contents: [
-        {
-          role: 'user',
-          parts,
-        },
-      ],
-      generationConfig: {
-        responseMimeType: 'application/json',
-        responseSchema: AI_REVIEW_RESPONSE_SCHEMA,
-        temperature: 0.2,
-      },
-    };
-
-    // 只有第一次（真的要用 googleSearch）才掛 tools，
-    // 免費專案那次刻意不掛，靠 public_info 裡存好的來源清單頂替。
-    if (useGrounding) {
-      body.tools = [{ googleSearch: {} }];
-    }
-
-    return body;
-  }
-
   private async callGemini(
     url: string,
     body: Record<string, unknown>,
@@ -258,7 +313,7 @@ export class AiReviewService {
   ): Promise<unknown> {
     try {
       const response = await firstValueFrom(
-        this.httpService.post(url, body, { timeout: 120_000, headers }),
+        this.httpService.post(url, body, { timeout: 600_000, headers }),
       );
       return response.data;
     } catch (error) {
@@ -273,12 +328,15 @@ export class AiReviewService {
     }
   }
 
+  /**
+   * `hasRealGrounding` 現在直接由 Step 1 是否存到 snapshot 決定，
+   * 不再從 Step 2 的 responseData 反推——Step 2 本來就不掛
+   * google_search，responseData 裡不會有任何 grounding 資訊可看。
+   */
   private sanitizeUnverifiedSources(
     result: AiReviewResult,
-    responseData: unknown,
+    hasRealGrounding: boolean,
   ): AiReviewResult {
-    const hasRealGrounding = extractGroundingSources(responseData).length > 0;
-
     if (hasRealGrounding) return result;
 
     const publicSourceLabels = [
@@ -306,18 +364,11 @@ export class AiReviewService {
   }
 
   private parseResponse(data: any): AiReviewResult {
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    const groundingMetadata = data?.candidates?.[0]?.groundingMetadata;
-    if (groundingMetadata?.groundingChunks) {
-      console.log(
-        `[Grounding] AI 成功檢索了 ${groundingMetadata.groundingChunks.length} 個真實網路資訊來源。`,
-      );
-    }
+    const text = extractModelOutputText(data);
 
     if (!text) {
       console.error(
-        'Gemini 回應格式不符預期（找不到 candidates[0].content.parts[0].text）',
+        '互動回應格式不符預期（找不到 model_output step 裡的 text content）',
         JSON.stringify(data),
       );
       throw new InternalError('AI 審核服務回應格式異常');
@@ -337,10 +388,7 @@ export class AiReviewService {
       const hasAllFields = requiredFields.every((field) => field in parsed);
 
       if (!hasAllFields) {
-        console.error(
-          'Gemini 回應遺漏了關鍵的 JSON 欄位（可能受聯網影響斷篇）',
-          text,
-        );
+        console.error('Gemini 回應遺漏了關鍵的 JSON 欄位', text);
         throw new InternalError('AI 審核服務回應結構不完整');
       }
 
