@@ -131,11 +131,6 @@ export class ShopDraftReviewService {
         },
       });
 
-      await this.prisma.shopDraft.update({
-        where: { id: draft.id },
-        data: { stage: 'APPROVED' },
-      });
-
       await this.instaPostService.schedulePostFromShop(draftDto);
     } else if (result === 'REJECT') {
       if (!rejectReason)
@@ -154,5 +149,10 @@ export class ShopDraftReviewService {
         },
       });
     }
+
+    await this.prisma.shopDraft.update({
+      where: { id: draft.id },
+      data: { stage: 'EDITING' },
+    });
   }
 }
