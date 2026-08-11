@@ -1,5 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
-import BackButton from "../../../widgets/BackButton";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ShopDraftDto } from "../../../types/shop";
 import { plainToInstance } from "class-transformer";
@@ -18,17 +17,23 @@ import WorkScheduleBlock from "./WorkScheduleBlock";
 import MetadataBlock from "./MetadataBlock";
 import HumanDecisionBlock from "./HumanDecisionBlock";
 import ImagesBlock from "./ImagesBlock";
+import { List } from "lucide-react";
 
 const Navbar = ({}: {}) => {
   return (
     <div className="navbar bg-base-100 shadow-sm z-50 fixed">
-      <div className="flex-1 ms-2">
-        <BackButton fallback="/admin" />
-      </div>
+      <div className="flex-1 ms-2"></div>
       <div className="flex-1 text-center">
         <h1 className="text-base font-semibold">Shop Info Review</h1>
       </div>
-      <div className="flex-1 flex me-2 gap-4 justify-end items-center"></div>
+      <div className="flex-1 flex me-2 gap-4 justify-end items-center">
+        <Link
+          to="/admin/draft-review-list"
+          className="btn btn-ghost btn-square"
+        >
+          <List />
+        </Link>
+      </div>
     </div>
   );
 };
