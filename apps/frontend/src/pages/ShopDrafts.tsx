@@ -323,12 +323,13 @@ const ShopDrafts = () => {
                 >
                   <div className="w-full bg-base-100 rounded-box p-4 shadow">
                     <div className="flex gap-4">
-                      {draft.images[0].previewUrl && (
-                        <img
-                          src={draft.images[0].previewUrl}
-                          className="w-30 h-30 aspect-square rounded-field"
-                        />
-                      )}
+                      {draft.images.length >= 1 &&
+                        draft.images[0].previewUrl && (
+                          <img
+                            src={draft.images[0].previewUrl}
+                            className="w-30 h-30 aspect-square rounded-field"
+                          />
+                        )}
 
                       <div className="flex flex-col gap-2 flex-1">
                         <div className="flex items-baseline gap-1 font-semibold">
