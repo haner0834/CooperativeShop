@@ -44,7 +44,7 @@ export class ShopDraftService {
     return {
       title: normalize(title),
       subtitle: normalize(subtitle || ''),
-      fullKey: `${normalize(title)}|${normalize(subtitle || '')}`,
+      fullKey: `${normalize(title)}${normalize(subtitle || '')}`,
     };
   }
 
