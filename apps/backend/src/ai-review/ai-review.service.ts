@@ -153,7 +153,6 @@ export class AiReviewService {
   private async runGroundingStep(
     shopInfo: unknown,
   ): Promise<AiReviewGroundingSnapshot | null> {
-    console.log('grounding step triggered');
     const url = `${this.baseUrl}/interactions`;
 
     const body: Record<string, unknown> = {
@@ -244,7 +243,6 @@ export class AiReviewService {
     contractBuffer: Buffer,
     hasRealGrounding: boolean,
   ): Promise<AiReviewResult> {
-    console.log('Review step triggered');
     const url = `${this.baseUrl}/interactions`;
 
     const input: any[] = [
