@@ -18,6 +18,7 @@ import MetadataBlock from "./MetadataBlock";
 import HumanDecisionBlock from "./HumanDecisionBlock";
 import ImagesBlock from "./ImagesBlock";
 import { List } from "lucide-react";
+import SubmissionNoteBlock from "./SubmissionNoteBlock";
 
 const Navbar = ({}: {}) => {
   return (
@@ -163,6 +164,8 @@ const DraftReview = () => {
               />
 
               <WorkScheduleBlock draft={draft} />
+
+              <SubmissionNoteBlock draft={draft} />
 
               <GroundingSourcesBlock draft={draft} />
 

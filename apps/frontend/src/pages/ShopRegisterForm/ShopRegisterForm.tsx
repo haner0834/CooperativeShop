@@ -49,6 +49,7 @@ import ShopContractBlock, { type UploadedContract } from "./ShopContractBlock";
 import { plainToInstance } from "class-transformer";
 import RejectReasonBlock from "./RejectReasonBlock";
 import { usePathHistory } from "../../contexts/PathHistoryContext";
+import SubmissionNoteBlock from "./ShopSubmissionNoteBlock";
 
 type SyncStatus = "success" | "failed" | "idle" | "syncing";
 
@@ -185,6 +186,7 @@ const ShopRegisterForm = () => {
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([
     DEFAULT_WORKSCHEDULE,
   ]);
+  const [submissionNote, setSubmissionNote] = useState("");
   const [editToken, setEditToken] = useState<string | null>(null);
   const [showHint, setShowHint] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -299,6 +301,7 @@ const ShopRegisterForm = () => {
             : null
         );
         setContactInfo(draft.contactInfo.map(fromContactInfoDto));
+        setSubmissionNote(draft.submissionNote ?? "");
       }
     };
     a();
@@ -420,6 +423,7 @@ const ShopRegisterForm = () => {
     contract,
     activeUser?.schoolId,
     activeUser?.schoolAbbr,
+    submissionNote,
   ]);
 
   async function authedFetchWithLockToken(
@@ -594,7 +598,7 @@ const ShopRegisterForm = () => {
     const currentDraft: ShopDraftDto = {
       ...lastSavedDraft.current,
       title: title.trim(),
-      subtitle: subTitle.trim(),
+      subtitle: subTitle.trim() ?? null,
       description: description.trim(),
       discount: discount.trim(),
       address: address.trim(),
@@ -604,6 +608,7 @@ const ShopRegisterForm = () => {
       contactInfo: contactInfo.map(toContactInfoDto),
       contract,
       workSchedules: toBackendSchedules(workSchedules),
+      submissionNote: submissionNote ?? null,
     };
 
     const lastSaved = lastSavedDraft.current;
@@ -770,6 +775,13 @@ const ShopRegisterForm = () => {
             workSchedules={workSchedules}
             showHint={showHint}
             setWorkSchedules={setWorkSchedules}
+          />
+
+          <div className="divider text-base-content/40"></div>
+
+          <SubmissionNoteBlock
+            submissionNote={submissionNote}
+            setSubmissionNote={setSubmissionNote}
           />
 
           <div className="flex space-x-4">
