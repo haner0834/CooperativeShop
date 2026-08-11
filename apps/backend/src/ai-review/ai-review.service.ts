@@ -24,7 +24,6 @@ import { ShopDraftDto } from 'src/shop-draft/dto/shop-draft.dto';
 import { BadRequestError, InternalError } from 'src/types/error.types';
 import { env } from 'src/common/utils/env.utils';
 import { getImageUrl } from 'src/common/utils/get-image-url.utils';
-import { promises as fs } from 'fs';
 
 @Injectable()
 export class AiReviewService {
@@ -175,12 +174,6 @@ export class AiReviewService {
       'x-goog-api-key': this.apiKey,
     });
 
-    await fs.writeFile(
-      `./results/groundings/${new Date().toISOString()}.json`,
-      JSON.stringify(responseData, null, 2),
-      'utf-8',
-    );
-
     const sources = extractGroundingSources(responseData);
 
     if (!sources.length) {
@@ -275,12 +268,6 @@ export class AiReviewService {
       'x-goog-api-key': this.freeApiKey,
       'x-goog-user-project': this.freeProjectNumber,
     });
-
-    await fs.writeFile(
-      `./results/reviews/${new Date().toISOString()}.json`,
-      JSON.stringify(responseData, null, 2),
-      'utf-8',
-    );
 
     const result = this.parseResponse(responseData);
     return this.sanitizeUnverifiedSources(result, hasRealGrounding);
