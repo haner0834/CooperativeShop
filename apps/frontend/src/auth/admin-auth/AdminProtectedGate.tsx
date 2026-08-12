@@ -10,7 +10,7 @@ const AdminProtectedGate = () => {
 
   useEffect(() => {
     if (hasAttemptedRestore && !activeAdmin) {
-      navigate(`/admin/login?to=${btoa(location.pathname)}`);
+      navigate(`/admin/login?to=${encodeURI(location.pathname)}`);
     }
   }, [hasAttemptedRestore, activeAdmin]);
 
