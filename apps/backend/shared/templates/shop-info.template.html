@@ -105,14 +105,6 @@
         line-height: normal;
       }
 
-      .business-hours-group {
-        display: inline-flex;
-        flex-direction: column;
-        align-items: flex-start;
-        position: relative;
-        flex: 0 0 auto;
-      }
-
       .text-hours {
         width: 904px;
         margin-top: -1px;
@@ -121,17 +113,6 @@
         color: #452c2b;
         font-size: 48px;
         letter-spacing: 0;
-        position: relative;
-        line-height: normal;
-      }
-
-      .text-note {
-        width: 904px;
-        font-family: var(--font-serif);
-        font-weight: 600;
-        color: #452c2b;
-        font-size: 36px;
-        letter-spacing: 3.24px;
         position: relative;
         line-height: normal;
       }
@@ -155,12 +136,7 @@
       <div class="details-stack">
         <div class="text-address">地址：{{address}}</div>
 
-        <div class="business-hours-group">
-          <div class="text-hours">營業時間：<br />{{{workSchedule}}}</div>
-          {{#if scheduleNote}}
-          <div class="text-note">{{scheduleNote}}</div>
-          {{/if}}
-        </div>
+        <div class="text-hours">營業時間：<br />{{{workSchedule}}}</div>
 
         <div class="text-info-item">聯絡資訊：{{contact}}</div>
         <div class="text-info-item">優惠內容：{{discount}}</div>
