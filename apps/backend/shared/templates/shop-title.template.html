@@ -1,58 +1,118 @@
+<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css"
+    />
+    <!-- 引入 Google Fonts (Noto Serif TC: 900) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@900&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
+      :root {
+        --canvas-size: 1280px;
+        --bg-url: url('{{bgImageUrl}}');
+        --font-serif:
+          'Noto Serif TC', 'Source Han Serif TC', 'Songti TC', 'PMingLiU', serif;
+      }
+
+      * {
+        -webkit-font-smoothing: antialiased;
+        box-sizing: border-box;
+      }
+
       html {
         background-color: #f0f0f0;
         display: flex;
+        min-height: 100%;
+        margin: 0px;
       }
-      :root {
-        --canvas-size: 1024px;
-      }
-      body {
-        container-type: inline-size;
 
+      body {
         width: var(--canvas-size);
         height: var(--canvas-size);
-        margin: 0;
-        padding: 4.68cqi;
+        margin: 0px;
+        padding: 108px 164px 173px 112px;
         box-sizing: border-box;
 
-        background-image: url('{{bgBase64Url}}');
+        background-image: var(--bg-url);
         background-size: 100% 100%;
         background-position: center;
         background-repeat: no-repeat;
-        overflow: clip;
         display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: 'Helvetica Neue', Arial, sans-serif;
+        flex-direction: column;
+        align-items: flex-start;
+        position: relative;
+        font-family: var(--font-serif);
+        font-weight: 900;
+      }
+
+      .frame-wrapper {
+        width: 1004px;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 212px 42px;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        flex: 0 0 auto;
       }
 
       .content-stack {
+        align-items: center;
+        justify-content: center;
+        padding: 14px 0px;
+        align-self: stretch;
+        width: 100%;
         display: flex;
         flex-direction: column;
-        gap: 4.6cqi;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        max-width: 100%;
-        height: 100%;
-        width: 100%;
+        position: relative;
+        flex: 0 0 auto;
       }
 
-      h1 {
+      .main-title {
+        position: relative;
+        width: 920px;
         margin: 0;
-        font-size: 12cqi;
-        color: #2d3748;
-        line-height: 1.2;
-        padding-bottom: 4cqi;
+        margin-top: -1px;
+        font-family: var(--font-serif);
+        font-weight: 900;
+        color: #452c2b;
+        font-size: 150px;
+        text-align: center;
+        letter-spacing: -6px;
+        line-height: normal;
+      }
+
+      .sub-title {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        align-self: stretch;
+        font-family: var(--font-serif);
+        font-weight: 900;
+        color: #452c2b;
+        font-size: 80px;
+        text-align: right;
+        letter-spacing: 16px;
+        line-height: normal;
       }
     </style>
   </head>
   <body>
-    <div class="content-stack">
-      <h1>店名</h1>
+    <div class="frame-wrapper">
+      <div class="content-stack">
+        <h1 class="main-title">{{{storeName}}}</h1>
+        <div class="sub-title">{{branchName}}</div>
+      </div>
     </div>
   </body>
 </html>

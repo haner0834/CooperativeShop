@@ -1,68 +1,101 @@
+<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css"
+    />
+    <!-- 引入 Google Fonts (Noto Serif TC: 500, 700) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
+      :root {
+        --canvas-size: 1280px;
+        --bg-url: url('{{bgImageUrl}}');
+        /* 全域字型定義：優先 CDN/FPS，最後降級至系統預設襯線體 (Serif) */
+        --font-serif:
+          'Noto Serif TC', 'Source Han Serif TC', 'Songti TC', 'PMingLiU', serif;
+      }
+
+      * {
+        -webkit-font-smoothing: antialiased;
+        box-sizing: border-box;
+      }
+
       html {
         background-color: #f0f0f0;
         display: flex;
+        min-height: 100%;
+        margin: 0px;
       }
-      :root {
-        --canvas-size: 1024px;
-      }
-      body {
-        container-type: inline-size;
 
+      body {
         width: var(--canvas-size);
         height: var(--canvas-size);
-        margin: 0;
-        padding: 4.68cqi;
+        margin: 0px;
+        padding: 108px 112px 139px;
         box-sizing: border-box;
 
-        background-image: url('{{bgBase64Url}}');
+        background-image: var(--bg-url);
         background-size: 100% 100%;
         background-position: center;
         background-repeat: no-repeat;
-        overflow: clip;
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
-        font-family: 'Helvetica Neue', Arial, sans-serif;
-      }
-
-      .content-stack {
         display: flex;
         flex-direction: column;
-        gap: 4.6cqi;
+        align-items: flex-start;
+        position: relative;
+        font-family: var(--font-serif);
+        font-weight: 500;
+      }
+
+      .content-wrapper {
+        display: flex;
+        flex-direction: column;
+        width: 1056px;
         align-items: center;
+        gap: 34px;
+        padding: 41px 72px;
+        position: relative;
+        flex: 0 0 auto;
+      }
+
+      .main-title {
+        margin: 0;
+        margin-top: -1px;
+        font-family: var(--font-serif);
+        font-weight: 700;
+        font-size: 110px;
         text-align: center;
-        max-width: 100%;
-        height: 100%;
-        width: 100%;
+        letter-spacing: 0;
+        position: relative;
+        align-self: stretch;
+        color: #452c2b;
+        line-height: normal;
       }
 
-      h1 {
-        margin: 0;
-        font-size: 6.25cqi;
-        color: #2d3748;
-        line-height: 1.2;
-        padding-top: 7.5cqi;
-      }
-
-      p {
-        margin: 0;
-        font-size: 3.8cqi;
-        color: #4a5568;
-        line-height: 1.5;
-        margin-left: 8cqi;
-        margin-right: 8cqi;
-        text-align: justify;
+      .description {
+        font-family: var(--font-serif);
+        font-weight: 500;
+        font-size: 44px; /* max 247 chinese letters*/
+        letter-spacing: 4.32px;
+        position: relative;
+        align-self: stretch;
+        color: #452c2b;
+        line-height: normal;
       }
     </style>
   </head>
   <body>
-    <div class="content-stack">
-      <h1>商家簡介</h1>
-      <p>{{shopDescription}}</p>
+    <div class="content-wrapper">
+      <h1 class="main-title">店家簡介</h1>
+      <div class="description">{{description}}</div>
     </div>
   </body>
 </html>
