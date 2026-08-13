@@ -6,7 +6,7 @@
     "studentIdFormat": null,
     "websiteUrl": "https://www.nnkieh.tn.edu.tw",
     "instagramAccount": "nnkieh_sa",
-    "isLimited": true
+    "isLimited": false
   },
   {
     "name": "南大附中",
@@ -20,7 +20,7 @@
     },
     "websiteUrl": "https://www.tntcsh.tn.edu.tw",
     "instagramAccount": "ashs.nutn_116th",
-    "isLimited": true
+    "isLimited": false
   },
   {
     "name": "北門高中",
@@ -38,7 +38,7 @@
     "studentIdFormat": null,
     "websiteUrl": "https://www.twvs.tn.edu.tw",
     "instagramAccount": "twvs_116th_sa_",
-    "isLimited": true
+    "isLimited": false
   },
   {
     "name": "台南二中",
@@ -56,7 +56,7 @@
     "studentIdFormat": null,
     "websiteUrl": "https://www.nkhs.tn.edu.tw",
     "instagramAccount": "nkhs_116th_official",
-    "isLimited": true
+    "isLimited": false
   },
   {
     "name": "新營高中",
@@ -70,7 +70,7 @@
     },
     "websiteUrl": "https://www.hysh.tn.edu.tw",
     "instagramAccount": "hysh.116th",
-    "isLimited": true
+    "isLimited": false
   },
   {
     "name": "新化高中",
@@ -79,7 +79,7 @@
     "studentIdFormat": null,
     "websiteUrl": "https://www.hhsh.tn.edu.tw",
     "instagramAccount": "hhshsa116",
-    "isLimited": true
+    "isLimited": false
   },
   {
     "name": "土城高中",
@@ -88,7 +88,7 @@
     "studentIdFormat": null,
     "websiteUrl": "https://www.tcjh.tn.edu.tw",
     "instagramAccount": "tcsa_116th",
-    "isLimited": true
+    "isLimited": false
   },
   {
     "name": "永仁高中",
@@ -151,11 +151,11 @@
   },
   {
     "name": "善化高中",
-    "abbreviation": "PLACEHOLDER",
-    "emailFormat": ["@PLACEHOLDER"],
+    "abbreviation": "shsh",
+    "emailFormat": ["@student.shsh.tn.edu.tw"],
     "studentIdFormat": null,
-    "websiteUrl": "https://PLACEHOLDER",
-    "instagramAccount": "PLACEHOLDER",
+    "websiteUrl": "https://www.shsh.tn.edu.tw",
+    "instagramAccount": "shsh_116th",
     "isLimited": false
   }
 ]
