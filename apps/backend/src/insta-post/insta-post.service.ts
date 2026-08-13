@@ -58,13 +58,13 @@ export class InstaPostService {
       getImageUrl(item.fileKey),
     );
 
-    // const postImageUrls = generatedImageUrls.concat(draftImageUrls);
+    const postImageUrls = generatedImageUrls.concat(draftImageUrls);
 
-    // await this.schedulePost({
-    //   accountId: env('INSTA_ACCOUNT_ID'),
-    //   content: this.getPostContent(shopDraft),
-    //   mediaItems: postImageUrls.map((url) => ({ type: 'image', url })),
-    // });
+    await this.schedulePost({
+      accountId: env('INSTA_ACCOUNT_ID'),
+      content: this.getPostContent(shopDraft),
+      mediaItems: postImageUrls.map((url) => ({ type: 'image', url })),
+    });
   }
 
   /**
