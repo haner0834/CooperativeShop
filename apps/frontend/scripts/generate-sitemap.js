@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const outputPath = join(__dirname, "../public/sitemap.xml");
 
-const sitemap = new SitemapStream({ hostname: "https://cooperativeshops.org" });
+const sitemap = new SitemapStream({ hostname: "https://tnshops.org" });
 
 const urls = [
   { url: "/", changefreq: "weekly", priority: 0.8 },

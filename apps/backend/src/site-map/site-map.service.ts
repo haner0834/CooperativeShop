@@ -27,7 +27,7 @@ export class SitemapService {
     const cached = await this.redis.get('sitemap');
     if (cached) return cached;
 
-    const baseUrl = 'https://cooperativeshops.org';
+    const baseUrl = 'https://tnshops.org';
 
     // 1️⃣ 靜態頁
     const staticUrls = this.staticRoutes

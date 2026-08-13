@@ -36,7 +36,8 @@ export default defineConfig({
             urlPattern: ({ url }) => {
               // 排除掉所有 /api 開頭的請求，讓它們直接走瀏覽器原生請求，不經過 Service Worker 緩存
               return (
-                url.origin === "https://cooperativeshops.org" &&
+                (url.origin === "https://cooperativeshops.org" ||
+                  url.origin === "https://tnshops.org") &&
                 !url.pathname.startsWith("/api")
               );
             },

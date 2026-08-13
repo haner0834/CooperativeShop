@@ -1207,7 +1207,7 @@ const Intro = () => {
   return (
     <>
       <PageMeta {...routesMeta.intro} />
-      <link rel="canonical" href="https://cooperativeshops.org/" />
+      <link rel="canonical" href="https://tnshops.org/" />
 
       <main className="w-full bg-base-100 selection:bg-primary selection:text-base-100 pt-18 pwa:pb-pwa">
         <Hero />
