@@ -10,5 +10,6 @@ export class SearchedDraftDto {
   @Expose() school: {
     name: string;
     id: string;
+    abbreviation: string;
   };
 }

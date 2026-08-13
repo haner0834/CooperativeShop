@@ -80,7 +80,7 @@ export class ShopDraftService {
   }
 
   // -- Searcing --
-  async search(title: string, subtitle: string) {
+  async search(title: string, subtitle: string | null) {
     const inputKey = this.calculateNormalizedKey(title, subtitle);
 
     // NOTE: Total drafts up to 300, so it's ok to compare all
@@ -96,6 +96,7 @@ export class ShopDraftService {
           select: {
             id: true,
             name: true,
+            abbreviation: true,
           },
         },
       },

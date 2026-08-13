@@ -6,5 +6,5 @@ export class DraftSearchQuery {
 
   @IsString()
   @IsOptional()
-  subtitle: string;
+  subtitle: string | null;
 }

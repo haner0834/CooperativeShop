@@ -36,6 +36,15 @@ export class ShopDraftController {
     private readonly shopDraftLockService: ShopDraftLockService,
   ) {}
 
+  @Get('search')
+  @UseGuards(JwtAccessGuard)
+  async search(@Query() query: DraftSearchQuery): Promise<SearchedDraftDto[]> {
+    return await this.shopDraftService.search(
+      query.title,
+      query.subtitle ?? null,
+    );
+  }
+
   @Get(':id')
   @UseGuards(JwtAccessGuard)
   async get(
@@ -90,12 +99,6 @@ export class ShopDraftController {
     return plainToInstance(ShopDraftDto, drafts, {
       excludeExtraneousValues: true,
     });
-  }
-
-  @Get('search')
-  @UseGuards(JwtAccessGuard)
-  async search(@Query() query: DraftSearchQuery): Promise<SearchedDraftDto[]> {
-    return await this.shopDraftService.search(query.title, query.subtitle);
   }
 
   @Patch()

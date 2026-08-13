@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { ShopDraftDto } from "../types/shop";
 import {
+  ArrowLeft,
   CircleAlert,
   Ellipsis,
+  Loader2,
   Pencil,
   PencilLine,
   Plus,
   Search,
+  SearchX,
+  Store,
   Trash2,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -23,6 +27,22 @@ import {
   getStatusText,
 } from "./ShopRegisterForm/ShopRegisterForm";
 import { getErrorMessage } from "../utils/errors";
+import SchoolIcon from "../widgets/SchoolIcon";
+
+// 對應 /api/shop-drafts-search 回傳的單筆結果
+export class ShopSearchResultDto {
+  similarity: number;
+  id: string;
+  title: string;
+  subtitle: string | null;
+  normalizedKey: string;
+  thumbnailKey: string | null;
+  school: {
+    name: string;
+    id: string;
+    abbreviation: string;
+  };
+}
 
 const Navbar = ({
   setShowSearch,
@@ -75,17 +95,56 @@ const SearchModal = () => {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const navigate = useNavigate();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { hideModal } = useModal();
 
+  // "input"：輸入店名 / 分店名　"results"：顯示搜尋結果並等待確認
+  const [step, setStep] = useState<"input" | "results">("input");
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [results, setResults] = useState<ShopSearchResultDto[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const [confirmLoading, setConfirmLoading] = useState(false);
+
   const search = async () => {
+    setErrorMessage(null);
+    setSearchLoading(true);
+
+    const query = new URLSearchParams({ title: title.trim() });
+    if (subtitle.trim()) query.set("subtitle", subtitle.trim());
+
+    const response = await authedFetch(
+      path(`/api/shop-draft/search?${query.toString()}`)
+    );
+
+    setSearchLoading(false);
+
+    const { success, data, error } = response;
+    if (success) {
+      setResults(data ?? []);
+      setStep("results");
+    } else {
+      const { code } = error;
+      if (code === "DRAFT_NORMALIZED_KEY_CONFLICT") {
+        setErrorMessage("該店家已被預約或登記");
+      } else {
+        setErrorMessage("發生未知錯誤，請稍後再試");
+      }
+    }
+  };
+
+  const confirmCreate = async () => {
+    setErrorMessage(null);
+    setConfirmLoading(true);
+
     const response = await authedFetch(path(`/api/shop-draft`), {
       method: "POST",
       body: JSON.stringify({
         title: title.trim(),
-        subtitle: subtitle ? subtitle.trim() : undefined,
+        subtitle: subtitle.trim() ? subtitle.trim() : undefined,
       }),
     });
+
+    setConfirmLoading(false);
 
     const { success, data, error } = response;
     if (success) {
@@ -100,6 +159,91 @@ const SearchModal = () => {
       }
     }
   };
+
+  if (step === "results") {
+    return (
+      <div className="flex flex-col w-full">
+        <div className="flex items-center gap-2">
+          <button
+            className="btn btn-circle btn-ghost btn-sm"
+            onClick={() => setStep("input")}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h3 className="flex-1 text-center text-lg font-semibold pr-8">
+            搜尋結果
+          </h3>
+        </div>
+
+        <p className="text-sm opacity-60 mt-2">
+          店名：{title}
+          {subtitle && ` / 分店名：${subtitle}`}
+        </p>
+
+        <div className="max-h-80 overflow-y-auto mt-2">
+          {results.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-8 opacity-60">
+              <SearchX className="w-8 h-8" />
+              <p className="text-sm">沒有找到相符的店家</p>
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {results.map((r) => (
+                <li
+                  key={r.id}
+                  className="flex items-center gap-3 bg-base-200 rounded-box p-3"
+                >
+                  <Store className="w-5 h-5 opacity-60 shrink-0" />
+                  <div className="flex flex-col flex-1 text-start min-w-0">
+                    <p className="font-medium truncate">
+                      {r.title}
+                      {r.subtitle && (
+                        <span className="opacity-60 font-normal">
+                          {" "}
+                          / {r.subtitle}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+
+                  {r.school.abbreviation && (
+                    <div className="flex items-center gap-2">
+                      <SchoolIcon
+                        abbreviation={r.school.abbreviation}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">{r.school.name}</span>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <p className="text-xs opacity-50 mt-4">
+          若清單中沒有你要登記的店家，可按下方按鈕以新店名建立草稿。
+          一旦送出，店名、分店名便不可修改。
+        </p>
+
+        <button
+          className="btn w-full btn-primary mt-2"
+          onClick={() => confirmCreate()}
+          disabled={confirmLoading}
+        >
+          {confirmLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            "確認，建立草稿"
+          )}
+        </button>
+
+        {errorMessage && (
+          <p className="text-error text-xs font-medium mt-2">{errorMessage}</p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col w-full">
@@ -137,11 +281,14 @@ const SearchModal = () => {
       <button
         className="btn w-full btn-primary mt-4"
         onClick={() => search()}
-        disabled={title === ""}
+        disabled={title === "" || searchLoading}
       >
-        登記預約
+        {searchLoading ? (
+          <Loader2 className="w-5 h-5 animate-spin" />
+        ) : (
+          "登記預約"
+        )}
       </button>
-      <p className="text-xs opacity-50">一旦送出，店名、分店名便不可修改</p>
 
       {errorMessage && (
         <p className="text-error text-xs font-medium">{errorMessage}</p>
