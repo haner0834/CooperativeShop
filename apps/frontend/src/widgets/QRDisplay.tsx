@@ -28,7 +28,7 @@ export default function QRDisplay({
         ],
       },
     },
-    image: "https://tnshops.org/logo-small.jpg",
+    image: "https://www.tnshops.org/logo-small.jpg",
     imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 7 },
     backgroundOptions: { color: "#ffffff" },
     cornersSquareOptions: { type: "extra-rounded", color: "#0056d6" },
