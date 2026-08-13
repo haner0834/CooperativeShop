@@ -3,7 +3,6 @@ import QuestionBlock from "./QuestionBlock";
 
 const ShopTitleBlock = ({
   title,
-  setTitle,
   showHint,
 }: {
   title: string;
@@ -13,18 +12,17 @@ const ShopTitleBlock = ({
   return (
     <QuestionBlock
       title="店家名稱"
-      description="請填寫該店家的 **店名** ，如：丹丹漢堡"
-      status={title ? "ok" : "required"}
+      description="店名、分店名已由最初預約的資料決定，若要修改請新增其他草稿。"
+      status={null}
       hint="尚未填寫店家名稱"
       showHint={showHint}
     >
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="丹丹漢堡"
-        className="input w-full"
-      />
+      <div
+        className="p-2 rounded-field bg-base-200 w-full tooltip tooltip-bottom"
+        data-tip="一旦決定店、分店名便不可修改"
+      >
+        <p className="opacity-50 text-sm">{title}</p>
+      </div>
     </QuestionBlock>
   );
 };

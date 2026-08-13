@@ -1,10 +1,26 @@
+import "reflect-metadata";
 import "./App.css";
 import { lazy, useEffect } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Outlet, Route, Routes } from "react-router-dom";
 import Root from "./pages/Root";
 import ProtectedGate from "./auth/ProtectedGate";
-import FilteredShops from "./pages/CategorizedShops";
-import UserAccountCenter from "./pages/AccounCenter";
+import { InteractionProvider } from "./contexts/InteractionProvider";
+import { AdminAuthProvider } from "./auth/admin-auth/AdminAuthContext";
+import { AuthProvider } from "./auth/AuthContext";
+import AdminProtectedGate from "./auth/admin-auth/AdminProtectedGate";
+import AdminLogin from "./pages/Admin/AdminLogin";
+import { ModalProvider } from "./widgets/ModalContext";
+const AdminMembersConsole = lazy(
+  () => import("./pages/Admin/AdminMembersConsole")
+);
+const AdminInviteAcceptPage = lazy(
+  () => import("./pages/Admin/AdminInviteAccept")
+);
+const DraftReviewList = lazy(() => import("./pages/Admin/DraftReviewList"));
+const DraftReview = lazy(() => import("./pages/Admin/DraftReview/DraftReview"));
+const FilteredShops = lazy(() => import("./pages/CategorizedShops"));
+const UserAccountCenter = lazy(() => import("./pages/AccounCenter"));
+const AdminDashboard = lazy(() => import("./pages/Admin/AdminDashboard"));
 const ShopsMap = lazy(() => import("./pages/ShopsMap"));
 const SchoolDetail = lazy(() => import("./pages/SchoolDetail"));
 const Navbar = lazy(() => import("./widgets/Navbar"));
@@ -26,6 +42,29 @@ const ShopRegisterForm = lazy(
 );
 const ShopDrafts = lazy(() => import("./pages/ShopDrafts"));
 
+function StudentAuthLayout() {
+  return (
+    <AuthProvider>
+      <ModalProvider>
+        <InteractionProvider>
+          <Outlet />
+        </InteractionProvider>
+      </ModalProvider>
+    </AuthProvider>
+  );
+}
+
+// AdminAuthLayout.tsx
+function AdminAuthLayout() {
+  return (
+    <AdminAuthProvider>
+      <ModalProvider>
+        <Outlet />
+      </ModalProvider>
+    </AdminAuthProvider>
+  );
+}
+
 function App() {
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme");
@@ -41,41 +80,55 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Navbar />}>
-        <Route index element={<Root />} />
-        <Route path="intro" element={<Intro />} />
-        <Route path="choose-school" element={<ChooseSchool />} />
-        <Route path="login/:method" element={<Login />} />
-        <Route path="login-failed" element={<LoginFailed />} />
-        <Route path="login-hint" element={<LoginHint />} />
-        <Route path="qr-scanner" element={<QrScannerRef />} />
-        <Route path="qr-verification" element={<QrVerification />} />
+      <Route element={<StudentAuthLayout />}>
+        <Route path="/" element={<Navbar />}>
+          <Route index element={<Root />} />
+          <Route path="intro" element={<Intro />} />
+          <Route path="choose-school" element={<ChooseSchool />} />
+          <Route path="login/:method" element={<Login />} />
+          <Route path="login-failed" element={<LoginFailed />} />
+          <Route path="login-hint" element={<LoginHint />} />
+          <Route path="qr-scanner" element={<QrScannerRef />} />
+          <Route path="qr-verification" element={<QrVerification />} />
+        </Route>
+
+        <Route element={<ProtectedGate />}>
+          <Route path="home" element={<Home />} />
+        </Route>
+
+        <Route path="schools" element={<Schools />} />
+
+        <Route path="schools/:abbr" element={<SchoolDetail />} />
+
+        <Route path="faq" element={<FAQPage />} />
+
+        <Route element={<ProtectedGate />}>
+          <Route path="account-center" element={<UserAccountCenter />} />
+        </Route>
+
+        <Route path="shops/map" element={<ShopsMap />} />
+
+        <Route path="shops/preview" element={<ShopPreview />} />
+
+        <Route path="shops/register" element={<ShopRegisterForm />} />
+
+        <Route path="shops/drafts" element={<ShopDrafts />} />
+        <Route path="shops" element={<Shops />} />
+        <Route path="shops/filtered/:filter" element={<FilteredShops />} />
+        <Route path="shops/:id" element={<ShopDetail />} />
       </Route>
 
-      <Route element={<ProtectedGate />}>
-        <Route path="home" element={<Home />} />
+      <Route path="/admin" element={<AdminAuthLayout />}>
+        <Route path="login" element={<AdminLogin />} />
+        <Route path="invite/:token" element={<AdminInviteAcceptPage />} />
+
+        <Route element={<AdminProtectedGate />}>
+          <Route path="draft-review-list" element={<DraftReviewList />} />
+          <Route path="auth-console" element={<AdminMembersConsole />} />
+          <Route index element={<AdminDashboard />} />
+          <Route path="draft-review/:id" element={<DraftReview />} />
+        </Route>
       </Route>
-
-      <Route path="schools" element={<Schools />} />
-
-      <Route path="schools/:abbr" element={<SchoolDetail />} />
-
-      <Route path="faq" element={<FAQPage />} />
-
-      <Route element={<ProtectedGate />}>
-        <Route path="account-center" element={<UserAccountCenter />} />
-      </Route>
-
-      <Route path="shops/map" element={<ShopsMap />} />
-
-      <Route path="shops/preview" element={<ShopPreview />} />
-
-      <Route path="shops/register" element={<ShopRegisterForm />} />
-
-      <Route path="shops/drafts" element={<ShopDrafts />} />
-      <Route path="shops" element={<Shops />} />
-      <Route path="shops/filtered/:filter" element={<FilteredShops />} />
-      <Route path="shops/:id" element={<ShopDetail />} />
     </Routes>
   );
 }

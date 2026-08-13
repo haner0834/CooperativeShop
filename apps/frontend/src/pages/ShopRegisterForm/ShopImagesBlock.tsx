@@ -2,13 +2,13 @@ import type { Dispatch } from "react";
 import QuestionBlock from "./QuestionBlock";
 import { CloudAlert, Upload, X } from "lucide-react";
 import type { SelectedImage } from "../../types/selectedImage";
-import axios from "axios";
 import { path } from "../../utils/path";
 import { compressImage } from "../../utils/imageCompressor";
 import { useAuthFetch } from "../../auth/useAuthFetch";
 import { AnimatedCloudUploadIcon } from "../../widgets/icon-animation/CloudUploadIcon";
 import { AnimatedChevrons } from "../../widgets/icon-animation/AnimatedChevrons";
 import { ImageWithFallback } from "../../widgets/ImageWithFallback";
+import { uploadToR2 } from "../../utils/upload-to-r2";
 
 const R2_PUBLIC_URL = "https://image.cooperativeshops.org";
 
@@ -96,6 +96,7 @@ const ShopImagesBlock = ({
             fileName: mainImage.name,
             contentType: "image/webp",
             category: "shop-image",
+            hasThumbnail: true,
             fileSize: mainImage.size,
           }),
         }
@@ -164,22 +165,6 @@ const ShopImagesBlock = ({
         )
       );
     }
-  };
-
-  const uploadToR2 = async (
-    uploadUrl: string,
-    file: File,
-    onProgress: (percent: number) => void
-  ) => {
-    await axios.put(uploadUrl, file, {
-      headers: {
-        "Content-Type": file.type,
-        "Cache-Control": "public, max-age=31536000, immutable",
-      },
-      onUploadProgress: (e) => {
-        if (e.total) onProgress((e.loaded / e.total) * 100);
-      },
-    });
   };
 
   const updateProgress = (localId: string, progress: number) => {

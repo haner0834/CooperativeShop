@@ -1,6 +1,6 @@
 import { useState, type Dispatch } from "react";
 import QuestionBlock from "./QuestionBlock";
-import { Trash, Plus, Check, AlertTriangle } from "lucide-react";
+import { Trash, Plus, Check, AlertTriangle, Ellipsis } from "lucide-react";
 import DoubleSlider from "../../widgets/RangeSlider";
 import {
   weekdayOrder,
@@ -12,6 +12,7 @@ import {
   hasWorkScheduleOverlap,
   type Weekday,
   type WorkSchedule,
+  type WorkScheduleType,
 } from "../../types/workSchedule";
 
 // Helper: Check if two time ranges overlap
@@ -23,24 +24,70 @@ const isRangeOverlapping = (
 };
 
 const WeekdaySelector = ({
-  defaultValue,
-  setNewWeekday,
+  defaultSchedule,
+  setNewSchedule,
   onClose,
 }: {
-  defaultValue: Weekday[];
+  defaultSchedule: WorkSchedule;
   // Removed selectedWeekdays prop as we no longer block used weekdays
-  setNewWeekday: (newValue: Weekday[]) => void;
+  setNewSchedule: (newValue: WorkSchedule) => void;
   onClose: () => void;
 }) => {
-  const [selected, setSelected] = useState(defaultValue);
+  const [selectedWeekdays, setSelectedWeeks] = useState(
+    defaultSchedule.weekdays
+  );
+  const [type, setType] = useState<WorkScheduleType>(
+    defaultSchedule.type ?? "FIXED"
+  );
+  const [note, setNote] = useState(defaultSchedule.scheduleNote);
+
+  const toTimeStr = (totalMins: number) => {
+    const min = totalMins % 60;
+    const hr = (totalMins - min) / 60; // must be int
+
+    const minPadStr = min.toString().padStart(2, "0");
+    const hrPadStr = hr.toString().padStart(2, "0");
+    const str = `${hrPadStr}:${minPadStr}`;
+    return str;
+  };
+
+  const [startTimeVal, setStartTimeVal] = useState(
+    toTimeStr(defaultSchedule.range[0])
+  );
+  const [endTimeVal, setEndTimeVal] = useState(
+    toTimeStr(defaultSchedule.range[1])
+  );
+
+  // 將 "HH:mm" 轉換為總分鐘數
+  const normalizeToMinutes = (timeStr: string) => {
+    if (!timeStr) return 0;
+    const [hr, min] = timeStr.split(":").map(Number);
+    return hr * 60 + min;
+  };
+
+  const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value > endTimeVal) return;
+    setStartTimeVal(value);
+  };
+
+  const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value < startTimeVal) return;
+    setEndTimeVal(value);
+  };
+
+  // const handleRemoveStartTime = () => {};
+
+  // const handleRemoveEndTime = () => {};
 
   const toggleSelection = (weekday: Weekday) => {
     // Logic simplified: Just toggle local state, don't care about other blocks
-    if (selected.includes(weekday)) {
-      const newSelected = [...selected].filter((w) => w !== weekday);
-      setSelected(newSelected);
+    if (selectedWeekdays.includes(weekday)) {
+      const newSelected = [...selectedWeekdays].filter((w) => w !== weekday);
+      setSelectedWeeks(newSelected);
     } else {
-      setSelected([...selected, weekday]);
+      setSelectedWeeks([...selectedWeekdays, weekday]);
     }
   };
 
@@ -49,14 +96,98 @@ const WeekdaySelector = ({
   };
 
   const finish = () => {
-    setNewWeekday(selected);
+    setNewSchedule({
+      ...defaultSchedule,
+      range: [normalizeToMinutes(startTimeVal), normalizeToMinutes(endTimeVal)],
+      weekdays: selectedWeekdays,
+      type: type,
+      scheduleNote: note,
+    });
     setTimeout(onClose, 0);
   };
 
   return (
     <div className="modal-box space-y-2">
-      <h3 className="font-bold flex-1 text-center">編輯工作日</h3>
-      <div className="divider" />
+      <h3 className="font-bold flex-1 text-center">營業時間詳情</h3>
+
+      <div className="flex gap-2 justify-center items-center">
+        <p className="text-xs font-medium opacity-50">基本設定</p>
+        <div className="divider flex-1 my-0" />
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <div className="flex w-full justify-between">
+          <p>彈性時間</p>
+
+          <input
+            type="checkbox"
+            className="toggle bg-base-content/20 border-base-300 text-base-100 checked:bg-success checked:border-base-100"
+            checked={type === "FLEXIBLE"}
+            onChange={(e) => setType(e.target.checked ? "FLEXIBLE" : "FIXED")}
+            name="is_flexible_schedule"
+          />
+        </div>
+
+        {type === "FLEXIBLE" && (
+          <div className="flex flex-col w-full justify-between">
+            <div className="w-full">
+              <p className="text-sm opacity-50">彈性時段說明</p>
+              <input
+                type="text"
+                value={note ?? ""}
+                onChange={(e) => setNote(e.target.value)}
+                className="w-full border-b-2 border-gray-300 focus:border-black focus:outline-none rounded-none py-1"
+                placeholder="例：售完為止"
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="flex w-full justify-between items-center gap-2">
+          <p className="flex-1">開始時間</p>
+
+          <input
+            type="time"
+            value={startTimeVal}
+            onChange={handleStartTimeChange}
+            className="input input-sm w-30"
+          />
+
+          {/* {type === "FLEXIBLE" && (
+            <button
+              className="btn btn-circle btn-xs btn-ghost"
+              onClick={handleRemoveStartTime}
+            >
+              <X className="h-4"></X>
+            </button>
+          )} */}
+        </div>
+
+        <div className="flex w-full justify-between items-center gap-2">
+          <p className="flex-1">結束時間</p>
+
+          <input
+            type="time"
+            value={endTimeVal}
+            onChange={handleEndTimeChange}
+            className="input input-sm w-30"
+          />
+
+          {/* {type === "FLEXIBLE" && (
+            <button
+              className="btn btn-circle btn-xs btn-ghost"
+              onClick={handleRemoveEndTime}
+            >
+              <X className="h-4"></X>
+            </button>
+          )} */}
+        </div>
+      </div>
+
+      <div className="flex gap-2 justify-center items-center">
+        <p className="text-xs font-medium opacity-50">日期設定</p>
+        <div className="divider flex-1 my-0" />
+      </div>
 
       <div className="flex space-x-2 overflow-scroll pb-3">
         {weekdayOrder.map((weekday, i) => (
@@ -68,8 +199,8 @@ const WeekdaySelector = ({
             <p className="text-sm">{getChineseWeekdayName(weekday)}</p>
 
             <div
-              className={`p-1 bg-accent rounded-full transition-opacity duration-150 ${
-                selected.includes(weekday) ? "" : "opacity-0"
+              className={`p-1 bg-success rounded-full transition-opacity duration-150 ${
+                selectedWeekdays.includes(weekday) ? "" : "opacity-0"
               }`}
             >
               <Check className="w-4 h-4 text-white" />
@@ -147,9 +278,9 @@ const ShopWorkSchedulesBlock = ({
     }, 0);
   };
 
-  const setWeekdays = (newValue: Weekday[], index: number) => {
+  const setWeekdays = (newValue: WorkSchedule, index: number) => {
     if (index < 0 || index >= workSchedules.length) return;
-    const newSchedule = { ...workSchedules[index], weekdays: newValue };
+    const newSchedule = { ...newValue };
     const newWorkSchedules = [...workSchedules];
     newWorkSchedules[index] = newSchedule;
     setWorkSchedules(newWorkSchedules);
@@ -203,8 +334,8 @@ const ShopWorkSchedulesBlock = ({
         <dialog id="my_modal_1" className="modal">
           {workScheduleIndex !== undefined && (
             <WeekdaySelector
-              defaultValue={workSchedules[workScheduleIndex].weekdays}
-              setNewWeekday={(newValue) =>
+              defaultSchedule={workSchedules[workScheduleIndex]}
+              setNewSchedule={(newValue) =>
                 setWeekdays(newValue, workScheduleIndex)
               }
               onClose={resetSelectedIndex}
@@ -218,41 +349,57 @@ const ShopWorkSchedulesBlock = ({
             return (
               <div
                 key={`WORK_SCHEDULE_BLOCK_${i}`}
-                className={`rounded-field w-full p-2 border flex flex-col space-y-4 transition-colors ${
+                className={`rounded-field w-full p-2 sm:p-4 border flex flex-col space-y-4 transition-colors ${
                   hasOverlap ? "border-error bg-error/5" : "border-base-300"
                 }`}
               >
-                <div className="flex justify-between items-center space-x-2">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => openModal(i)}
-                      className="btn btn-sm btn-soft btn-primary"
-                    >
-                      {formatWeekdays(workSchedule.weekdays) || "尚未選擇"}
-                    </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => openModal(i)}
+                    className="btn btn-sm btn-soft btn-primary"
+                  >
+                    {formatWeekdays(workSchedule.weekdays) || "尚未選擇"}
+                  </button>
 
-                    {/* Overlap Warning Badge */}
-                    {hasOverlap && (
-                      <div
-                        className="tooltip tooltip-right"
-                        data-tip="同一天內工作時段不可重疊"
-                      >
-                        <div className="flex items-center gap-1 text-xs text-error font-medium animate-pulse">
-                          <AlertTriangle className="w-4 h-4" />
-                          <span className="hidden sm:inline">時段重疊</span>
-                        </div>
+                  <div className="flex-1" />
+                  {workSchedule.type === "FLEXIBLE" && (
+                    <span
+                      className={`badge badge-sm badge-soft font-semibold ${
+                        !workSchedule.scheduleNote ? "badge-error" : ""
+                      }`}
+                    >
+                      {workSchedule.scheduleNote ?? "缺少彈性時段說明"}
+                    </span>
+                  )}
+
+                  {/* Overlap Warning Badge */}
+                  {hasOverlap && (
+                    <div
+                      className="tooltip tooltip-right"
+                      data-tip="同一天內工作時段不可重疊"
+                    >
+                      <div className="flex items-center gap-1 text-xs text-error font-medium animate-pulse">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span className="hidden sm:inline">時段重疊</span>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {workSchedules.length > 1 && (
                     <button
                       onClick={() => removeWorkSchedule(i)}
-                      className="btn btn-xs btn-square"
+                      className="btn btn-xs btn-square me-1"
                     >
                       <Trash className="w-4 h-4" />
                     </button>
                   )}
+
+                  <button
+                    onClick={() => openModal(i)}
+                    className="btn btn-sm btn-square btn-ghost"
+                  >
+                    <Ellipsis />
+                  </button>
                 </div>
 
                 <p className="flex-1 text-sm font-mono">

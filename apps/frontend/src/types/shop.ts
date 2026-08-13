@@ -1,11 +1,14 @@
+import type { UploadedContract } from "../pages/ShopRegisterForm/ShopContractBlock";
 import type { Point } from "../pages/ShopRegisterForm/ShopLocationBlock";
 import { categoryMap } from "../utils/contactInfoMap";
+import type { AiReviewResult } from "./ai-review-result";
 import type { ImageDto, SelectedImage } from "./selectedImage";
 import type {
   WorkScheduleBackend,
   WorkSchedule,
   Weekday,
 } from "./workSchedule";
+import { Type } from "class-transformer";
 
 export interface ResponseImageDto {
   fileUrl: string;
@@ -73,6 +76,16 @@ export interface ResponseShopDto {
   isSaved?: boolean;
 }
 
+export const fromContactInfoDto = (dto: ContactInfoDto): ContactInfo => {
+  const { content, href, ...rest } = categoryMap[dto.category];
+  return {
+    category: dto.category,
+    content: dto.content,
+    href: dto.href,
+    ...rest,
+  };
+};
+
 // 轉換函數：將後端 DTO 轉換為前端 Shop 介面
 export function transformDtoToShop(dto: ResponseShopDto): Shop {
   // 由於後端 DTO 被設計為盡可能與前端 Shop 介面保持一致，轉換操作極為簡單。
@@ -83,15 +96,7 @@ export function transformDtoToShop(dto: ResponseShopDto): Shop {
     title: dto.title,
     subTitle: dto.subTitle ?? undefined,
     description: dto.description,
-    contactInfo: dto.contactInfo.map((c) => {
-      const { content, href, ...rest } = categoryMap[c.category];
-      return {
-        category: c.category,
-        content: c.content,
-        href: c.href,
-        ...rest,
-      };
-    }),
+    contactInfo: dto.contactInfo.map(fromContactInfoDto),
     googleMapsLink: dto.googleMapsLink,
     schoolId: dto.schoolId,
     schoolAbbr: dto.schoolAbbr,
@@ -109,6 +114,7 @@ export function transformDtoToShop(dto: ResponseShopDto): Shop {
 }
 
 export const DEFAULT_WORKSCHEDULE: WorkSchedule = {
+  type: "FIXED",
   weekdays: [],
   range: [480, 1020],
 };
@@ -123,7 +129,7 @@ export function transformSchedules(
 
     schedule.weekdays.forEach((weekday) => {
       result.push({
-        id: crypto.randomUUID(),
+        type: schedule.type,
         weekday,
         startMinuteOfDay,
         endMinuteOfDay,
@@ -201,6 +207,81 @@ export interface ShopDraft {
     contactInfo: ContactInfo[];
     workSchedules: WorkSchedule[];
     mode: ShopMode;
+  };
+}
+
+export type ShopDraftStage =
+  | "RESERVED"
+  | "EDITING"
+  | "SUBMITTED"
+  | "ARCHIVED"
+  | "APPROVED";
+
+export type ReviewStatus = "IDLE" | "REJECT" | "SUCCESS" | "SUPERSEDED";
+
+export type AiReviewStatus = "APPROVED" | "PENDING" | "REJECTED";
+
+export class ShopDraftVersionDto {
+  id: string;
+  versionNo: number;
+  reviewStatus: ReviewStatus;
+  reviewerId: string;
+  @Type(() => Date) submittedAt: Date;
+  @Type(() => Date) reviewedAt: Date;
+  rejectReason?: string;
+  aiReviewStatus?: AiReviewStatus;
+  @Type(() => Date)
+  aiReviewedAt?: Date;
+  aiReviewResult?: AiReviewResult;
+}
+
+export class AiReviewGroundingSource {
+  uri: string;
+  title: string;
+}
+
+/**
+ * 存進 ShopDraft.aiGroundingSources 的完整快照。
+ * 除了來源清單外，順便記錄當初的搜尋關鍵字與擷取時間，
+ * 方便之後除錯／人工檢視「AI 當初到底查了什麼」。
+ */
+export class AiReviewGroundingSnapshot {
+  fetchedAt: string; // ISO timestamp
+  webSearchQueries: string[];
+  @Type(() => AiReviewGroundingSource)
+  sources: AiReviewGroundingSource[];
+  findings: string;
+}
+
+export class ShopDraftDto {
+  id: string;
+  @Type(() => Date) createdAt: Date;
+  @Type(() => Date) updatedAt: Date;
+  shopId: string | null;
+  title: string;
+  subtitle: string | null;
+  description: string;
+  discount: string | null;
+  address: string;
+  contract: UploadedContract | null;
+  longitude: number | null;
+  latitude: number | null;
+  thumbnailKey: string;
+  stage: ShopDraftStage;
+  @Type(() => AiReviewGroundingSnapshot)
+  aiGroundingSources: AiReviewGroundingSnapshot;
+  reservedUntil: Date | null;
+  @Type(() => ShopDraftVersionDto)
+  currentVersion?: ShopDraftVersionDto;
+  versions?: ShopDraftVersionDto[];
+  contactInfo: ContactInfoDto[];
+  images: SelectedImage[];
+  workSchedules: WorkScheduleBackend[];
+  submissionNote: string | null;
+  school: {
+    id: string;
+    abbr?: string;
+    name?: string;
   };
 }
 

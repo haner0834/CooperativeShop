@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css"
+    />
+    <!-- 引入 Google Fonts (Noto Serif TC: 600, 700) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --canvas-size: 1280px;
+        --bg-url: url('{{{bgImageUrl}}}');
+        --font-serif:
+          'Noto Serif TC', 'Source Han Serif TC', 'Songti TC', 'PMingLiU', serif;
+      }
+
+      * {
+        -webkit-font-smoothing: antialiased;
+        box-sizing: border-box;
+      }
+
+      html {
+        background-color: #f0f0f0;
+        display: flex;
+        min-height: 100%;
+        margin: 0px;
+        overflow: auto;
+      }
+
+      body {
+        width: var(--canvas-size);
+        min-width: 1280px;
+        height: var(--canvas-size);
+        margin: 0px;
+        padding: 108px 112px;
+        box-sizing: border-box;
+
+        background-image: var(--bg-url);
+        background-size: cover;
+        background-position: 50% 50%;
+        background-repeat: no-repeat;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        position: relative;
+        font-family: var(--font-serif);
+        font-weight: 600;
+      }
+
+      .info-container {
+        display: flex;
+        flex-direction: column;
+        width: 1056px;
+        height: 1064px;
+        padding: 41px 76px;
+        align-items: center;
+        gap: 34px;
+        position: relative;
+        flex: 0 0 auto;
+      }
+
+      .main-title {
+        align-self: stretch;
+        margin: 0;
+        margin-top: -1px;
+        font-family: var(--font-serif);
+        font-weight: 700;
+        color: #452c2b;
+        font-size: 110px;
+        text-align: center;
+        letter-spacing: 0;
+        position: relative;
+        line-height: normal;
+      }
+
+      .details-stack {
+        display: inline-flex;
+        flex-direction: column;
+        height: 790px;
+        justify-content: center;
+        align-items: center;
+        gap: 34px;
+        position: relative;
+      }
+
+      .text-address {
+        width: 904px;
+        font-family: var(--font-serif);
+        font-weight: 600;
+        color: #452c2b;
+        font-size: 48px;
+        letter-spacing: 0;
+        position: relative;
+        line-height: normal;
+      }
+
+      .text-hours {
+        width: 904px;
+        margin-top: -1px;
+        font-family: var(--font-serif);
+        font-weight: 600;
+        color: #452c2b;
+        font-size: 48px;
+        letter-spacing: 0;
+        position: relative;
+        line-height: normal;
+      }
+
+      .text-info-item {
+        position: relative;
+        width: 904px;
+        font-family: var(--font-serif);
+        font-weight: 600;
+        color: #452c2b;
+        font-size: 48px;
+        letter-spacing: 4.32px;
+        line-height: normal;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="info-container">
+      <h1 class="main-title">店家資訊</h1>
+
+      <div class="details-stack">
+        <div class="text-address">地址：{{address}}</div>
+
+        <div class="text-hours">營業時間：<br />{{{workSchedule}}}</div>
+
+        <div class="text-info-item">聯絡資訊：{{contact}}</div>
+        <div class="text-info-item">優惠內容：{{discount}}</div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -7,6 +7,7 @@ import GithubIcon from '@shared/icons/github.svg?react';
 import GoogleUrl from '@shared/icons/google.png';
 import InstagramIcon from '@shared/icons/instagram.svg?react';
 import LineIcon from '@shared/icons/line.svg?react';
+import LotusUrl from '@shared/icons/lotus.jpeg';
 import MidFingerUrl from '@shared/icons/mid-finger.jpg';
 import TintedInstagramUrl from '@shared/icons/tinted-instagram.png';
 
@@ -48,6 +49,11 @@ export const Instagram = (props: React.SVGProps<SVGSVGElement>) => {
 
 export const Line = (props: React.SVGProps<SVGSVGElement>) => {
   return <LineIcon {...props} />;
+};
+
+
+export const Lotus = (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
+  return <img src={LotusUrl} {...props} />;
 };
 
 

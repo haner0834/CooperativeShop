@@ -13,23 +13,23 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import express from 'express';
-import { AuthMeta, AuthService } from './services/auth.service';
+import { AuthMeta, AuthService } from '../services/auth.service';
 import { Log } from 'src/common/decorators/logger.decorator';
-import { JwtAccessGuard } from './guards/jwt-access.guard';
-import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
-import { GoogleOAuthGuard } from './guards/google-oauth.guard';
+import { JwtAccessGuard } from '../guards/jwt-access.guard';
+import { JwtRefreshGuard } from '../guards/jwt-refresh.guard';
+import { GoogleOAuthGuard } from '../guards/google-oauth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import {
   RegisterDto,
   LoginDto,
   SwitchAccountDto,
   GoogleLoginQueryDto,
-} from './dto/auth.dto';
-import type { UserPayload } from './types/auth.types';
+} from '../dto/auth.dto';
+import type { UserPayload } from '../types/auth.types';
 import type { User } from '@prisma/client';
 import { BadRequestError, UnauthorizedError } from 'src/types/error.types';
 import { env } from 'src/common/utils/env.utils';
-import { GoogleRedirectGuard } from './guards/google-redirect.guard';
+import { GoogleRedirectGuard } from '../guards/google-redirect.guard';
 import { RateLimit } from 'src/rate-limit/rate-limit.decorator';
 import { DeviceId } from 'src/device-id/device-id.decorator';
 import { type DeviceIdResult } from 'src/device-id/types/device-id-result';

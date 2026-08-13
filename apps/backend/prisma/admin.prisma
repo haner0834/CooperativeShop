@@ -6,11 +6,20 @@ model Admin {
     email    String     @unique
     isActive Boolean    @default(true)
 
+    // 對齊 User 的密碼雜湊策略：password = hash(salt + server secret + content)
+    // 注意：這裡不能只靠 @default(cuid()) 生成，因為 accept invite 流程需要
+    // 在 create Admin 之前就先算好 salt 拿去 hash 密碼，所以 app 端一律顯式帶入。
+    // @default(cuid()) 保留作為沒有顯式帶入時的 fallback。
+    salt String @default(cuid())
+
     schoolId String?
     school   School? @relation(references: [id], fields: [schoolId])
 
     lastLoginAt DateTime?
     lastLoginIp String?
+
+    reviewedDrafts ShopDraftVersion[]
+    invitesSent    AdminInvite[]      @relation("InvitedBy")
 
     createAt DateTime @default(now())
     updateAt DateTime @updatedAt()
@@ -19,4 +28,28 @@ model Admin {
 enum AdminLevel {
     ORGANIZATION
     SCHOOL
+}
+
+// Admin 邀請連結。目前只有 org level admin 會用到 accept 流程，
+// schoolId 欄位先保留給未來 school level admin 用。
+model AdminInvite {
+    id    String     @id @default(cuid())
+    email String
+    level AdminLevel
+
+    schoolId String?
+    school   School? @relation(references: [id], fields: [schoolId])
+
+    // 明文 token 只會在建立當下回傳一次，DB 只存 hash，避免 DB 外洩直接等於連結外洩
+    tokenHash String @unique
+
+    invitedByAdminId String
+    invitedBy        Admin  @relation("InvitedBy", fields: [invitedByAdminId], references: [id])
+
+    expiresAt  DateTime
+    acceptedAt DateTime?
+
+    createAt DateTime @default(now())
+
+    @@index([email])
 }

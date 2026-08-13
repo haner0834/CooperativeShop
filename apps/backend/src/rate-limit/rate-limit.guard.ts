@@ -23,16 +23,38 @@ export class RateLimitGuard implements CanActivate {
     );
 
     let userId: string | null = null;
+    let adminId: string | null = null;
+
     if (request.user?.id) {
       userId = request.user.id;
+    } else if (request.orgAdmin?.adminId) {
+      // JwtAdminGuard 可能已經在這之前跑過了（取決於 route 上兩個 guard 的順序），
+      // request.orgAdmin 是它塞的、已經跟 AdminService 核對過的 AdminContext，直接用即可。
+      adminId = request.orgAdmin.adminId;
     } else {
       const authHeader = request.headers.authorization;
       if (authHeader?.startsWith('Bearer ')) {
         const token = authHeader.split(' ')[1];
+
+        // 學生 token 跟 admin token 是不同 secret 簽的，verify 失敗只會回傳 null，
+        // 兩邊互不干擾，依序試過去即可。
         try {
-          const decoded = this.tokenService.verifyAccessToken(token);
-          request.user = decoded;
-          userId = decoded?.id || null;
+          const decodedUser = this.tokenService.verifyAccessToken(token);
+          if (decodedUser?.id) {
+            request.user = decodedUser;
+            userId = decodedUser.id;
+          } else {
+            const decodedAdmin =
+              this.tokenService.verifyAdminAccessToken(token);
+            if (decodedAdmin?.adminId) {
+              // 注意：這裡刻意不寫進 request.orgAdmin —— 那個屬性名保留給
+              // JwtAdminGuard 用來寫入「已經回頭跟 AdminService 驗證過」的 AdminContext。
+              // 這裡拿到的只是 token 自己宣稱的內容，純粹拿來算 rate limit 配額用，
+              // 不能當成「這個人真的是有效 admin」的證明——那件事還是要交給 JwtAdminGuard 做。
+              request.orgAdminTokenPayload = decodedAdmin;
+              adminId = decodedAdmin.adminId;
+            }
+          }
         } catch (e) {
           /* Token invalid, treat as guest */
         }
@@ -44,13 +66,14 @@ export class RateLimitGuard implements CanActivate {
     let trustLevel = TrustLevel.UNTRUSTED;
 
     const deviceId = deviceIdResult?.value ?? null;
-    trustLevel = userId
-      ? TrustLevel.AUTHENTICATED
-      : deviceId
-        ? deviceIdResult?.verified
-          ? TrustLevel.DEVICE_COOKIE
-          : TrustLevel.DEVICE_HEADER
-        : TrustLevel.UNTRUSTED;
+    trustLevel =
+      userId || adminId
+        ? TrustLevel.AUTHENTICATED
+        : deviceId
+          ? deviceIdResult?.verified
+            ? TrustLevel.DEVICE_COOKIE
+            : TrustLevel.DEVICE_HEADER
+          : TrustLevel.UNTRUSTED;
 
     const ip = request.ip || request.connection.remoteAddress;
 
@@ -64,6 +87,7 @@ export class RateLimitGuard implements CanActivate {
     const isAllowed = await this.rateLimitService.checkAccess(
       ip,
       userId,
+      adminId,
       deviceId,
       trustLevel,
       limits,

@@ -1,3 +1,5 @@
+import { WorkScheduleType } from '../dto/create-shop.dto';
+
 export enum Weekday {
   MONDAY = 'MONDAY',
   TUESDAY = 'TUESDAY',
@@ -12,4 +14,6 @@ export interface WorkSchedule {
   weekday: Weekday;
   startMinuteOfDay: number;
   endMinuteOfDay: number;
+  type: WorkScheduleType;
+  scheduleNote: string | null;
 }

@@ -4,11 +4,17 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { RecordFileResult, StorageService } from './storage.service';
+import {
+  PresignedUrlResult,
+  PresignedUrlWithThumbnailResult,
+  RecordFileResult,
+  StorageService,
+} from './storage.service';
 import {
   ConfirmUploadDto,
   DeleteFileDto,
@@ -28,12 +34,22 @@ export class StorageController {
   @Post('presigned-url')
   @UseGuards(JwtAccessGuard)
   async generatePresignedUrl(@Body() body: GeneratePresignedUrlDto) {
-    const result = await this.storageService.generatePresignedUrlWithThumbnail(
-      body.fileName,
-      body.contentType,
-      body.category,
-      body.fileSize,
-    );
+    let result: PresignedUrlWithThumbnailResult | PresignedUrlResult;
+    if (body.hasThumbnail) {
+      result = await this.storageService.generatePresignedUrlWithThumbnail(
+        body.fileName,
+        body.contentType,
+        body.category,
+        body.fileSize,
+      );
+    } else {
+      result = await this.storageService.generatePresignedUrl(
+        body.fileName,
+        body.contentType,
+        body.category,
+        body.fileSize,
+      );
+    }
 
     return result;
   }
@@ -45,9 +61,14 @@ export class StorageController {
     @Body() body: ConfirmUploadDto,
     @CurrentUser() user: UserPayload,
   ) {
-    const isExist =
-      (await this.storageService.verifyFileUploaded(body.fileKey)) &&
-      (await this.storageService.verifyFileUploaded(body.thumbnailKey));
+    const isMainFileExist = await this.storageService.verifyFileUploaded(
+      body.fileKey,
+    );
+    const isThumbnailExist = body.thumbnailKey
+      ? await this.storageService.verifyFileUploaded(body.thumbnailKey)
+      : true;
+
+    const isExist = isMainFileExist && isThumbnailExist;
 
     let record: RecordFileResult | null = null;
     if (isExist) {
@@ -55,8 +76,8 @@ export class StorageController {
         body.fileKey,
         body.category,
         body.contentType,
-        body.thumbnailKey,
         user.id,
+        body.thumbnailKey,
       );
     }
 

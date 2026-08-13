@@ -9,6 +9,11 @@ import {
   Tokens,
   GeneratedRefreshToken,
 } from '../types/auth.types';
+import {
+  AdminPayload,
+  AdminRefreshTokenPayload,
+  AdminTokens,
+} from '../types/admin-auth.types';
 import { env } from 'src/common/utils/env.utils';
 
 export interface RefreshTokenPayload {
@@ -19,14 +24,25 @@ export interface RefreshTokenPayload {
 @Injectable()
 export class TokenService {
   private readonly SALT_ROUNDS = 10;
+
+  // ---- 學生端 ----
   private readonly JWT_ACCESS_SECRET: string;
   private readonly JWT_REFRESH_SECRET: string;
-  private readonly JWT_ACCESS_EXPIRES_IN: ms.StringValue = '15m';
-  private readonly JWT_REFRESH_EXPIRES_IN: ms.StringValue = '30d';
+  private readonly JWT_ACCESS_EXPIRES_IN: ms.StringValue = '60m';
+  private readonly JWT_REFRESH_EXPIRES_IN: ms.StringValue = '90d';
+
+  // ---- Admin 端：獨立 secret，不共用 ----
+  private readonly JWT_ADMIN_ACCESS_SECRET: string;
+  private readonly JWT_ADMIN_REFRESH_SECRET: string;
+  private readonly JWT_ADMIN_ACCESS_EXPIRES_IN: ms.StringValue = '15m';
+  // Admin 是高權限帳號，refresh token 天數刻意比學生端短
+  private readonly JWT_ADMIN_REFRESH_EXPIRES_IN: ms.StringValue = '14d';
 
   constructor(private jwtService: JwtService) {
     this.JWT_ACCESS_SECRET = env('JWT_ACCESS_SECRET');
     this.JWT_REFRESH_SECRET = env('JWT_REFRESH_SECRET');
+    this.JWT_ADMIN_ACCESS_SECRET = env('JWT_ADMIN_ACCESS_SECRET');
+    this.JWT_ADMIN_REFRESH_SECRET = env('JWT_ADMIN_REFRESH_SECRET');
   }
 
   getRefreshTokenMaxAge(trustDevice: boolean): number {
@@ -107,6 +123,86 @@ export class TokenService {
       });
 
       return typeof decoded === 'object' ? decoded : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  // ================= Admin =================
+
+  async generateAdminRefreshToken(
+    accountId: string,
+  ): Promise<GeneratedRefreshToken> {
+    const payload: AdminRefreshTokenPayload = {
+      jti: crypto.randomBytes(16).toString('hex'),
+      accountId,
+    };
+
+    const token = this.jwtService.sign(payload, {
+      secret: this.JWT_ADMIN_REFRESH_SECRET,
+      subject: accountId,
+      expiresIn: this.JWT_ADMIN_REFRESH_EXPIRES_IN,
+    });
+
+    const hash = await bcrypt.hash(token, this.SALT_ROUNDS);
+
+    return { token, hash };
+  }
+
+  async generateAdminTokens(payload: AdminPayload): Promise<AdminTokens> {
+    const accessToken = this.jwtService.sign(payload, {
+      secret: this.JWT_ADMIN_ACCESS_SECRET,
+      expiresIn: this.JWT_ADMIN_ACCESS_EXPIRES_IN,
+      subject: payload.accountId,
+    });
+
+    const { token: refreshToken, hash: hashedRefreshToken } =
+      await this.generateAdminRefreshToken(payload.accountId);
+
+    return {
+      accessToken,
+      refreshToken,
+      hashedRefreshToken,
+      cookieMaxAge: ms(this.JWT_ADMIN_REFRESH_EXPIRES_IN),
+    };
+  }
+
+  verifyAdminAccessToken(token: string): AdminPayload | null {
+    try {
+      const decoded = this.jwtService.verify(token, {
+        secret: this.JWT_ADMIN_ACCESS_SECRET,
+      });
+
+      if (
+        typeof decoded === 'object' &&
+        decoded !== null &&
+        'accountId' in decoded &&
+        'adminId' in decoded
+      ) {
+        return decoded as AdminPayload;
+      }
+
+      return null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  verifyAdminRefreshToken(token: string): AdminRefreshTokenPayload | null {
+    try {
+      const decoded = this.jwtService.verify(token, {
+        secret: this.JWT_ADMIN_REFRESH_SECRET,
+      });
+
+      if (
+        typeof decoded === 'object' &&
+        decoded !== null &&
+        'accountId' in decoded
+      ) {
+        return decoded as AdminRefreshTokenPayload;
+      }
+
+      return null;
     } catch (error) {
       return null;
     }

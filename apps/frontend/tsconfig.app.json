@@ -14,8 +14,12 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
 
     "types": ["vite-plugin-svgr/client"],
+
+    "strictPropertyInitialization": false,
 
     /* Linting */
     "strict": true,
@@ -24,11 +28,11 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
+    "baseUrl": "src/*",
     "paths": {
-      "*": ["./src/*"],
-      "@shared/*": ["./src/shared/*"],
-      "@assets/*": ["./src/assets/*"],
-      "@icons": ["./src/generated/icons"]
+      "@shared/*": ["../shared/*"],
+      "@assets/*": ["../assets/*"],
+      "@icons": ["../generated/icons"]
     }
   },
   "include": ["src"]

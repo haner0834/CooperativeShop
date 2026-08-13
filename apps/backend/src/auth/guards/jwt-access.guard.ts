@@ -15,7 +15,7 @@ export class JwtAccessGuard implements CanActivate {
     private reflector: Reflector,
   ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const bypass = this.reflector.getAllAndOverride<boolean>(BYPASS_JWT_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -24,15 +24,12 @@ export class JwtAccessGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     // `RateLimitGuard` may be called before `JwtAccessGuard`, if authorized, it will add it to `request.user`
     if (request.user) return true;
-    const authHeader = request.headers.authorization;
 
+    const authHeader = request.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      // 沒有 token
-      return bypass
-        ? true
-        : (() => {
-            throw new UnauthorizedException('No token provided.');
-          })();
+      // no token
+      if (bypass) return true;
+      throw new UnauthorizedException('No token provided.');
     }
 
     const token = authHeader.split(' ')[1];
@@ -45,6 +42,7 @@ export class JwtAccessGuard implements CanActivate {
 
     // token 驗證成功
     request.user = decoded;
+
     return true;
   }
 }

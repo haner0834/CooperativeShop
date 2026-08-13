@@ -8,15 +8,20 @@ export type Weekday =
   | "SUNDAY";
 
 export interface WorkScheduleBackend {
-  id: string;
   weekday: Weekday;
   startMinuteOfDay: number;
   endMinuteOfDay: number;
+  type: WorkScheduleType;
+  scheduleNote?: string;
 }
+
+export type WorkScheduleType = "FIXED" | "FLEXIBLE";
 
 // Seperate them because this interface match more to the
 // interaction in shop register form.
 export interface WorkSchedule {
+  type: WorkScheduleType;
+  scheduleNote?: string;
   weekdays: Weekday[];
   range: [number, number]; // 0 ~ 1440 (mins)
 }
@@ -33,10 +38,11 @@ export function toBackendSchedules(
     const [startMinuteOfDay, endMinuteOfDay] = schedule.range;
     schedule.weekdays.forEach((weekday) => {
       result.push({
-        id: crypto.randomUUID(),
         weekday,
         startMinuteOfDay,
         endMinuteOfDay,
+        type: schedule.type ?? "FIXED",
+        scheduleNote: schedule.scheduleNote,
       });
     });
   });
@@ -69,6 +75,8 @@ export function fromBackendSchedules(
     const weekdays = schedules.map((s) => s.weekday);
 
     result.push({
+      type: schedules[0].type,
+      scheduleNote: schedules[0].scheduleNote,
       weekdays,
       range: [startHour, endHour],
     });

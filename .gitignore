@@ -54,6 +54,9 @@ build/
 Package.resolved
 *.xcbkptlist
 
+# Redis
+dump.rdb
+
 # VS Code
 .vscode/
 .history/

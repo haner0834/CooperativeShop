@@ -1,0 +1,87 @@
+model ShopDraft {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    versions         ShopDraftVersion[]
+    currentVersionId String?            @unique
+    currentVersion   ShopDraftVersion?  @relation("CurrentVersion", fields: [currentVersionId], references: [id])
+
+    shopId String? @unique
+    shop   Shop?   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+    title         String
+    subtitle      String?
+    normalizedKey String  @unique
+    description   String  @default("")
+
+    contactInfo Json @default("[]") // An array
+
+    discount      String?
+    workSchedules Json    @default("[]") // array
+    contract      Json?
+
+    address   String @default("")
+    longitude Float?
+    latitude  Float?
+
+    thumbnailKey String?
+    images       Json    @default("[]") // array
+
+    submissionNote String?
+
+    schoolId String
+    school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+    aiGroundingSources Json?
+
+    stage         ShopDraftStage
+    reservedUntil DateTime?
+
+    @@index([normalizedKey])
+}
+
+enum ShopDraftStage {
+    RESERVED
+    EDITING
+    SUBMITTED
+    ARCHIVED
+    APPROVED
+}
+
+model ShopDraftVersion {
+    id        String    @id @default(cuid())
+    draftId   String
+    draft     ShopDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+    versionNo Int
+    snapshot  Json
+
+    aiReviewStatus AiReviewStatus @default(PENDING)
+    aiReviewResult Json?
+    aiReviewedAt   DateTime?
+
+    reviewStatus ReviewStatus @default(IDLE)
+    rejectReason String?
+    reviewerId   String?
+    reviewer     Admin?       @relation(fields: [reviewerId], references: [id])
+
+    submittedAt DateTime
+    reviewedAt  DateTime?
+
+    currentFor ShopDraft? @relation("CurrentVersion")
+
+    @@unique([draftId, versionNo])
+}
+
+enum AiReviewStatus {
+    PENDING
+    APPROVED
+    REJECTED
+}
+
+enum ReviewStatus {
+    IDLE
+    REJECT
+    SUCCESS
+    SUPERSEDED
+}

@@ -11,5 +11,9 @@ model School {
     websiteUrl       String?
     isLimited        Boolean  @default(false)
 
+    drafts ShopDraft[]
+
+    adminInvites AdminInvite[]
+
     @@index([abbreviation])
 }

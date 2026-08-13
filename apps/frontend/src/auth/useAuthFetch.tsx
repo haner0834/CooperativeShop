@@ -48,7 +48,6 @@ export const useAuthFetch = () => {
       const { retries = 1, bypass = false, ...fetchOptions } = options;
       const maxAttempts = retries + 1;
       let lastError: Error | null = null;
-      console.log("AuthedFetch called.");
 
       if (!activeUserRef.current && restorePromise) {
         // If `activeUser` has not been set (App just launch)，

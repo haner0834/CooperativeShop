@@ -5,12 +5,14 @@ import {
   IsOptional,
   IsNumber,
   Max,
+  IsBoolean,
 } from 'class-validator';
 
 export enum FileCategory {
   AVATAR = 'avatar',
   SHOP_IMAGE = 'shop-image',
   SHOP_THUMBNAIL = 'shop-thumbnail',
+  SHOP_CONTRACT = 'shop-contract',
 }
 
 export class GeneratePresignedUrlDto {
@@ -25,6 +27,9 @@ export class GeneratePresignedUrlDto {
   @IsEnum(FileCategory)
   category: FileCategory;
 
+  @IsBoolean()
+  hasThumbnail: boolean;
+
   @IsNumber()
   @IsOptional()
   @Max(5 * 1024 * 1024)
@@ -38,7 +43,8 @@ export class ConfirmUploadDto {
 
   @IsString()
   @IsNotEmpty()
-  thumbnailKey: string;
+  @IsOptional()
+  thumbnailKey?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -56,5 +62,6 @@ export class DeleteFileDto {
 
   @IsString()
   @IsNotEmpty()
-  thumbnailKey: string;
+  @IsOptional()
+  thumbnailKey?: string;
 }

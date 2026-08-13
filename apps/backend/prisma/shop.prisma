@@ -20,6 +20,9 @@ model Shop {
     cachedHotScore  Float           @default(0)
     cachedHomeScore Float           @default(0)
     savedBy         SavedShop[]
+    shopDraft       ShopDraft?
+    contractFileId  String?         @unique
+    contractFile    FileRecord?     @relation(fields: [contractFileId], references: [id])
 
     @@index([title])
     @@index([schoolId])
@@ -48,6 +51,9 @@ model WorkSchedule {
     // 0 - 1439 (例如 09:00 = 540)
     startMinute Int
     endMinute   Int
+
+    type         String  @default("FIXED") // FLEXIBLE, FIXED
+    scheduleNote String?
 
     @@index([shopId, dayOfWeek])
 }

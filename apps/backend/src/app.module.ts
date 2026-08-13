@@ -26,6 +26,14 @@ import { DeviceIdGuard } from './device-id/device-id.guard';
 import { DeviceIdService } from './device-id/device-id.service';
 import { CloudflareContextInterceptor } from './common/interceptors/cloudflare-context.interceptor';
 import { MapModule } from './map/map.module';
+import { ShopDraftModule } from './shop-draft/shop-draft.module';
+import { BullModule } from '@nestjs/bullmq';
+import { InstaPostModule } from './insta-post/insta-post.module';
+import { AiReviewModule } from './ai-review/ai-review.module';
+import { InstaPostImageModule } from './insta-post-image/insta-post-image.module';
+import { IdempotencyModule } from './idempotency/idempotency.module';
+import { IdempotencyInterceptor } from './idempotency/idempotency.interceptor';
+import { IdempotencyGuard } from './idempotency/idempotency.guard';
 
 @Module({
   imports: [
@@ -46,6 +54,25 @@ import { MapModule } from './map/map.module';
     SitemapModule,
     AccountModule,
     MapModule,
+    ShopDraftModule,
+    BullModule.forRootAsync({
+      useFactory: () => {
+        const parsed = new URL(env('REDIS_URI'));
+        return {
+          connection: {
+            host: parsed.hostname,
+            port: parseInt(parsed.port || '6379', 10),
+            username: parsed.username || undefined,
+            password: parsed.password || undefined,
+            maxRetriesPerRequest: null,
+          },
+        };
+      },
+    }),
+    InstaPostModule,
+    AiReviewModule,
+    InstaPostImageModule,
+    IdempotencyModule,
   ],
   controllers: [AppController],
   providers: [
@@ -65,12 +92,20 @@ import { MapModule } from './map/map.module';
       useClass: RateLimitGuard,
     },
     {
+      provide: APP_GUARD,
+      useClass: IdempotencyGuard,
+    },
+    {
       provide: APP_INTERCEPTOR,
       useClass: DeviceCookieInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,
       useClass: RiskAssessmentInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: IdempotencyInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,

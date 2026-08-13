@@ -1,0 +1,9 @@
+-- AlterTable
+ALTER TABLE "ShopDraft" ALTER COLUMN "description" SET DEFAULT '',
+ALTER COLUMN "contactInfo" SET DEFAULT '[]',
+ALTER COLUMN "workSchedules" SET DEFAULT '[]',
+ALTER COLUMN "address" SET DEFAULT '',
+ALTER COLUMN "longitude" DROP NOT NULL,
+ALTER COLUMN "latitude" DROP NOT NULL,
+ALTER COLUMN "thumbnailKey" DROP NOT NULL,
+ALTER COLUMN "images" SET DEFAULT '[]';

@@ -123,7 +123,16 @@ const ShopContactInfoBlock = ({
           >
             <div className="flex flex-col w-full">
               <label className="input w-full">
-                {contact.icon}
+                {contact.category !== "website" ? (
+                  contact.icon
+                ) : contact.content ? (
+                  <img
+                    src={`https://www.google.com/s2/favicons?domain=${contact.content}&sz=64`}
+                    className="w-5 h-5"
+                  ></img>
+                ) : (
+                  contact.icon
+                )}
                 <p>{contact.prefix}</p>
                 <input
                   type={contact.inputType}
