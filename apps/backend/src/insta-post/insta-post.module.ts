@@ -7,6 +7,7 @@ import { PostPeerClient } from './postpeer.client';
 import { INSTAGRAM_POST_QUEUE } from './insta-post.constants';
 import { InstaPostImageModule } from 'src/insta-post-image/insta-post-image.module';
 import { StorageModule } from 'src/storage/storage.module';
+import { InstaPostSequenceService } from './insta-post-sequence.service';
 
 @Module({
   imports: [
@@ -23,7 +24,12 @@ import { StorageModule } from 'src/storage/storage.module';
     StorageModule,
   ],
   controllers: [InstaPostController],
-  providers: [InstaPostService, InstagramPostProcessor, PostPeerClient],
+  providers: [
+    InstaPostService,
+    InstaPostSequenceService,
+    InstagramPostProcessor,
+    PostPeerClient,
+  ],
   exports: [InstaPostService],
 })
 export class InstaPostModule {}

@@ -5,36 +5,74 @@ import {
   InstaPostImageType,
   InstaPostImageResult,
 } from './types/insta-post-image-type.types';
-
-import { join } from 'node:path';
-import { readFile } from 'node:fs/promises';
 import { ShopDraftDto } from 'src/shop-draft/dto/shop-draft.dto';
+import { images } from 'src/generated/images';
+import { templates } from 'src/generated/templates';
+import { PostVisualState } from 'src/insta-post/insta-post-sequence.service';
+import { ContactInfoDto } from 'src/shops/dto/create-shop.dto';
+import { generateScheduleText } from 'src/common/utils/work-schedule.utils';
+import { ContactCategory } from 'src/shops/types/contact-info.type';
 
 @Injectable()
 export class InstaPostImageService {
-  private async getTemplate(type: InstaPostImageType) {
-    return await readFile(
-      join(__dirname, `templates/shop-${type.toLowerCase()}.template.html`),
-      'utf-8',
-    );
+  private getTemplate(type: InstaPostImageType): string {
+    switch (type) {
+      case 'COVER':
+        return templates.SHOP_TITLE_TEMPLATE;
+      case 'INFO':
+        return templates.SHOP_INFO_TEMPLATE;
+      case 'DESCRIPTION':
+        return templates.SHOP_DESCRIPTION_TEMPLATE;
+    }
+  }
+
+  private getCoverBg(visualState: PostVisualState): string {
+    const key =
+      `COVER_${visualState.coverStyle}_${visualState.coverFlip}` as keyof typeof images;
+    return images[key];
+  }
+
+  private getContentBg(flip: 0 | 1): string {
+    const key = `CONTENT_0_${flip}` as keyof typeof images;
+    return images[key];
+  }
+
+  private getContractString(contactInfo: ContactInfoDto[]) {
+    const priorityOrder = [
+      ContactCategory.PhoneNumber,
+      ContactCategory.Instagram,
+      ContactCategory.Website,
+    ];
+
+    const infoMap = new Map(contactInfo.map((ci) => [ci.category, ci.content]));
+
+    for (const category of priorityOrder) {
+      const content = infoMap.get(category);
+      if (content) return content;
+    }
+
+    return '無可用聯絡方式';
   }
 
   async generateInstaPostImages(
     shopInfo: ShopDraftDto,
+    visualState: PostVisualState,
   ): Promise<InstaPostImageResult[]> {
     const templatesConfig: Record<InstaPostImageType, Record<string, any>> = {
       COVER: {
-        bgBase64Url: '',
-        title: shopInfo.title,
-        subtitle: shopInfo.subtitle ?? '',
+        bgImageUrl: this.getCoverBg(visualState),
+        storeName: shopInfo.title,
+        branchName: shopInfo.subtitle ?? '',
       },
       INFO: {
-        bgBase64Url: '',
+        bgImageUrl: this.getContentBg(visualState.infoFlip),
         address: shopInfo.address,
         discount: shopInfo.discount ?? '',
+        workSchedule: generateScheduleText(shopInfo.workSchedules),
+        contact: this.getContractString(shopInfo.contactInfo),
       },
       DESCRIPTION: {
-        bgBase64Url: '',
+        bgImageUrl: this.getContentBg(visualState.descriptionFlip),
         description: shopInfo.description,
       },
     };
@@ -43,7 +81,7 @@ export class InstaPostImageService {
 
     return Promise.all(
       keys.map(async (type) => {
-        const template = await this.getTemplate(type);
+        const template = this.getTemplate(type);
         const buffer = await this.generateImageBuffer(template, {
           ...templatesConfig[type],
         });

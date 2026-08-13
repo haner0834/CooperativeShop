@@ -53,7 +53,7 @@ generateTsFile(
 // ==========================================
 // 2. Images (Base64) -> src/generated/images.ts
 // ==========================================
-const imageFiles = readdirSync(sourceImagesDir).filter((file) => file.endsWith('.png') || file.endsWith('.jpeg') || file.endsWith('.webp'));
+const imageFiles = readdirSync(sourceImagesDir).filter((file) => file.endsWith('.webp'));
 const MAX_IMAGE_SIZE = 50 * 1024; // 50 KB
 
 generateTsFile(
@@ -68,7 +68,7 @@ generateTsFile(
       console.error(`[ERROR] 圖片過大: ${file} (${sizeInKB} KB > 50 KB)`);
     }
 
-    return `data:image/png;base64,${buffer.toString('base64')}`;
+    return `data:image/webp;base64,${buffer.toString('base64')}`;
   },
   'images'
 );
