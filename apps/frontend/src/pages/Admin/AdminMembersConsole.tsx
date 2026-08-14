@@ -383,7 +383,7 @@ const AdminMembersConsole = () => {
         </div>
       </nav>
 
-      <div className="max-w-xl w-full p-4 space-y-4 lg:ms-64">
+      <div className="max-w-xl w-full p-4 space-y-4">
         <div className="bg-base-100 p-4 rounded-box">
           <div className="flex flex-row items-center gap-6">
             <div className="p-3 rounded-full border border-base-300">
