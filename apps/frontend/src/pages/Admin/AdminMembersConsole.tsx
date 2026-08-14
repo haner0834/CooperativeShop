@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Users,
   UserPlus,
@@ -63,8 +63,10 @@ const buildInviteLink = (token: string) =>
 // -------------------- 建立邀請 Modal --------------------
 
 const CreateInviteModal = ({
+  dialogRef,
   onCreated,
 }: {
+  dialogRef: React.RefObject<HTMLDialogElement | null>;
   onCreated: (invite: PendingInvite, link: string) => void;
 }) => {
   const { showToast } = useToast();
@@ -73,10 +75,7 @@ const CreateInviteModal = ({
   const [submitting, setSubmitting] = useState(false);
 
   const closeModal = () => {
-    const modal = document.getElementById(
-      "create_invite_modal"
-    ) as HTMLDialogElement | null;
-    modal?.close();
+    dialogRef.current?.close();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -117,7 +116,7 @@ const CreateInviteModal = ({
   };
 
   return (
-    <dialog id="create_invite_modal" className="modal">
+    <dialog ref={dialogRef} className="modal">
       <div className="modal-box flex flex-col gap-4 p-4">
         <h3 className="text-center font-semibold">邀請新的組織管理員</h3>
 
@@ -165,10 +164,21 @@ const CreateInviteModal = ({
 
 // -------------------- 邀請連結建立成功 Modal --------------------
 
-const InviteLinkResultModal = ({ link }: { link: string }) => {
+const InviteLinkResultModal = ({ link }: { link: string | null }) => {
   const { showToast } = useToast();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  // link 是從 null 變成新的 token 時才代表「剛建立了一筆新的邀請」，
+  // 這個 dialog 本身一開始就掛載在 DOM 上（不再是條件渲染），
+  // 所以這裡拿到的 ref 一定是最新、已存在的節點，不會有「還沒掛載就找不到」的競速問題。
+  useEffect(() => {
+    if (link) {
+      dialogRef.current?.showModal();
+    }
+  }, [link]);
 
   const copyLink = async () => {
+    if (!link) return;
     try {
       await navigator.clipboard.writeText(link);
       showToast({
@@ -184,7 +194,7 @@ const InviteLinkResultModal = ({ link }: { link: string }) => {
   };
 
   return (
-    <dialog id="invite_link_modal" className="modal">
+    <dialog ref={dialogRef} className="modal">
       <div className="modal-box flex flex-col gap-4 p-4">
         <h3 className="text-center font-semibold flex items-center justify-center gap-2">
           <Link2 size={20} />
@@ -230,6 +240,7 @@ const AdminMembersConsole = () => {
   const { showModal } = useModal();
   const { activeAdmin } = useAdminAuth();
   const { adminAuthedFetch } = useAdminAuthFetch();
+  const createInviteModalRef = useRef<HTMLDialogElement>(null);
 
   const loadAll = async () => {
     setLoading(true);
@@ -256,19 +267,15 @@ const AdminMembersConsole = () => {
   }, []);
 
   const openCreateInviteModal = () => {
-    const modal = document.getElementById(
-      "create_invite_modal"
-    ) as HTMLDialogElement | null;
-    modal?.showModal();
+    createInviteModalRef.current?.showModal();
   };
 
   const handleInviteCreated = (invite: PendingInvite, link: string) => {
     setInvites((prev) => [invite, ...prev]);
+    // InviteLinkResultModal 一開始就掛載在 DOM 上，
+    // 這裡只要更新 link，它內部的 useEffect 就會負責開啟 dialog，
+    // 不需要再用 getElementById + setTimeout 去猜測 DOM 是否已經渲染完成。
     setPendingInviteLink(link);
-    const modal = document.getElementById(
-      "invite_link_modal"
-    ) as HTMLDialogElement | null;
-    modal?.showModal();
     showToast({
       title: "邀請已建立",
       icon: <ShieldCheck className="text-success" />,
@@ -361,8 +368,11 @@ const AdminMembersConsole = () => {
 
   return (
     <div className="min-h-screen bg-base-300 flex flex-col items-center pt-18">
-      {pendingInviteLink && <InviteLinkResultModal link={pendingInviteLink} />}
-      <CreateInviteModal onCreated={handleInviteCreated} />
+      <InviteLinkResultModal link={pendingInviteLink} />
+      <CreateInviteModal
+        dialogRef={createInviteModalRef}
+        onCreated={handleInviteCreated}
+      />
 
       <nav className="navbar bg-base-100 fixed top-0 z-50 shadow-xs px-3">
         <div className="navbar-start space-x-4">
