@@ -14,6 +14,7 @@ import { JwtAdminGuard } from './guards/jwt-admin.guard';
 import { JwtAdminRefreshGuard } from './guards/jwt-admin-refresh.guard';
 import { AdminAuthService } from './services/admin-auth.service';
 import { AdminAuthController } from './controllers/admin-auth.controller';
+import { GoogleAdminStrategy } from './strategies/google-admin.strategy';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AdminAuthController } from './controllers/admin-auth.controller';
     AuthService,
     TokenService,
     GoogleStrategy,
+    GoogleAdminStrategy,
     JwtAccessGuard,
     JwtRefreshGuard,
     JwtAdminGuard,

@@ -19,7 +19,7 @@ const SAFETY_REFRESH_INTERVAL_MS = 60_000; // 保底輪詢，容忍最多 1 分�
 export class AdminService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(AdminService.name);
 
-  /** Guard 實際讀的地方：每個 process 自己的記憶體快取 */
+  /** Guard 實際讀的地方：每個 process 自己的記憶體快取，key 是 accountId */
   private localCache = new Map<string, AdminContext>();
   private refreshTimer?: NodeJS.Timeout;
   private initialLoad!: Promise<void>;
@@ -84,8 +84,15 @@ export class AdminService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * 在升級/降級/停用 admin 的地方呼叫這個，
-   * 這裡只負責直接改 Redis，改完後 Redis 的通知機制會觸發所有服務的訊息監聽
+   * 在升級/降級/停用單一 Account 的地方呼叫這個，
+   * 這裡只負責直接改 Redis，改完後 Redis 的通知機制會觸發所有服務的訊息監聽。
+   *
+   * 注意：這個方法只處理「一筆 accountId」。一個 admin 底下可能有多筆 Account
+   * （Admin.account 是 Account[]，例如同時有 credentials + google 兩種登入方式），
+   * 如果是「整個 admin」層級的異動（停權、復權、調整 level），
+   * 要呼叫下面的 invalidateAdmin，讓所有登入方式的 cache 一起刷新——
+   * 只呼叫 invalidateAccount 只會刷新到剛好操作的那一筆 accountId，
+   * 其他 accountId 要等最多 60 秒的保底輪詢才會跟著失效，這段空窗期是安全性風險。
    */
   async invalidateAccount(accountId: string): Promise<void> {
     const ctx = await this.loadOneFromDb(accountId);
@@ -102,40 +109,43 @@ export class AdminService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * 停用一個 admin（不刪除資料，只是關閉權限）。
-   * 呼叫完會立刻讓所有 process 的快取失效，guard 下一次請求就會擋下來。
+   * 讓一個 admin「名下所有」Account（所有登入方式）的 cache 一起失效。
+   * deactivate / reactivate / 調整 level 都是 admin 層級的異動，一定要呼叫這個，
+   * 不要只呼叫 invalidateAccount，理由見上面的註解。
    */
-  async deactivateAdmin(accountId: string): Promise<void> {
-    const account = await this.prisma.account.findUnique({
-      where: { id: accountId },
-      select: { adminId: true },
+  async invalidateAdmin(adminId: string): Promise<void> {
+    const accounts = await this.prisma.account.findMany({
+      where: { adminId, role: 'ADMIN' },
+      select: { id: true },
     });
-    if (!account?.adminId) return;
 
+    await Promise.all(accounts.map((a) => this.invalidateAccount(a.id)));
+  }
+
+  /**
+   * 停用一個 admin（不刪除資料，只是關閉權限）。
+   * 呼叫完會立刻讓所有登入方式、所有 process 的快取失效，
+   * guard 下一次請求就會擋下來，不管對方是用哪一種方式登入的。
+   */
+  async deactivateAdmin(adminId: string): Promise<void> {
     await this.prisma.admin.update({
-      where: { id: account.adminId },
+      where: { id: adminId },
       data: { isActive: false },
     });
 
-    await this.invalidateAccount(accountId);
+    await this.invalidateAdmin(adminId);
   }
 
   /**
    * 重新啟用一個先前被停用的 admin。
    */
-  async reactivateAdmin(accountId: string): Promise<void> {
-    const account = await this.prisma.account.findUnique({
-      where: { id: accountId },
-      select: { adminId: true },
-    });
-    if (!account?.adminId) return;
-
+  async reactivateAdmin(adminId: string): Promise<void> {
     await this.prisma.admin.update({
-      where: { id: account.adminId },
+      where: { id: adminId },
       data: { isActive: true },
     });
 
-    await this.invalidateAccount(accountId);
+    await this.invalidateAdmin(adminId);
   }
 
   /**
@@ -143,59 +153,54 @@ export class AdminService implements OnModuleInit, OnModuleDestroy {
    * 但方法先做好，school level admin 上線時可以直接用）。
    */
   async updateAdminLevel(
-    accountId: string,
+    adminId: string,
     level: AdminLevel,
     schoolId: string | null = null,
   ): Promise<void> {
-    const account = await this.prisma.account.findUnique({
-      where: { id: accountId },
-      select: { adminId: true },
-    });
-    if (!account?.adminId) return;
-
     await this.prisma.admin.update({
-      where: { id: account.adminId },
+      where: { id: adminId },
       data: { level, schoolId },
     });
 
-    await this.invalidateAccount(accountId);
+    await this.invalidateAdmin(adminId);
   }
 
-  /** 給 admin console 「成員列表」頁用，回傳所有 admin（含停用的） */
+  /**
+   * 給 admin console 「成員列表」頁用，回傳所有 admin（含停用的）。
+   *
+   * 從 Admin 表出發、把 account 當 relation 帶出來，而不是從 Account 表出發，
+   * 是刻意的——一個 admin 可能有多筆 Account（多種登入方式），
+   * 從 Account 表出發會讓同一個人在列表上重複出現。
+   */
   async listAdmins(): Promise<AdminListItem[]> {
-    const accounts = await this.prisma.account.findMany({
-      where: { role: 'ADMIN' },
+    const admins = await this.prisma.admin.findMany({
       select: {
         id: true,
-        admin: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            level: true,
-            schoolId: true,
-            isActive: true,
-            lastLoginAt: true,
-            createAt: true,
-          },
+        name: true,
+        email: true,
+        level: true,
+        schoolId: true,
+        isActive: true,
+        lastLoginAt: true,
+        createAt: true,
+        accounts: {
+          where: { role: 'ADMIN' },
+          select: { provider: true },
         },
       },
     });
 
-    return accounts
-      .filter((a): a is typeof a & { admin: NonNullable<typeof a.admin> } =>
-        Boolean(a.admin),
-      )
+    return admins
       .map((a) => ({
-        accountId: a.id,
-        adminId: a.admin.id,
-        name: a.admin.name,
-        email: a.admin.email,
-        level: a.admin.level,
-        schoolId: a.admin.schoolId,
-        isActive: a.admin.isActive,
-        lastLoginAt: a.admin.lastLoginAt,
-        createAt: a.admin.createAt,
+        adminId: a.id,
+        name: a.name,
+        email: a.email,
+        level: a.level,
+        schoolId: a.schoolId,
+        isActive: a.isActive,
+        lastLoginAt: a.lastLoginAt,
+        createAt: a.createAt,
+        linkedProviders: a.accounts.map((acc) => acc.provider),
       }))
       .sort((x, y) => y.createAt.getTime() - x.createAt.getTime());
   }
@@ -225,9 +230,14 @@ export class AdminService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  /** 全量重建：開機、保底輪詢、Redis 掛掉時都會用到 */
+  /**
+   * 全量重建：開機、保底輪詢、Redis 掛掉時都會用到。
+   * 一律以 accountId 為 key，一個 admin 有幾筆 Account 就會有幾筆 cache entry，
+   * 內容（level/schoolId 等）都相同，只有 accountId 不同——
+   * 這樣不管 JWT 裡帶的是哪一個登入方式的 accountId 都查得到。
+   */
   private async refreshFromDb(): Promise<void> {
-    const admins = await this.prisma.account.findMany({
+    const accounts = await this.prisma.account.findMany({
       where: { role: 'ADMIN', admin: { isActive: true } },
       select: {
         id: true,
@@ -237,7 +247,7 @@ export class AdminService implements OnModuleInit, OnModuleDestroy {
     });
 
     const next = new Map<string, AdminContext>();
-    for (const a of admins) {
+    for (const a of accounts) {
       if (!a.adminId || !a.admin) continue;
       next.set(a.id, {
         accountId: a.id,
