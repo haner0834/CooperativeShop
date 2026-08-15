@@ -10,6 +10,8 @@ import { AuthProvider } from "./auth/AuthContext";
 import AdminProtectedGate from "./auth/admin-auth/AdminProtectedGate";
 import AdminLogin from "./pages/Admin/AdminLogin";
 import { ModalProvider } from "./widgets/ModalContext";
+import AdminOAuthCallbackSuccessPage from "./pages/Admin/AdminOAuthCallback";
+import AdminOAuthCallbackFailedPage from "./pages/Admin/AdminOAuthCallback";
 const AdminMembersConsole = lazy(
   () => import("./pages/Admin/AdminMembersConsole")
 );
@@ -121,6 +123,11 @@ function App() {
       <Route path="/admin" element={<AdminAuthLayout />}>
         <Route path="login" element={<AdminLogin />} />
         <Route path="invite/:token" element={<AdminInviteAcceptPage />} />
+        <Route
+          path="oauth-callback"
+          element={<AdminOAuthCallbackSuccessPage />}
+        />
+        <Route path="login-failed" element={<AdminOAuthCallbackFailedPage />} />
 
         <Route element={<AdminProtectedGate />}>
           <Route path="draft-review-list" element={<DraftReviewList />} />

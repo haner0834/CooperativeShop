@@ -78,5 +78,9 @@
   "ADMIN_EXISTS": {
     "message": "該 email 已被其他管理員使用",
     "devNote": "An admin with this email already exists."
+  },
+  "CANNOT_DEACTIVATE_SELF": {
+    "message": "不可停用自己",
+    "devNote": "You cannot deactivate your own account."
   }
 }
