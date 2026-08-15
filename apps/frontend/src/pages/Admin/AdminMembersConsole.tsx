@@ -24,7 +24,6 @@ import { Link } from "react-router-dom";
 // ---- 型別對應後端 AdminListItem / PendingInvite ----
 
 interface AdminListItem {
-  accountId: string;
   adminId: string;
   name: string;
   email: string;
@@ -323,7 +322,7 @@ const AdminMembersConsole = () => {
     try {
       const res = await adminAuthedFetch(
         path(
-          `/api/auth/admin/members/${admin.accountId}/${
+          `/api/auth/admin/members/${admin.adminId}/${
             active ? "reactivate" : "deactivate"
           }`
         ),
@@ -332,7 +331,7 @@ const AdminMembersConsole = () => {
       if (!res.success) throw new Error(res.error?.code);
       setAdmins((prev) =>
         prev.map((a) =>
-          a.accountId === admin.accountId ? { ...a, isActive: active } : a
+          a.adminId === admin.adminId ? { ...a, isActive: active } : a
         )
       );
       showToast({
@@ -473,10 +472,10 @@ const AdminMembersConsole = () => {
             ) : (
               <ul className="space-y-3">
                 {admins.map((admin) => {
-                  const isSelf = admin.accountId === activeAdmin?.accountId;
+                  const isSelf = admin.adminId === activeAdmin?.adminId;
                   return (
                     <li
-                      key={admin.accountId}
+                      key={admin.adminId}
                       className="border border-base-300 rounded-field p-3 flex items-center gap-3"
                     >
                       <div className="w-9 h-9 rounded-lg bg-base-200 flex items-center justify-center shrink-0">
