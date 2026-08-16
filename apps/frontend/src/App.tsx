@@ -11,7 +11,7 @@ import AdminProtectedGate from "./auth/admin-auth/AdminProtectedGate";
 import AdminLogin from "./pages/Admin/AdminLogin";
 import { ModalProvider } from "./widgets/ModalContext";
 import AdminOAuthCallbackSuccessPage from "./pages/Admin/AdminOAuthCallback";
-import AdminOAuthCallbackFailedPage from "./pages/Admin/AdminOAuthCallback";
+import AdminOAuthCallbackFailedPage from "./pages/Admin/AdminLoginFailed";
 const AdminMembersConsole = lazy(
   () => import("./pages/Admin/AdminMembersConsole")
 );
