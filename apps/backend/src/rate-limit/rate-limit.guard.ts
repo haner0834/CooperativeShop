@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { RateLimitService, TrustLevel } from './rate-limit.service';
-import { TooManyRequestsError } from 'src/types/error.types';
+import { TooManyRequestsError, UnauthorizedError } from 'src/types/error.types';
 import { RateLimitOptions, RATE_LIMIT_KEY } from './rate-limit.decorator';
 import { TokenService } from 'src/auth/services/token.service';
 import { DeviceIdService } from 'src/device-id/device-id.service';
@@ -54,6 +54,13 @@ export class RateLimitGuard implements CanActivate {
               request.orgAdminTokenPayload = decodedAdmin;
               adminId = decodedAdmin.adminId;
             }
+          }
+
+          // has authorization and fucked up with these verifications
+          // treat as expired token
+          // have to deal with whether to limit them in malicious cases
+          if (!userId && !adminId) {
+            throw new UnauthorizedError();
           }
         } catch (e) {
           /* Token invalid, treat as guest */
