@@ -55,15 +55,21 @@ export class RateLimitGuard implements CanActivate {
               adminId = decodedAdmin.adminId;
             }
           }
-
-          // has authorization and fucked up with these verifications
-          // treat as expired token
-          // have to deal with whether to limit them in malicious cases
-          if (!userId && !adminId) {
-            throw new UnauthorizedError();
-          }
         } catch (e) {
           /* Token invalid, treat as guest */
+        }
+
+        // has authorization and fucked up with these verifications
+        // treat as expired token
+        // have to deal with whether to limit them in malicious cases
+        if (
+          typeof request.path === 'string' &&
+          request.path.includes('admin') &&
+          !adminId
+        ) {
+          throw new UnauthorizedError('From admin haha piyan');
+        } else if (!adminId && !userId) {
+          throw new UnauthorizedError();
         }
       }
     }
