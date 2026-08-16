@@ -6,6 +6,7 @@ import { getDeviceId } from "../../utils/device";
 import { path } from "../../utils/path";
 import { getErrorMessage } from "../../utils/errors";
 import { useToast } from "../../widgets/Toast/ToastProvider";
+import { useModal } from "../../widgets/ModalContext";
 
 // Google OAuth callback 在後端只做了一件事：設好 httpOnly 的 adminRefreshToken
 // cookie，然後把瀏覽器導來這頁——accessToken 刻意不放在 redirect URL 上
@@ -17,12 +18,19 @@ const AdminOAuthCallbackPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { showToast } = useToast();
+  const { showModal } = useModal();
   const ran = useRef(false);
 
   useEffect(() => {
     // React 18 StrictMode 下 effect 會跑兩次，這裡只讓 restore 真正打一次
     if (ran.current) return;
     ran.current = true;
+    if (searchParams.get("code") || searchParams.get("message")) {
+      showModal({
+        title: searchParams.get("code") ?? "FUCK",
+        description: searchParams.get("message") ?? "FUCK",
+      });
+    }
 
     (async () => {
       try {

@@ -111,9 +111,7 @@ export class AdminAuthController {
 
     this.setAdminRefreshCookie(res, result.refreshToken, result.cookieMaxAge);
 
-    const redirectUrl = new URL(
-      `${env('ADMIN_CONSOLE_URL', '')}/oauth-callback`,
-    );
+    const redirectUrl = new URL(`${env('ADMIN_CONSOLE_URL')}/oauth-callback`);
     if (result.to) redirectUrl.searchParams.set('to', result.to);
 
     return res.redirect(redirectUrl.toString());

@@ -81,7 +81,7 @@ export class GoogleAdminStrategy extends PassportStrategy(
 
       // to 純粹透傳給 controller 決定登入成功後要導去哪，這裡不做任何驗證
       // （避免這個 strategy 對 URL 格式有意見，交給前端/controller 處理即可）
-      done(null, { ...session, to: state.to });
+      return { ...session, to: state.to };
     } catch (error) {
       done(error, undefined);
     }
