@@ -23,6 +23,8 @@ import {
   Contact,
   IdCard,
   ShieldCheck,
+  X,
+  CircleAlert,
 } from "lucide-react";
 import { SidebarContent } from "../widgets/SidebarContent";
 import Sidebar from "../widgets/Sidebar";
@@ -151,12 +153,79 @@ const SessionDetailModal = ({
   );
 };
 
+const EditNameModal = ({
+  name,
+  setName,
+}: {
+  name: string;
+  setName: (arg0: string) => void | Promise<void>;
+}) => {
+  const [newName, setNewName] = useState(name);
+  const { hideModal } = useModal();
+  const { authedFetch } = useAuthFetch();
+  const { showToast } = useToast();
+
+  const updateName = async () => {
+    const url = path("/api/account/rename");
+    const body = JSON.stringify({
+      newName: newName,
+    });
+    const res = await authedFetch(url, {
+      method: "PATCH",
+      body,
+    });
+    const { success, error } = res;
+
+    if (!success) {
+      showToast({
+        title: "改名失敗",
+        description: getErrorMessage(error.code),
+        icon: <CircleAlert className="text-error" />,
+      });
+    }
+  };
+
+  const handleSave = async () => {
+    await setName(newName);
+    await updateName();
+    hideModal();
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex justify-end items-center">
+        <h3 className="font-bold flex-1 text-start text-lg">Edit Name</h3>
+        <button className="btn btn-circle btn-ghost btn-sm" onClick={hideModal}>
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <input
+        type="text"
+        className="input w-full"
+        value={newName}
+        onChange={(e) => setNewName(e.target.value)}
+      />
+
+      <button className="btn btn-primary w-full" onClick={handleSave}>
+        Save
+      </button>
+    </div>
+  );
+};
+
 const UserAccountCenter = () => {
   const [showSidebar, setShowSidebar] = useState(false);
 
   const { showToast } = useToast();
   const { showModal } = useModal();
-  const { switchableAccounts, activeUser, switchAccount, logout } = useAuth();
+  const {
+    switchableAccounts,
+    activeUser,
+    switchAccount,
+    logout,
+    setActiveUserAndRef,
+  } = useAuth();
 
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
 
@@ -246,6 +315,25 @@ const UserAccountCenter = () => {
     }
   };
 
+  const setNewName = (newName: string) => {
+    if (!activeUser) return;
+    setActiveUserAndRef({
+      ...activeUser,
+      name: newName,
+    });
+  };
+
+  const handleEditButtonClick = () => {
+    showModal({
+      content: (
+        <EditNameModal
+          name={activeUser?.name ?? "ERR:NO_ACTIVE_USER_FOUND"}
+          setName={setNewName}
+        />
+      ),
+    });
+  };
+
   useEffect(() => {
     getSessions();
   }, []);
@@ -271,11 +359,7 @@ const UserAccountCenter = () => {
         <div className="navbar-center">
           <h3 className="font-semibold">帳號中心</h3>
         </div>
-        <div className="navbar-end">
-          <button className="btn btn-circle btn-ghost">
-            <Pencil size={22} />
-          </button>
-        </div>
+        <div className="navbar-end"></div>
       </nav>
 
       <Sidebar isOpen={showSidebar} onClose={() => setShowSidebar(false)}>
@@ -294,16 +378,16 @@ const UserAccountCenter = () => {
                 加入於 {activeUser && formatDate(activeUser.joinAt)}
               </p>
             </div>
-            {activeUser?.schoolAbbr && (
-              <div className="badge badge-soft ml-2 gap-1">
-                <School size={14} />
-                {activeUser.schoolAbbr}
-              </div>
-            )}
+            <button
+              className="btn btn-circle btn-ghost"
+              onClick={handleEditButtonClick}
+            >
+              <Pencil size={22} />
+            </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <a
             href="/shops?type=saved"
             className="rounded-box bg-base-100 cursor-pointer"
@@ -314,7 +398,6 @@ const UserAccountCenter = () => {
               </div>
               <div>
                 <h3 className="font-bold text-base">我的收藏</h3>
-                <p className="text-xs text-base-content/60">查看已儲存的商家</p>
               </div>
               <ChevronRight className="ml-auto text-base-content/30" />
             </div>
@@ -325,10 +408,15 @@ const UserAccountCenter = () => {
               <div className="">
                 <School size={24} />
               </div>
-              <div>
-                <h3 className="font-semibold text-base">學校資訊</h3>
-                <p className="text-xs text-base-content/60">查看我的學校</p>
+              <div className="flex-1">
+                <h3 className="font-semibold text-base">學校</h3>
               </div>
+              {activeUser?.schoolAbbr && (
+                <div className="badge badge-soft ml-2 gap-1">
+                  <School size={14} />
+                  {activeUser.schoolAbbr}
+                </div>
+              )}
               <ChevronRight className="ml-auto text-base-content/30" />
             </div>
           </a>

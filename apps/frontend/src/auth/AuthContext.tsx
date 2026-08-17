@@ -74,6 +74,7 @@ type AuthContextType = {
   restoreSession: () => Promise<void>; // ✨ 新增：暴露給 ProtectedRoute 的恢復函式
   refreshAccessToken: () => Promise<string>;
   setAccessToken: (accessToken: string | null) => void;
+  setActiveUserAndRef: (user: UserPayload | null) => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -306,6 +307,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     hasAttemptedRestore,
     restoreSession,
     setAccessToken: setAccessTokenAndTokenRef,
+    setActiveUserAndRef,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
