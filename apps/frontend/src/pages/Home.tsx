@@ -89,7 +89,7 @@ const Home = () => {
       </ResponsiveSheet>
 
       {activeUser && (
-        <div className="flex flex-col justify-between w-full max-w-sm aspect-[1.58/1] p-6 rounded-box border border-base-300 bg-base-100 shadow-lg text-base-content overflow-hidden">
+        <div className="flex flex-col justify-between w-full max-w-sm aspect-[1.58/1] p-6 rounded-box border border-base-300 bg-base-100 shadow-lg text-base-content overflow-hidden lg:ms-64">
           <div className="flex justify-between items-start">
             <img
               src={PureLogo}
