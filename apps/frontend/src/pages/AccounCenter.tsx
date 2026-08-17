@@ -392,13 +392,11 @@ const UserAccountCenter = () => {
             href="/shops?type=saved"
             className="rounded-box bg-base-100 cursor-pointer"
           >
-            <div className="flex flex-row items-center p-4 gap-4">
+            <div className="flex items-center p-4 gap-4">
               <div className="">
                 <Bookmark size={24} />
               </div>
-              <div>
-                <h3 className="font-bold text-base">我的收藏</h3>
-              </div>
+              <h3 className="font-bold text-base">我的收藏</h3>
               <ChevronRight className="ml-auto text-base-content/30" />
             </div>
           </a>
@@ -408,12 +406,13 @@ const UserAccountCenter = () => {
               <div className="">
                 <School size={24} />
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-base">學校</h3>
-              </div>
+
+              <h3 className="flex-1 font-semibold text-base whitespace-nowrap">
+                學校
+              </h3>
+
               {activeUser?.schoolAbbr && (
                 <div className="badge badge-soft ml-2 gap-1">
-                  <School size={14} />
                   {activeUser.schoolAbbr}
                 </div>
               )}
