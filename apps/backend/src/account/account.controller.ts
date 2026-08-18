@@ -16,7 +16,8 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { type UserPayload } from 'src/auth/types/auth.types';
 import { DeviceId } from 'src/device-id/device-id.decorator';
 import { type DeviceIdResult } from 'src/device-id/types/device-id-result';
-import { BadRequestError } from 'src/types/error.types';
+import { BadRequestError, InternalError } from 'src/types/error.types';
+import { UpdateNameDto } from './dto/update-name.dto';
 
 @Controller('account')
 export class AccountController {
@@ -41,5 +42,12 @@ export class AccountController {
     @CurrentUser() user: UserPayload,
   ) {
     await this.accountService.revokeSession(user.id, sessionId);
+  }
+
+  @Patch('rename')
+  @UseGuards(JwtAccessGuard)
+  async rename(@CurrentUser() user: UserPayload, @Body() body: UpdateNameDto) {
+    if (!user) throw new InternalError();
+    await this.accountService.updateName(user.id, body.newName);
   }
 }

@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ResponseSessionDto } from './dto/response-session.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthError, NotFoundError } from 'src/types/error.types';
+import {
+  AuthError,
+  BadRequestError,
+  NotFoundError,
+} from 'src/types/error.types';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AccountService {
@@ -16,6 +21,27 @@ export class AccountService {
   }
 
   async updateMe() {}
+
+  async updateName(userId: string, newName: string) {
+    if (!newName.trim()) {
+      throw new BadRequestError('INVALID_NAME', 'Name should not be empty');
+    }
+
+    try {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { name: newName },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundError('USER', 'User does not exist');
+      }
+      throw error;
+    }
+  }
 
   async getSessions(
     userId: string,

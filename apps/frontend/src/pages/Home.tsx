@@ -1,21 +1,15 @@
-import { useEffect, useState } from "react";
-
+import { useState } from "react";
 import { useAuth } from "../auth/AuthContext";
 import type { LoginMethod } from "../types/school";
-import { useAuthFetch } from "../auth/useAuthFetch";
 import { Google } from "@icons";
-import { IdCard, School as SchoolIcon, Menu, User } from "lucide-react";
+import { IdCard, Menu, ScanLine, User } from "lucide-react";
 import ResponsiveSheet from "../widgets/ResponsiveSheet";
-import { path } from "../utils/path";
-import QRDisplay from "../widgets/QRDisplay";
 import PageMeta from "../widgets/PageMeta";
 import { SwictableAccountsSheet } from "../widgets/SwitchableAccountSheet";
-import { useModal } from "../widgets/ModalContext";
-import { getErrorMessage } from "../utils/errors";
-import { useNavigate } from "react-router-dom";
-import Logo from "@shared/app-icons/cooperativeshop-logo.svg?react";
 import { SidebarContent } from "../widgets/SidebarContent";
 import Sidebar from "../widgets/Sidebar";
+import Logo from "../widgets/Logo";
+import PureLogo from "@shared/app-icons/logo.jpg";
 
 const MenuToggle = ({ onClick }: { onClick: () => void }) => {
   return (
@@ -45,143 +39,19 @@ export const Avator = ({ method }: { method: LoginMethod }) => {
 
 const Home = () => {
   const { switchAccount, activeUser } = useAuth();
-  const { authedFetch } = useAuthFetch();
-  const { showModal } = useModal();
-  const navigate = useNavigate();
   const [isSheetOn, setIsSheetOn] = useState(false);
-  const [isAnonymous, setIsAnonymous] = useState(false);
-  const [isNormal, setIsNormal] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [qrData, setQrData] = useState<string | null>(null);
   const [showSidebar, setShowSidebar] = useState(false);
-
-  const getQrCode = async () => {
-    try {
-      const { success, data, error } = await authedFetch(
-        path("/api/qr/generate-data")
-      );
-      if (!success) {
-        setIsLoading(false);
-
-        showModal({
-          title: "無法取得 QR code",
-          description: getErrorMessage(error.code),
-          buttons: [
-            {
-              label: "返回登入",
-              onClick: () => navigate("/choose-school"),
-            },
-          ],
-        });
-        throw new Error(error.code);
-      }
-      setQrData(data);
-    } catch (error: any) {
-      const code = error.message;
-      if (code === "TOO_MANY_REQUESTS") {
-        showModal({
-          title: "操作過於頻繁，請稍後再試",
-          description:
-            "若您正在使用 Wi-Fi ，可嘗試使用個人熱點，或等待人潮高峰消退。",
-          buttons: [
-            {
-              label: "關閉",
-              onClick: () => navigate("/choose-school"),
-            },
-          ],
-        });
-      } else {
-        showModal({
-          title: "無法取得 QR code",
-          description: getErrorMessage(error.message),
-          buttons: [
-            {
-              label: "返回登入",
-              onClick: () => navigate("/choose-school"),
-            },
-          ],
-        });
-      }
-    }
-  };
-
-  useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(true);
-      getQrCode();
-
-      localStorage.setItem("isLoggedIn", "true");
-      setIsLoading(false);
-    }, 0);
-  }, []);
-
-  const toggleNameVisibility = () => {
-    const prev = localStorage.getItem("isAnonymous");
-    localStorage.setItem("isAnonymous", prev === "true" ? "false" : "true");
-    setIsAnonymous((prev) => !prev);
-  };
 
   const handleSwitch = async (id: string) => {
     if (activeUser?.id !== id) {
       await switchAccount(id);
-      await getQrCode();
     } else {
     }
   };
 
-  useEffect(() => {
-    setIsAnonymous(localStorage.getItem("isAnonymous") === "true");
-    localStorage.setItem("lastOpen", "/home");
-  }, []);
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-blue-300">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-base-300 px-4">
       <PageMeta />
-
-      <div className="bg-base-100 flex flex-col items-center justify-center max-w-sm min-w-xs mx-10 p-4 px-8 rounded-box shadow-md lg:ms-64">
-        <button
-          onClick={() => setIsNormal((prev) => !prev)}
-          className={`text-lg font-bold mb-2 ${isNormal ? "" : "text-success"}`}
-        >
-          {isNormal ? "會員證" : "狗牌"}
-        </button>
-
-        {isLoading || !qrData ? (
-          <div className="w-full flex justify-center">
-            <span className="loading"></span>
-          </div>
-        ) : (
-          <QRDisplay data={qrData} className="rounded-field overflow-hidden" />
-        )}
-
-        <div className="divider" />
-
-        <div className="font-mono w-full space-y-4 pb-2">
-          <button
-            onClick={toggleNameVisibility}
-            className="w-full flex justify-between"
-          >
-            <div className="flex space-x-2">
-              <IdCard />
-              <p>名稱</p>
-            </div>
-            <p className="transition-transform">
-              {isAnonymous ? "匿名" : activeUser?.name}
-            </p>
-          </button>
-
-          <div className="w-full flex justify-between">
-            <div className="flex space-x-2">
-              <SchoolIcon />
-              <p>學校</p>
-            </div>
-            <p className="" translate="no">
-              {activeUser?.schoolAbbr}
-            </p>
-          </div>
-        </div>
-      </div>
-
       <nav className="navbar bg-base-100 fixed top-0 z-50 shadow-xs">
         <div className="navbar-start space-x-4">
           <button
@@ -217,6 +87,33 @@ const Home = () => {
       >
         <SwictableAccountsSheet handleSwitch={handleSwitch} />
       </ResponsiveSheet>
+
+      {activeUser && (
+        <div className="flex flex-col justify-between w-full max-w-sm aspect-[1.58/1] p-6 rounded-box border border-base-300 bg-base-100 shadow-lg text-base-content overflow-hidden lg:ms-64">
+          <div className="flex justify-between items-start">
+            <img
+              src={PureLogo}
+              alt="Logo"
+              className="w-16 h-16 rounded-2xl shadow-md"
+            />
+            <ScanLine className="w-8 h-8 opacity-50" />
+          </div>
+
+          <div>
+            <div className="font-mono text-sm opacity-50 mb-1">
+              {new Date().getFullYear()} COOPERATIVE SHOPS
+            </div>
+            <div className="text-2xl font-bold tracking-widest uppercase">
+              {activeUser.name}
+            </div>
+          </div>
+
+          <div className="flex justify-between items-end font-mono text-xs opacity-70">
+            <span className="uppercase">{activeUser.schoolAbbr}</span>
+            <span>VALID THRU 06/26</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
