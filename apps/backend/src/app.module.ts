@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { SchoolsModule } from './schools/schools.module';
-import { QrModule } from './qr/qr.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ShopsModule } from './shops/shops.module';
@@ -39,7 +38,6 @@ import { IdempotencyGuard } from './idempotency/idempotency.guard';
   imports: [
     AuthModule,
     SchoolsModule,
-    QrModule,
     PrismaModule,
     ScheduleModule.forRoot(),
     ShopRankingModule,

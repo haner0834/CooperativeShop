@@ -28,14 +28,12 @@ const SchoolDetail = lazy(() => import("./pages/SchoolDetail"));
 const Navbar = lazy(() => import("./widgets/Navbar"));
 const LoginHint = lazy(() => import("./pages/LoginHint"));
 const FAQPage = lazy(() => import("./pages/FAQ"));
-const QrVerification = lazy(() => import("./pages/QRVerification"));
 const ShopPreview = lazy(() => import("./pages/ShopRegisterForm/ShopPreview"));
 const Intro = lazy(() => import("./pages/Intro"));
 const ChooseSchool = lazy(() => import("./pages/ChooseSchool"));
 const Login = lazy(() => import("./pages/Login"));
 const Home = lazy(() => import("./pages/Home"));
 const LoginFailed = lazy(() => import("./pages/LoginFailed"));
-const QrScannerRef = lazy(() => import("./pages/QRCodeScanner"));
 const Schools = lazy(() => import("./pages/Schools"));
 const Shops = lazy(() => import("./pages/Shops"));
 const ShopDetail = lazy(() => import("./pages/ShopDetail"));
@@ -90,8 +88,6 @@ function App() {
           <Route path="login/:method" element={<Login />} />
           <Route path="login-failed" element={<LoginFailed />} />
           <Route path="login-hint" element={<LoginHint />} />
-          <Route path="qr-scanner" element={<QrScannerRef />} />
-          <Route path="qr-verification" element={<QrVerification />} />
         </Route>
 
         <Route element={<ProtectedGate />}>
