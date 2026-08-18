@@ -13,6 +13,11 @@
     "prebuild": "node scripts/sync-assets.js",
     "generate-pwa-assets": "npx pwa-assets-generator -c pwa-icon.config.js && npx pwa-assets-generator -c pwa-splash.config.js && npx pwa-assets-generator -c pwa-favicon.config.js"
   },
+  "overrides": {
+    "@vite-pwa/assets-generator": {
+      "sharp": "^0.35.3"
+    }
+  },
   "dependencies": {
     "@mapbox/mapbox-gl-language": "^1.0.1",
     "@tailwindcss/vite": "^4.1.12",
@@ -34,6 +39,7 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.8.1",
     "reflect-metadata": "^0.2.2",
+    "sharp": "^0.35.3",
     "sitemap": "^8.0.0",
     "tailwindcss": "^4.1.12",
     "use-query-params": "^2.2.2",
