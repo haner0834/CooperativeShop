@@ -104,6 +104,10 @@ export class CreateShopDto {
   @IsString()
   discount: string | null;
 
+  @IsOptional()
+  @IsString()
+  discountTerms: string | null;
+
   @IsString()
   @IsNotEmpty()
   address: string;

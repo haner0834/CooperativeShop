@@ -8,6 +8,7 @@ export class PatchShopDraftDto extends PartialType(
     'contactInfo',
     'description',
     'discount',
+    'discountTerms',
     'images',
     'latitude',
     'longitude',

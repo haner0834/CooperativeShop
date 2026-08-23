@@ -226,6 +226,11 @@ export class ShopDraftDto {
   discount: string | null;
 
   @Expose()
+  @IsOptional()
+  @IsString()
+  discountTerms: string | null;
+
+  @Expose()
   @IsString()
   address: string;
 

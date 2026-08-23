@@ -31,6 +31,10 @@ export class ResponseShopDto {
   @IsString()
   description: string;
 
+  @IsOptional()
+  @IsString()
+  discountTerms: string | null;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ContactInfoDto)
