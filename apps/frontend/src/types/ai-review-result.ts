@@ -18,6 +18,7 @@ export type AiReviewField =
   | "subtitle"
   | "description"
   | "discount"
+  | "discountTerms"
   | "contactInfo"
   | "location"
   | "contract"
@@ -28,6 +29,7 @@ export interface AiReviewResult {
   subtitle: AiReviewFieldResult;
   description: AiReviewFieldResult;
   discount: AiReviewFieldResult;
+  discountTerms: AiReviewFieldResult;
   contactInfo: AiReviewFieldResult;
   location: AiReviewFieldResult;
   contract: AiReviewFieldResult;
