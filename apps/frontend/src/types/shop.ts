@@ -30,6 +30,7 @@ export interface Shop {
   thumbnailLink: string;
   isOpen: boolean;
   discount: string | null;
+  discountTerms: string | null;
   address: string;
   longitude: number;
   latitude: number;
@@ -66,6 +67,7 @@ export interface ResponseShopDto {
   thumbnailLink: string;
   isOpen: boolean;
   discount: string | null;
+  discountTerms: string | null;
   address: string;
   longitude: number;
   latitude: number;
@@ -104,6 +106,7 @@ export function transformDtoToShop(dto: ResponseShopDto): Shop {
     thumbnailLink: dto.thumbnailLink,
     isOpen: dto.isOpen,
     discount: dto.discount,
+    discountTerms: dto.discountTerms,
     address: dto.address,
     longitude: dto.longitude,
     latitude: dto.latitude,
@@ -262,6 +265,7 @@ export class ShopDraftDto {
   subtitle: string | null;
   description: string;
   discount: string | null;
+  discountTerms: string | null;
   address: string;
   contract: UploadedContract | null;
   longitude: number | null;
