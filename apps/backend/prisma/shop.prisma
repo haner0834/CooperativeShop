@@ -6,6 +6,7 @@ model Shop {
     contactInfo     Json // An array
     thumbnailKey    String
     discount        String?
+    discountTerms   String?
     schedules       Json
     workSchedules   WorkSchedule[]
     address         String

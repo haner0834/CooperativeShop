@@ -18,6 +18,7 @@ model ShopDraft {
     contactInfo Json @default("[]") // An array
 
     discount      String?
+    discountTerms String?
     workSchedules Json    @default("[]") // array
     contract      Json?
 

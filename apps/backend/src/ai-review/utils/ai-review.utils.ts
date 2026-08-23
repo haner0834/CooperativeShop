@@ -21,7 +21,7 @@ function minuteOfDayToHHMM(minuteOfDay: number): string {
  * 組出送給 Gemini 的 shop_info payload。
  *
  * NOTE: 欄位命名刻意維持跟 ShopDraft 一致（address/longitude/latitude 併成 location），
- * 讓 prompt 端的 Rule 5 (Location) 可以直接吃到完整地址資訊。
+ * 讓 prompt 端的 Rule 6 (Location) 可以直接吃到完整地址資訊。
  *
  * submissionNote 是店家／提交者填給審核員看的自由文字備註（溝通用，不是審核欄位）。
  * 直接原樣帶給 AI，讓它在寫 reason 時可以參考這個脈絡；但這段文字是使用者自報、
@@ -34,6 +34,7 @@ export function buildShopInfoPayload(draft: ShopDraftDto) {
     subtitle: draft.subtitle ?? '',
     description: draft.description,
     discount: draft.discount ?? null,
+    discountTerms: draft.discountTerms ?? null,
     contactInfo: draft.contactInfo ?? [],
     submissionNote: draft.submissionNote ?? null,
     location: {

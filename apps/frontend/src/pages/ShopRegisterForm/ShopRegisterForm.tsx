@@ -179,6 +179,7 @@ const ShopRegisterForm = () => {
   const [searchParams] = useSearchParams();
   const [description, setDescription] = useState("");
   const [discount, setDiscount] = useState("");
+  const [discountTerms, setDiscountTerms] = useState<string | null>(null);
   const [address, setAddress] = useState("");
   const [selectedPoint, setSelectedPoint] = useState<Point | null>(null);
   const [contactInfo, setContactInfo] = useState<ContactInfo[]>([]);
@@ -275,6 +276,7 @@ const ShopRegisterForm = () => {
         setSubTitle(draft.subtitle ?? "");
         setDescription(draft.description);
         setDiscount(draft.discount ?? "");
+        setDiscountTerms(draft.discountTerms);
         setImages(
           draft.images.map((image) => {
             const { status, isUploading, ...rest } = image;
@@ -415,6 +417,7 @@ const ShopRegisterForm = () => {
     subTitle,
     description,
     discount,
+    discountTerms,
     contactInfo,
     workSchedules,
     images,
@@ -601,6 +604,7 @@ const ShopRegisterForm = () => {
       subtitle: subTitle.trim() ?? null,
       description: description.trim(),
       discount: discount.trim(),
+      discountTerms: (discountTerms ?? "").trim() || null,
       address: address.trim(),
       images,
       latitude: selectedPoint?.lat ?? null,
@@ -737,6 +741,8 @@ const ShopRegisterForm = () => {
           <ShopDiscountBlock
             discount={discount}
             showHint={showHint}
+            discountTerms={discountTerms}
+            setDiscountTerms={setDiscountTerms}
             setDiscount={setDiscount}
           />
 

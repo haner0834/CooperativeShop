@@ -19,6 +19,7 @@ import HumanDecisionBlock from "./HumanDecisionBlock";
 import ImagesBlock from "./ImagesBlock";
 import { List } from "lucide-react";
 import SubmissionNoteBlock from "./SubmissionNoteBlock";
+import DiscountTermsBlock from "./DiscountTermsBlock";
 
 const Navbar = ({}: {}) => {
   return (
@@ -149,6 +150,10 @@ const DraftReview = () => {
               <DescriptionBlock draft={draft} />
 
               <DiscountBlock draft={draft} />
+
+              {draft.discountTerms !== null && (
+                <DiscountTermsBlock draft={draft} />
+              )}
 
               <ContractBlock draft={draft} />
 

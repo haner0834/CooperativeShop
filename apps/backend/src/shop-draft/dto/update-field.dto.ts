@@ -13,6 +13,7 @@ type AllowedShopDraftFields = Pick<
   | 'description'
   | 'contactInfo'
   | 'discount'
+  | 'discountTerms'
   | 'workSchedules'
   | 'address'
   | 'longitude'
@@ -47,6 +48,7 @@ function IsValidFieldValue(validationOptions?: ValidationOptions) {
             subtitle: 'string',
             description: 'string',
             discount: 'string',
+            discountTerms: 'string',
             address: 'string',
             thumbnailKey: 'string',
             longitude: 'number',
@@ -68,6 +70,7 @@ function IsValidFieldValue(validationOptions?: ValidationOptions) {
             const nullableFields: (keyof AllowedShopDraftFields)[] = [
               'subtitle',
               'discount',
+              'discountTerms',
             ];
             return nullableFields.includes(fieldName);
           }
