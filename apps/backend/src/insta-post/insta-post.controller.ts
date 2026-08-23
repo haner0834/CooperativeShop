@@ -21,6 +21,7 @@ export class InstaPostController {
       description:
         '介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹介紹',
       discount: '優惠會會會會會',
+      discountTerms: null,
       address: '台南市東區復興國小',
       longitude: null,
       latitude: null,

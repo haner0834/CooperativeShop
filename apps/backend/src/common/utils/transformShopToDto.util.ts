@@ -106,6 +106,7 @@ export function transformShopToDto(
     images,
     thumbnailLink: thumbnailLink || '',
     discount: shop.discount,
+    discountTerms: shop.discountTerms,
     address: shop.address,
     longitude: shop.longitude,
     latitude: shop.latitude,

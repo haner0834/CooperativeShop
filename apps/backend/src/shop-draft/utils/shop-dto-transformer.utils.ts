@@ -33,6 +33,7 @@ export function mapDraftToCreateShopDto(draft: ShopDraftDto): CreateShopDto {
 
     thumbnailKey: draft.thumbnailKey,
     discount: draft.discount,
+    discountTerms: draft.discountTerms,
     address: draft.address,
     longitude: draft.longitude,
     latitude: draft.latitude,
