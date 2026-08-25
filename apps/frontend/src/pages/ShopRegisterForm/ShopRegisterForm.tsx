@@ -495,7 +495,10 @@ const ShopRegisterForm = () => {
   };
 
   const getDraft = async (id: string): Promise<ShopDraftDto | null> => {
-    const apiUrl = new URL(path(`/api/shop-draft/${id}`));
+    const apiUrl = new URL(
+      path(`/api/shop-draft/${id}`),
+      window.location.origin
+    );
     apiUrl.searchParams.append("versions", "true");
     apiUrl.searchParams.append("school", "true");
     apiUrl.searchParams.append("currentVersion", "true");
