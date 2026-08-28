@@ -101,22 +101,30 @@ export class InstaPostImageService {
         content,
         type: 'png',
         puppeteerArgs: {
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          executablePath:
+            process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+          ],
         },
       });
 
       return image as Buffer;
-    } catch (error: any) {
-      console.error('Puppeteer Error Message:', error?.message);
-      console.error('Puppeteer Error Stack:', error?.stack);
-
-      const errorJson = JSON.stringify(
-        error,
-        Object.getOwnPropertyNames(error),
+    } catch (error) {
+      const err = error as Error;
+      const errorDetails = JSON.stringify(
+        {
+          message: err?.message,
+          stack: err?.stack,
+        },
+        null,
         2,
       );
 
-      throw new InternalError(`Error generating image: ${errorJson}`);
+      throw new InternalError(`Error generating image: ${errorDetails}`);
     }
   }
 }
