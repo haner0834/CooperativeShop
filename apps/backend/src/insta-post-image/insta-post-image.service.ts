@@ -107,7 +107,9 @@ export class InstaPostImageService {
 
       return image as Buffer;
     } catch (error) {
-      throw new InternalError('Error generating image');
+      throw new InternalError(
+        `Error generating image: ${JSON.stringify(error, null, 2)}`,
+      );
     }
   }
 }
