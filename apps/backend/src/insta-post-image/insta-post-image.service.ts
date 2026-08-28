@@ -106,10 +106,17 @@ export class InstaPostImageService {
       });
 
       return image as Buffer;
-    } catch (error) {
-      throw new InternalError(
-        `Error generating image: ${JSON.stringify(error, null, 2)}`,
+    } catch (error: any) {
+      console.error('Puppeteer Error Message:', error?.message);
+      console.error('Puppeteer Error Stack:', error?.stack);
+
+      const errorJson = JSON.stringify(
+        error,
+        Object.getOwnPropertyNames(error),
+        2,
       );
+
+      throw new InternalError(`Error generating image: ${errorJson}`);
     }
   }
 }
