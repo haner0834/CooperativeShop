@@ -1,0 +1,39 @@
+model ArchivedShop {
+    id             String @id @default(cuid())
+    originalShopId String @unique // 保留舊 shop id 方便日後追溯 / debug
+
+    title         String
+    subTitle      String?
+    description   String
+    contactInfo   Json
+    thumbnailKey  String
+    discount      String?
+    discountTerms String?
+    address       String
+    longitude     Float
+    latitude      Float
+
+    school   School @relation(fields: [schoolId], references: [id])
+    schoolId String
+
+    // Denormalized snapshot — archive 不維護跟 WorkSchedule / ShopImage 的關聯，
+    // 純粹保留當初的資料樣貌，不支援 relational query。
+    workSchedules Json // [{ dayOfWeek, startMinute, endMinute, type, scheduleNote }]
+    images        Json // [{ fileId, fileKey, url, order }]  -- FileRecord 本身不刪，R2 檔案不動
+
+    contractFile Json? // snapshot: { fileId, fileKey, url } — 不建關聯，FileRecord/R2 本體不受影響
+
+    // ShopDailyStat 不會被 cron 清掉，歸檔時直接壓成總數，不整張表搬過去
+    totalImpressions Int @default(0)
+    totalViews       Int @default(0)
+    totalViewTimeSec Int @default(0)
+    totalTaps        Int @default(0)
+
+    // ShopRanking 同樣不會被清，依 type 壓成彙總。type 固定是 "home" | "hot" | "nearby"
+    // { home?: {...}, hot?: {...}, nearby?: {...} }，每項為 { appearances, bestRank, avgScore, lastScore }
+    rankingSummary Json?
+
+    archivedAt DateTime @default(now())
+
+    @@index([schoolId])
+}
