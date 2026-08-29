@@ -13,7 +13,8 @@ model School {
 
     drafts ShopDraft[]
 
-    adminInvites AdminInvite[]
+    adminInvites  AdminInvite[]
+    archivedShops ArchivedShop[]
 
     @@index([abbreviation])
 }
