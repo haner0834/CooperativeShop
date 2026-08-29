@@ -744,23 +744,26 @@ const Shops = () => {
       </nav>
 
       <main className="bg-base-100 min-h-screen pt-20 lg:ps-64 pb-10">
-        {currentType === "home" && recentShops.length >= 1 && !searchQuery && (
-          <section className="mb-8">
-            <ShopSectionTitle
-              title="近期訪問"
-              onClickArrow={() => updateQuery({ type: "recent" })}
-            />
-            <div className="flex overflow-x-auto px-4 gap-4 no-scrollbar pb-2">
-              {recentShops.map((s) => (
-                <ShopCard
-                  key={`rec-${s.id}`}
-                  shop={s}
-                  className="w-80 shrink-0"
-                />
-              ))}
-            </div>
-          </section>
-        )}
+        {currentType === "home" &&
+          recentShops.length >= 1 &&
+          shops.length !== 0 &&
+          !searchQuery && (
+            <section className="mb-8">
+              <ShopSectionTitle
+                title="近期訪問"
+                onClickArrow={() => updateQuery({ type: "recent" })}
+              />
+              <div className="flex overflow-x-auto px-4 gap-4 no-scrollbar pb-2">
+                {recentShops.map((s) => (
+                  <ShopCard
+                    key={`rec-${s.id}`}
+                    shop={s}
+                    className="w-80 shrink-0"
+                  />
+                ))}
+              </div>
+            </section>
+          )}
 
         {/* Mobile 實時搜尋列表：當 Focus 且有字時顯示 */}
         <AnimatePresence>
@@ -835,31 +838,41 @@ const Shops = () => {
                 : undefined
             }
           />
-          <motion.div
-            layout
-            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 px-4"
-          >
-            <AnimatePresence mode="popLayout">
-              {shops.map((shop) => (
-                <motion.div
-                  key={shop.id}
-                  layout
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <ShopCard shop={shop} className="w-full" />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-            {isLoading &&
-              [...Array(6)].map((_, i) => (
-                <div key={i} className="flex flex-col space-y-4">
-                  <div className="skeleton w-full aspect-video" />
-                  <div className="skeleton h-6 w-3/4" />
-                </div>
-              ))}
-          </motion.div>
+          {!isLoading && shops.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-20 px-4 text-center opacity-60">
+              <Frown size={48} className="opacity-50" />
+              <p className="text-lg font-medium">目前沒有商家</p>
+              <p className="text-sm opacity-70">
+                請稍後再回來看看，或嘗試調整篩選條件
+              </p>
+            </div>
+          ) : (
+            <motion.div
+              layout
+              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 px-4"
+            >
+              <AnimatePresence mode="popLayout">
+                {shops.map((shop) => (
+                  <motion.div
+                    key={shop.id}
+                    layout
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <ShopCard shop={shop} className="w-full" />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+              {isLoading &&
+                [...Array(6)].map((_, i) => (
+                  <div key={i} className="flex flex-col space-y-4">
+                    <div className="skeleton w-full aspect-video" />
+                    <div className="skeleton h-6 w-3/4" />
+                  </div>
+                ))}
+            </motion.div>
+          )}
           <div ref={observerTarget} className="h-10" />
         </section>
       </main>
