@@ -258,7 +258,7 @@ const SearchModal = () => {
           className="input w-full"
           placeholder="店名"
           value={title}
-          onChange={(e) => setTitle(e.target.value.trim())}
+          onChange={(e) => setTitle(e.target.value)}
         />
       </fieldset>
       <div className="w-full flex flex-col items-start">
@@ -272,7 +272,7 @@ const SearchModal = () => {
             className="input w-full"
             placeholder="分店名"
             value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value.trim())}
+            onChange={(e) => setSubtitle(e.target.value)}
           />
         </fieldset>
         <p className="text-xs opacity-50">如果沒有分店名，本欄位請留空</p>
