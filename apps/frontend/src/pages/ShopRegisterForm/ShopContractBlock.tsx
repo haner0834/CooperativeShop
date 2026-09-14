@@ -115,7 +115,7 @@ const ShopContractBlock = ({
         fileSize: 0,
         uploadUrl: undefined,
         fileKey: undefined,
-        status: "idle",
+        status: "error",
       });
     }
   };
@@ -163,6 +163,12 @@ const ShopContractBlock = ({
   // 3. 移除/刪除檔案邏輯（請在此處實作 R2/後端刪除 API）
   const handleRemove = async () => {
     try {
+      if (!contract?.fileKey) {
+        setContract(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+
       setContract((prev) => (prev ? { ...prev, status: "deleting" } : null));
 
       if (!contract?.fileKey) {
@@ -262,7 +268,7 @@ const ShopContractBlock = ({
                   onClick={handleRemove}
                   className="btn btn-xs btn-error btn-outline"
                 >
-                  清除並重試
+                  清除
                 </button>
               </div>
             )}

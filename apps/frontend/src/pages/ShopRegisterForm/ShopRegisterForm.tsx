@@ -294,7 +294,11 @@ const ShopRegisterForm = () => {
           lng: draft.longitude ?? 0,
         };
         setWorkSchedules(fromBackendSchedules(draft.workSchedules));
-        setContract(draft.contract);
+        setContract(
+          draft.contract?.status === "idle"
+            ? { ...draft.contract, status: "error" }
+            : draft.contract
+        );
         setAddress(draft.address);
         setSelectedPoint(selectedPoint);
         setCurrentVersion(
