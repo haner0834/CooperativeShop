@@ -170,12 +170,13 @@ const DraftReviewList = () => {
                           <p className="line-clamp-1">{draft.description}</p>
                         </div>
 
-                        {draft.images[0].previewUrl && (
-                          <img
-                            src={draft.images[0].previewUrl}
-                            className="w-15 h-15 aspect-square rounded-field"
-                          />
-                        )}
+                        {draft.images.length > 0 &&
+                          draft.images[0].previewUrl && (
+                            <img
+                              src={draft.images[0].previewUrl}
+                              className="w-15 h-15 aspect-square rounded-field"
+                            />
+                          )}
                       </div>
 
                       <div className="h-[1.5px] w-full bg-base-content/10"></div>
