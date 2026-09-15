@@ -123,7 +123,10 @@ const DraftReview = () => {
   };
 
   const getDraft = async (id: string): Promise<ShopDraftDto | null> => {
-    const apiUrl = new URL(path(`/api/admin/shop-draft/${id}/snapshot`));
+    const apiUrl = new URL(
+      path(`/api/admin/shop-draft/${id}/snapshot`),
+      window.location.origin
+    );
 
     const result = await adminAuthedFetch(apiUrl.toString(), { method: "GET" });
     const { success, data, error } = result;
