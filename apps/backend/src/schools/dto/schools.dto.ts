@@ -1,4 +1,4 @@
-import { Expose } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 import { IsIn, IsNumber, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class SchoolDTO {
@@ -29,10 +29,12 @@ export class SchoolDTO {
   websiteUrl: string | null;
 
   @IsNumber()
-  @Expose({ name: '_count.shops' })
+  @Expose()
+  @Transform(({ obj }) => obj?._count?.shops ?? 0)
   shopsCount: number;
 
   @IsNumber()
-  @Expose({ name: '_count.users' })
+  @Expose()
+  @Transform(({ obj }) => obj?._count?.users ?? 0)
   usersCount: number;
 }

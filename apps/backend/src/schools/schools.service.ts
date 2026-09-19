@@ -89,8 +89,6 @@ export class SchoolsService {
 
     if (!school) throw new NotFoundError('SCHOOL');
 
-    if (!school) throw new NotFoundError('SCHOOL');
-
     return plainToInstance(SchoolDTO, school, {
       excludeExtraneousValues: true,
     });
