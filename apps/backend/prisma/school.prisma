@@ -16,5 +16,7 @@ model School {
     adminInvites  AdminInvite[]
     archivedShops ArchivedShop[]
 
+    partnershipPeriod PartnershipPeriod[]
+
     @@index([abbreviation])
 }

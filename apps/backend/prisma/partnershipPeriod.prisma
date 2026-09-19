@@ -1,0 +1,14 @@
+model PartnershipPeriod {
+    id      String   @id @default(cuid())
+    name    String   @unique
+    startAt DateTime
+    endAt   DateTime
+    schools School[]
+    // shops Shop[]
+
+    // i want it to be like a foundamental basis of the system
+    // containing logo, posters, shops, schools
+    // providing current participants
+
+    // it can also act as user manager
+}
