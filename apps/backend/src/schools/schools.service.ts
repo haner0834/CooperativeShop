@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { Prisma, School } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SchoolDTO } from './dto/schools.dto';
-import { BadRequestError, NotFoundError } from 'src/types/error.types';
+import {
+  AppError,
+  BadRequestError,
+  NotFoundError,
+} from 'src/types/error.types';
 
 type SchoolWithCount = School & {
   _count: {
@@ -15,55 +19,51 @@ type SchoolWithCount = School & {
 export class SchoolsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private async getCurrentPeriod() {
+    const now = new Date();
+    const currentPeriod = await this.prisma.partnershipPeriod.findFirst({
+      where: {
+        startAt: { lte: now },
+        endAt: { gte: now },
+      },
+      include: {
+        schools: {
+          include: {
+            _count: {
+              select: {
+                shops: true,
+                users: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!currentPeriod)
+      throw new AppError(
+        'PERIOD_NOT_EXIST',
+        `There's no available period for querying schools.`,
+        500,
+      );
+
+    return currentPeriod;
+  }
+
   async getAvailableSchools(
     provider?: 'google' | 'credential',
   ): Promise<SchoolDTO[]> {
-    let schools: SchoolWithCount[] = [];
-    if (!provider) {
-      schools = await this.prisma.school.findMany({
-        include: {
-          _count: {
-            select: {
-              shops: true,
-              users: true,
-            },
-          },
-        },
-      });
-    } else if (provider === 'google') {
-      schools = await this.prisma.school.findMany({
-        where: {
-          emailFormats: {
-            isEmpty: false,
-          },
-        },
-        include: {
-          _count: {
-            select: {
-              shops: true,
-              users: true,
-            },
-          },
-        },
-      });
-    } else if (provider === 'credential') {
-      schools = await this.prisma.school.findMany({
-        where: {
-          studentIdFormat: {
-            not: Prisma.JsonNull,
-          },
-        },
-        include: {
-          _count: {
-            select: {
-              shops: true,
-              users: true,
-            },
-          },
-        },
-      });
-    } else {
+    const currentPeriod = await this.getCurrentPeriod();
+
+    let schools: SchoolWithCount[] = currentPeriod.schools;
+
+    if (provider && provider !== 'google' && provider !== 'credential') {
       throw new BadRequestError('INVALID_LOGIN_TYPE', 'Invalid login type');
+    }
+
+    if (provider === 'google') {
+      schools = schools.filter((s) => s.emailFormats.length > 0);
+    } else if (provider === 'credential') {
+      schools = schools.filter((s) => s.studentIdFormat !== null);
     }
 
     return schools.map((school) => ({
@@ -79,17 +79,8 @@ export class SchoolsService {
   }
 
   async getSchoolById(id: string): Promise<SchoolDTO> {
-    const school = await this.prisma.school.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: {
-            shops: true,
-            users: true,
-          },
-        },
-      },
-    });
+    const currentPeriod = await this.getCurrentPeriod();
+    const school = currentPeriod.schools.find((s) => s.id === id);
 
     if (!school) throw new NotFoundError('SCHOOL');
 
@@ -106,17 +97,10 @@ export class SchoolsService {
   }
 
   async getSchoolByAbbr(abbr: string): Promise<SchoolDTO> {
-    const school = await this.prisma.school.findUnique({
-      where: { abbreviation: abbr },
-      include: {
-        _count: {
-          select: {
-            shops: true,
-            users: true,
-          },
-        },
-      },
-    });
+    const currentPeriod = await this.getCurrentPeriod();
+    const school = currentPeriod.schools.find((s) => s.abbreviation === abbr);
+
+    if (!school) throw new NotFoundError('SCHOOL');
 
     if (!school) throw new NotFoundError('SCHOOL');
 
