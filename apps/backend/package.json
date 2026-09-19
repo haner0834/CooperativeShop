@@ -15,6 +15,7 @@
     "migrate:schedules": "ts-node scripts/migrate-schedules.ts",
     "migrate:draft-versions": "ts-node scripts/migrate-draft-versions.ts",
     "migrate:shop-rankings": "ts-node scripts/migrate-shop-rankings.ts",
+    "migrate:schools": "ts-node scripts/migrate-schools.ts",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
