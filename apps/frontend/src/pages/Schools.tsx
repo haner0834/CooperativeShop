@@ -77,7 +77,7 @@ const Schools = () => {
                 <div className="w-full flex items-center bg-base-100 p-4 gap-4 rounded-box">
                   <div className="p-3 bg-white rounded-full overflow-clip">
                     <SchoolIcon
-                      abbreviation={school.abbreviation}
+                      iconUrl={school.iconUrl}
                       className="w-14 h-14"
                     />
                   </div>

@@ -41,6 +41,7 @@ export class ShopSearchResultDto {
     name: string;
     id: string;
     abbreviation: string;
+    iconUrl: string;
   };
 }
 
@@ -209,7 +210,7 @@ const SearchModal = () => {
                   {r.school.abbreviation && (
                     <div className="flex items-center gap-2">
                       <SchoolIcon
-                        abbreviation={r.school.abbreviation}
+                        iconUrl={r.school.iconUrl}
                         className="w-4 h-4"
                       />
                       <span className="text-sm">{r.school.name}</span>

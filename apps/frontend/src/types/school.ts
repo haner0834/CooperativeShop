@@ -6,6 +6,7 @@ export interface School {
   abbreviation: string;
   loginMethod: LoginMethod;
   instagramAccount: string | null;
+  iconUrl: string;
   websiteUrl: string | null;
   shops: Shop[];
   usersCount: number;
