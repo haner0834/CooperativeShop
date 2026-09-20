@@ -23,6 +23,10 @@ export class SchoolDTO {
   @Expose()
   instagramAccount: string | null;
 
+  @IsString()
+  @Expose()
+  iconUrl: string;
+
   @IsUrl()
   @IsOptional()
   @Expose()
