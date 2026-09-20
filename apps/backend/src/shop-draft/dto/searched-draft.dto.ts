@@ -11,5 +11,6 @@ export class SearchedDraftDto {
     name: string;
     id: string;
     abbreviation: string;
+    iconUrl: string;
   };
 }

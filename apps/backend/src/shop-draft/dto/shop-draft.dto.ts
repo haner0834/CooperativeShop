@@ -148,6 +148,9 @@ class SchoolInfoDto {
 
   @Expose()
   name: string;
+
+  @Expose()
+  iconUrl: string;
 }
 
 export class ContractDto {
@@ -309,6 +312,7 @@ export class ShopDraftDto {
           id: obj.school.id,
           abbr: obj.school.abbreviation,
           name: obj.school.name,
+          iconUrl: obj.school.iconUrl,
         };
       }
 
@@ -316,6 +320,7 @@ export class ShopDraftDto {
         id: obj.schoolId,
         abbr: undefined,
         name: undefined,
+        iconUrl: undefined,
       };
     }
     return undefined;
