@@ -286,6 +286,7 @@ export class ShopDraftDto {
     id: string;
     abbr?: string;
     name?: string;
+    iconUrl: string;
   };
 }
 

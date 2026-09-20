@@ -10,6 +10,7 @@ model School {
     instagramAccount String?
     websiteUrl       String?
     isLimited        Boolean  @default(false)
+    iconUrl          String   @default("https://static.wikia.nocookie.net/adventures-of-chris-and-tifa/images/c/c1/ThisIsFineDog.jpeg/revision/latest?cb=20241003041905")
 
     drafts ShopDraft[]
 

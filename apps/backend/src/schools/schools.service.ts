@@ -7,6 +7,7 @@ import {
   BadRequestError,
   NotFoundError,
 } from 'src/types/error.types';
+import { plainToInstance } from 'class-transformer';
 
 type SchoolWithCount = School & {
   _count: {
@@ -66,16 +67,9 @@ export class SchoolsService {
       schools = schools.filter((s) => s.studentIdFormat !== null);
     }
 
-    return schools.map((school) => ({
-      id: school.id,
-      name: school.name,
-      abbreviation: school.abbreviation,
-      loginMethod: school.emailFormats.length > 0 ? 'google' : 'credential',
-      instagramAccount: school.instagramAccount,
-      websiteUrl: school.websiteUrl,
-      usersCount: school._count.users,
-      shopsCount: school._count.shops,
-    }));
+    return plainToInstance(SchoolDTO, schools, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async getSchoolById(id: string): Promise<SchoolDTO> {
@@ -84,16 +78,9 @@ export class SchoolsService {
 
     if (!school) throw new NotFoundError('SCHOOL');
 
-    return {
-      id: school.id,
-      name: school.name,
-      abbreviation: school.abbreviation,
-      loginMethod: school.emailFormats.length >= 1 ? 'google' : 'credential',
-      instagramAccount: school.instagramAccount,
-      websiteUrl: school.websiteUrl,
-      usersCount: school._count.users,
-      shopsCount: school._count.shops,
-    };
+    return plainToInstance(SchoolDTO, school, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async getSchoolByAbbr(abbr: string): Promise<SchoolDTO> {
@@ -102,17 +89,8 @@ export class SchoolsService {
 
     if (!school) throw new NotFoundError('SCHOOL');
 
-    if (!school) throw new NotFoundError('SCHOOL');
-
-    return {
-      id: school.id,
-      name: school.name,
-      abbreviation: school.abbreviation,
-      loginMethod: school.emailFormats.length >= 1 ? 'google' : 'credential',
-      instagramAccount: school.instagramAccount,
-      websiteUrl: school.websiteUrl,
-      usersCount: school._count.users,
-      shopsCount: school._count.shops,
-    };
+    return plainToInstance(SchoolDTO, school, {
+      excludeExtraneousValues: true,
+    });
   }
 }

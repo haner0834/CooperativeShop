@@ -19,6 +19,7 @@ import { plainToInstance } from 'class-transformer';
 import { ContractDto, ShopDraftDto } from '../dto/shop-draft.dto';
 import { AdminService } from 'src/auth/services/admin.service';
 import { PatchShopDraftDto } from '../dto/patch-draft.dto';
+import { SearchedDraftDto } from '../dto/searched-draft.dto';
 
 @Injectable()
 export class ShopDraftService {
@@ -80,7 +81,10 @@ export class ShopDraftService {
   }
 
   // -- Searcing --
-  async search(title: string, subtitle: string | null) {
+  async search(
+    title: string,
+    subtitle: string | null,
+  ): Promise<SearchedDraftDto[]> {
     const inputKey = this.calculateNormalizedKey(title, subtitle);
 
     // NOTE: Total drafts up to 300, so it's ok to compare all
@@ -97,6 +101,7 @@ export class ShopDraftService {
             id: true,
             name: true,
             abbreviation: true,
+            iconUrl: true,
           },
         },
       },
@@ -131,7 +136,7 @@ export class ShopDraftService {
     title: string,
     subtitle: string | null,
     schoolId: string,
-  ) {
+  ): Promise<DraftWithRelations> {
     if (title === '')
       throw new BadRequestError(
         'EMPTY_TITLE',
