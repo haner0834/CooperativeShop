@@ -97,6 +97,7 @@ export class ShopDraftService {
             id: true,
             name: true,
             abbreviation: true,
+            iconUrl: true,
           },
         },
       },
