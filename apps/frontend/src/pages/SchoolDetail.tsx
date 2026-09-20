@@ -28,6 +28,7 @@ import PageMeta, { routesMeta } from "../widgets/PageMeta";
 
 const SchoolDetail = () => {
   const { abbr: schoolAbbrParam } = useParams();
+  // @ts-expect-error
   const [schoolAbbr, setSchoolAbbr] = useState(schoolAbbrParam);
   const { activeUserRef, restorePromise } = useAuth();
   const [school, setSchool] = useState<School | null>(null);
@@ -136,11 +137,8 @@ const SchoolDetail = () => {
         <div className="flex flex-col items-center space-y-2">
           <div className="relative">
             <div className="p-5 bg-white rounded-full overflow-clip border-2 border-neutral/9">
-              {schoolAbbr !== "me" ? (
-                <SchoolIcon
-                  abbreviation={schoolAbbr ?? "kmsh"}
-                  className="w-25 h-25"
-                />
+              {school ? (
+                <SchoolIcon iconUrl={school.iconUrl} className="w-25 h-25" />
               ) : (
                 <div className="w-25 h-25 flex justify-center items-center">
                   <span className="loading" />

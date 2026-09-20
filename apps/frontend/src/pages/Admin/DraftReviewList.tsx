@@ -184,7 +184,7 @@ const DraftReviewList = () => {
                       <div className="flex justify-between items-center">
                         <span className="flex gap-1 items-center text-sm">
                           <SchoolIcon
-                            abbreviation={draft.school.abbr!}
+                            iconUrl={draft.school.iconUrl!}
                             className="w-6 h-6"
                           />
                           {draft.school.name}

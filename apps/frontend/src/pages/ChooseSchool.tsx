@@ -52,10 +52,7 @@ const SchoolCard = ({
         className="w-full flex flex-col items-center justify-center bg-base-100 py-4 rounded-box gap-2 border border-base-300"
       >
         <div className="p-3 bg-white rounded-full overflow-clip shadow">
-          <SchoolIcon
-            abbreviation={school.abbreviation}
-            className="w-14 h-14"
-          />
+          <SchoolIcon iconUrl={school.iconUrl} className="w-14 h-14" />
         </div>
         <p className="opacity-80">{school.name}</p>
       </div>

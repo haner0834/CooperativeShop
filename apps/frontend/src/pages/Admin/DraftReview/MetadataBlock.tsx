@@ -89,7 +89,7 @@ const MetadataBlock = ({ draft }: { draft: ShopDraftDto }) => {
         <div className="flex items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-2">
             <SchoolIcon
-              abbreviation={draft.school.abbr ?? "kmsh"}
+              iconUrl={draft.school.iconUrl}
               className="h-8 w-8 shrink-0"
             />
 

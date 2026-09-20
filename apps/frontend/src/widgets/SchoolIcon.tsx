@@ -31,23 +31,26 @@ const schoolIconFileNameMap: Record<string, string> = {
 };
 
 const SchoolIcon = ({
+  iconUrl,
   abbreviation,
   className,
 }: {
-  abbreviation: string;
+  iconUrl?: string;
+  abbreviation?: string;
   className?: string;
 }) => {
-  const fileName = schoolIconFileNameMap[abbreviation];
-  if (fileName) {
+  if (iconUrl) {
+    return <LazyLoadImage className={className} src={iconUrl}></LazyLoadImage>;
+  } else if (abbreviation && schoolIconFileNameMap[abbreviation]) {
+    const fileName = schoolIconFileNameMap[abbreviation];
     return (
       <LazyLoadImage
         className={className}
         src={`https://image.cooperativeshops.org/${fileName}`}
       ></LazyLoadImage>
     );
-  } else {
-    return <p className="font-bold text-error">You spelled it wrong bruh</p>;
   }
+  return <p className="font-bold text-error">You spelled it wrong bruh</p>;
 };
 
 export default SchoolIcon;
