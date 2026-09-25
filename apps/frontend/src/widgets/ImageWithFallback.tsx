@@ -54,7 +54,13 @@ export function ImageWithFallback({
 
   if (state === "error") {
     return (
-      <>{error ?? <div className="bg-error/30 text-sm">圖片無法載入</div>}</>
+      <>
+        {error ?? (
+          <div className="bg-error/30 text-sm h-full w-full flex text-center justify-center items-center">
+            圖片無法載入
+          </div>
+        )}
+      </>
     );
   }
 

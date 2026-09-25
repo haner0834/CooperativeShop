@@ -118,7 +118,7 @@ const ShopContractBlock = ({
       updateProgress(10);
 
       // 2. 上傳至 Cloudflare R2 (10% ~ 90%)
-      await uploadToR2(uploadUrl, file, (progress) =>
+      await uploadToR2(uploadUrl, file, "application/pdf", (progress) =>
         updateProgress(10 + progress * 0.8)
       );
 

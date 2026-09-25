@@ -112,11 +112,14 @@ const ShopImagesBlock = ({
 
       // 上傳主圖 + 縮圖
       await Promise.all([
-        uploadToR2(uploadUrl, mainImage, (progress) =>
+        uploadToR2(uploadUrl, mainImage, "image/webp", (progress) =>
           updateProgress(localId, progress * 0.8)
         ),
-        uploadToR2(thumbnailUploadUrl, thumbnailImage, (progress) =>
-          updateProgress(localId, 80 + progress * 0.2)
+        uploadToR2(
+          thumbnailUploadUrl,
+          thumbnailImage,
+          "image/webp",
+          (progress) => updateProgress(localId, 80 + progress * 0.2)
         ),
       ]);
 

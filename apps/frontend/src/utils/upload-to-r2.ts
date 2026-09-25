@@ -3,12 +3,10 @@ import axios from "axios";
 export const uploadToR2 = async (
   uploadUrl: string,
   file: File,
+  contentType: string,
   onProgress: (percent: number) => void
 ) => {
   try {
-    const contentType =
-      file.type && file.type.includes("pdf") ? file.type : "application/pdf";
-
     await axios.put(uploadUrl, file, {
       headers: {
         "Content-Type": contentType,
