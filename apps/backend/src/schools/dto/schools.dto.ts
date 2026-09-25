@@ -16,6 +16,9 @@ export class SchoolDTO {
 
   @IsIn(['google', 'credential'])
   @Expose()
+  @Transform(({ obj }) =>
+    obj?.emailFormats.length > 0 ? 'google' : 'credential',
+  )
   loginMethod: string;
 
   @IsString()
