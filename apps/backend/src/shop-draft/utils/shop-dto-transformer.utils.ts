@@ -3,11 +3,17 @@ import { ShopDraftDto } from '../dto/shop-draft.dto';
 import { InternalError } from 'src/types/error.types';
 
 export function mapDraftToCreateShopDto(draft: ShopDraftDto): CreateShopDto {
+  // because the existing drafts are ALL missing thumbnailKey
+  const firstImage = draft.images.length > 0 ? draft.images[0] : null;
+  const thumbnailKey =
+    draft.thumbnailKey ?? firstImage?.uploadInfo?.thumbnailKey;
+
   if (
     !draft.school?.id ||
     !draft.longitude ||
     !draft.latitude ||
-    !draft.contract?.fileKey
+    !draft.contract?.fileKey ||
+    !thumbnailKey
   )
     throw new InternalError(
       'DraftDTO transformation fault: missing argument(s)',
@@ -31,7 +37,7 @@ export function mapDraftToCreateShopDto(draft: ShopDraftDto): CreateShopDto {
         thumbnailKey: img.uploadInfo!.thumbnailKey,
       })),
 
-    thumbnailKey: draft.thumbnailKey,
+    thumbnailKey: thumbnailKey,
     discount: draft.discount,
     discountTerms: draft.discountTerms,
     address: draft.address,

@@ -249,7 +249,8 @@ export class ShopDraftDto {
 
   @Expose()
   @IsString()
-  thumbnailKey: string;
+  @IsOptional()
+  thumbnailKey: string | null;
 
   @Expose()
   @IsEnum(ShopDraftStage)

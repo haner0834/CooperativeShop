@@ -396,6 +396,18 @@ export class ShopDraftService {
   ) {
     await this.lockService.verifyAndRefreshLock(draftId, userId, lockToken);
 
+    if ('images' in data) {
+      if (
+        data.images &&
+        (data.images?.length ?? 0) > 0 &&
+        data.images[0].uploadInfo
+      ) {
+        data.thumbnailKey = data.images[0].uploadInfo.thumbnailKey;
+      } else {
+        data.thumbnailKey = null;
+      }
+    }
+
     try {
       return await this.prisma.shopDraft.update({
         where: { id: draftId },
