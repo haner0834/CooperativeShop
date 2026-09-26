@@ -114,7 +114,7 @@ export class InstaPostService {
 
 優惠內容：
 ${draft.discount}
-${draft.discountTerms ? '' : `（使用規則：${draft.discountTerms}）`}
+${draft.discountTerms ? `（使用規則：${draft.discountTerms}）` : ''}
 
 店家資訊
 🏠地址：${draft.address}
