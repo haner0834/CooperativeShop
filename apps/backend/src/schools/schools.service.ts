@@ -55,21 +55,23 @@ export class SchoolsService {
   ): Promise<SchoolDTO[]> {
     const currentPeriod = await this.getCurrentPeriod();
 
-    let schools: SchoolWithCount[] = currentPeriod.schools;
+    let schools: SchoolDTO[] = plainToInstance(
+      SchoolDTO,
+      currentPeriod.schools,
+      {
+        excludeExtraneousValues: true,
+      },
+    );
 
     if (provider && provider !== 'google' && provider !== 'credential') {
       throw new BadRequestError('INVALID_LOGIN_TYPE', 'Invalid login type');
     }
 
-    if (provider === 'google') {
-      schools = schools.filter((s) => s.emailFormats.length > 0);
-    } else if (provider === 'credential') {
-      schools = schools.filter((s) => s.studentIdFormat !== null);
+    if (provider) {
+      schools = schools.filter((s) => s.loginMethod === 'google');
     }
 
-    return plainToInstance(SchoolDTO, schools, {
-      excludeExtraneousValues: true,
-    });
+    return schools;
   }
 
   async getSchoolById(id: string): Promise<SchoolDTO> {
