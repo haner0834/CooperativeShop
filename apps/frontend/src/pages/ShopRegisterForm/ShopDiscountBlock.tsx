@@ -23,7 +23,10 @@ const ShopDiscountBlock = ({
 
   const showInfoModal = () => {
     showModal({
-      title: "",
+      title: "折扣規則為使用該特約的額外規則",
+      description:
+        "若合約已勾選「本優惠得與店內其他行銷活動並用」，則免填使用規則。本欄位請填寫合約「其他附則」內容，若記載為「無」則免填（可留空）。",
+      showDismissButton: true,
     });
   };
 
