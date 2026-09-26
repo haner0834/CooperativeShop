@@ -68,7 +68,7 @@ export class SchoolsService {
     }
 
     if (provider) {
-      schools = schools.filter((s) => s.loginMethod === 'google');
+      schools = schools.filter((s) => s.loginMethod === provider);
     }
 
     return schools;
