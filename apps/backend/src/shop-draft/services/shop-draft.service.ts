@@ -355,7 +355,7 @@ export class ShopDraftService {
 
     // 3. 組裝查詢物件
     const query: Prisma.ShopDraftFindManyArgs = { where };
-    query.orderBy = { createdAt: 'desc' };
+    query.orderBy = { currentVersion: { submittedAt: 'desc' } };
 
     // 如果 include 裡面有任何一個欄位被設為 true，才帶入 include 參數
     if (Object.keys(include).length > 0) {
