@@ -11,6 +11,8 @@ import { InternalError } from 'src/types/error.types';
 import { ShopDraftDto } from 'src/shop-draft/dto/shop-draft.dto';
 import { env } from 'src/common/utils/env.utils';
 import { Log } from 'src/common/decorators/logger.decorator';
+import { generateScheduleText } from 'src/common/utils/work-schedule.utils';
+import { ContactCategory } from 'src/shops/types/contact-info.type';
 
 @Injectable()
 export class InstaPostService {
@@ -96,6 +98,35 @@ export class InstaPostService {
   }
 
   private getPostContent(draft: ShopDraftDto): string {
-    return '';
+    const district = draft.address.match(
+      /(?:市|縣)([^路]+?(?:區|鄉|鎮|市))/,
+    )?.[1];
+
+    const phone = draft.contactInfo.find(
+      (c) => c.category === ContactCategory.PhoneNumber,
+    );
+    const phoneNumber = phone?.content;
+    const statrYear = new Date().getFullYear() - 1911;
+    const endYear = statrYear + 1;
+
+    return `
+這間位於${district}的【${draft.title}${draft.subtitle ? `-${draft.subtitle}` : ''}】現在到這裡消費，出示學生證或就能享有特約優惠！
+
+優惠內容：
+${draft.discount}
+${draft.discountTerms ? '' : `（使用規則：${draft.discountTerms}）`}
+
+店家資訊
+🏠地址：${draft.address}
+⏰營業時間：
+${generateScheduleText(draft.workSchedules)}
+${phoneNumber ? `☎️聯絡方式： ${phoneNumber}` : ''}
+
+右滑查看店家與優惠內容
+趕快邀請你們朋友一起享受特約優惠吧😎
+⚠️優惠期限 ${statrYear}/9/30-${endYear}/6/30
+⚠️各主辦學校及協辦學校之學生會保有變更及終止本活動之最終決定權
+⚠️圖片取用自網路
+`;
   }
 }
