@@ -18,7 +18,7 @@ const ShopDiscountBlock = ({
   setDiscountTerms: Dispatch<React.SetStateAction<string | null>>;
 }) => {
   // FUCK react 低能兒做出來的東西
-  const [hasTerms, setHasTerms] = useState(false);
+  const [hasTerms, setHasTerms] = useState(discountTerms !== "");
   const { showModal } = useModal();
 
   const showInfoModal = () => {
