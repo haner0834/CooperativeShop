@@ -56,7 +56,7 @@ const ContactInfoBlock = ({ draft }: { draft: ShopDraftDto }) => {
                     <a
                       href={contactInfo.href}
                       target="_blank"
-                      className="font-mono text-sm underline"
+                      className="font-mono text-sm underline break-all"
                     >
                       {contactInfo.href}
                     </a>
