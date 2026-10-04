@@ -107,6 +107,10 @@ export class InstagramPostProcessor extends WorkerHost {
 
       return result;
     } catch (err) {
+      if (err.code === 'ECONNABORTED') {
+        this.logger.error(`job ${job.id} 逾時，PostPeer 結果未知，需人工確認`);
+        return { status: 'UNKNOWN_TIMEOUT' }; // 不 throw
+      }
       // 呼叫失敗（尚未真正成功發文）→ 釋放剛剛佔用的額度，避免白白浪費一個名額
       await redis.zrem(rateKey, member);
 

@@ -14,7 +14,7 @@ import { InstaPostSequenceService } from './insta-post-sequence.service';
     BullModule.registerQueue({
       name: INSTAGRAM_POST_QUEUE,
       defaultJobOptions: {
-        attempts: 3,
+        attempts: 1,
         backoff: { type: 'exponential', delay: 5_000 },
         removeOnComplete: 100,
         removeOnFail: 500,

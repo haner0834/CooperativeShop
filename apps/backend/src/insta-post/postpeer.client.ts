@@ -23,17 +23,21 @@ export class PostPeerClient {
         'x-access-key': env('POSTPEER_API_KEY'),
         'Content-Type': 'application/json',
       },
-      timeout: 30_000,
+      timeout: 90_000,
     });
   }
 
   async createPost(payload: PostPeerPostPayload) {
+    const startedAt = Date.now();
     try {
       const { data } = await this.http.post('/posts', payload);
+      this.logger.log(`PostPeer OK in ${Date.now() - startedAt}ms`);
       return data;
     } catch (err: any) {
       this.logger.error(
-        `PostPeer API error: ${err.response?.status} ${JSON.stringify(err.response?.data)}`,
+        `PostPeer API error: status=${err.response?.status} code=${err.code} ` +
+          `message=${err.message} elapsed=${Date.now() - startedAt}ms ` +
+          `body=${JSON.stringify(err.response?.data)}`,
       );
       throw err;
     }

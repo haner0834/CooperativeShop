@@ -108,6 +108,7 @@ const DraftReview = () => {
     const result = await adminAuthedFetch(apiUrl, {
       body,
       method: "POST",
+      idempotent: true,
     });
 
     const { success, error } = result;

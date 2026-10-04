@@ -10,6 +10,7 @@ import { CurrentAdmin } from 'src/common/decorators/current-admin.decorator';
 import { PermissionError } from 'src/types/error.types';
 import { ReviewDraftDto } from '../dto/review-draft.dto';
 import { ShopDraftReviewService } from '../services/shop-draft-review.service';
+import { Idempotent } from 'src/idempotency/idempotent.decorator';
 
 @Controller('admin/shop-draft')
 export class AdminShopDraftController {
@@ -61,6 +62,7 @@ export class AdminShopDraftController {
   }
 
   @Post(':id/review')
+  @Idempotent()
   @AdminOnly()
   async reviewDraft(
     @Param('id') draftId: string,
