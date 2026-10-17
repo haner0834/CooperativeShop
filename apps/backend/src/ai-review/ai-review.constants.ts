@@ -1,3 +1,5 @@
+import { env } from 'src/common/utils/env.utils';
+
 /**
  * Gemini structured output 用的 responseSchema（OpenAPI 3.0 子集）。
  * 對應 AiReviewResult 這個 TS interface。
@@ -81,7 +83,7 @@ export const AI_REVIEW_RESPONSE_FORMAT = [
   },
 ];
 
-export const DEFAULT_GEMINI_MODEL = 'gemini-3.5-flash';
+export const DEFAULT_GEMINI_MODEL = env('DEFAULT_GEMINI_MODEL');
 // NOTE: Interactions API 端點是 `${baseUrl}/interactions`（同一顆 v1beta base），
 // 不再是 `${baseUrl}/models/{model}:generateContent`。
 export const DEFAULT_GEMINI_API_BASE_URL =
