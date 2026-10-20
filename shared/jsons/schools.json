@@ -32,6 +32,15 @@
     "isLimited": false
   },
   {
+    "name": "瀛海高中",
+    "abbreviation": "yhsh",
+    "emailFormat": ["@gm.yhsh.tn.edu.tw"],
+    "studentIdFormat": null,
+    "websiteUrl": "https://www.yhsh.tn.edu.tw",
+    "instagramAccount": "yhsh_116th",
+    "isLimited": true
+  },
+  {
     "name": "曾文家商",
     "abbreviation": "twvs",
     "emailFormat": ["@ms2.twvs.tn.edu.tw"],

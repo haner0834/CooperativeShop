@@ -34,7 +34,7 @@ async function main() {
      * 1–2. Check if 2025-2026 exists.
      * Create it if it doesn't.
      */
-    const period2025 = await tx.partnershipPeriod.upsert({
+    await tx.partnershipPeriod.upsert({
       where: {
         name: '2025-2026',
       },
@@ -47,32 +47,7 @@ async function main() {
     });
 
     /*
-     * 3. Add all existing schools into 2025-2026.
-     */
-    const existingSchools = await tx.school.findMany({
-      select: {
-        id: true,
-      },
-    });
-
-    if (existingSchools.length > 0) {
-      await tx.partnershipPeriod.update({
-        where: {
-          id: period2025.id,
-        },
-        data: {
-          schools: {
-            connect: existingSchools.map((school) => ({
-              id: school.id,
-            })),
-          },
-        },
-      });
-    }
-
-    /*
-     * 4–5. Check if 2026-2027 exists.
-     * Create it if it doesn't.
+- 3–5. 檢查 2026-2027 是否存在，若不存在則建立
      */
     const period2026 = await tx.partnershipPeriod.upsert({
       where: {
@@ -87,10 +62,10 @@ async function main() {
     });
 
     /*
-     * 6–8. Create missing schools from schools.json
-     * and add every school appearing in the JSON
-     * into 2026-2027.
+- 6. 批次upsert schools.json 中的學校，並收集其 ID
      */
+    const connectedSchoolIds: { id: string }[] = [];
+
     for (const school of schools) {
       const dbSchool = await tx.school.upsert({
         where: {
@@ -100,19 +75,22 @@ async function main() {
         create: school,
       });
 
-      await tx.partnershipPeriod.update({
-        where: {
-          id: period2026.id,
-        },
-        data: {
-          schools: {
-            connect: {
-              id: dbSchool.id,
-            },
-          },
-        },
-      });
+      connectedSchoolIds.push({ id: dbSchool.id });
     }
+
+    /*
+- 7. 更新 2026-2027 的 schools 內容，以 schools.json 的學校名單作為最新對應
+     */
+    await tx.partnershipPeriod.update({
+      where: {
+        id: period2026.id,
+      },
+      data: {
+        schools: {
+          set: connectedSchoolIds, // 使用 set 會將 2026-2027 的學校關聯完全同步為目前 JSON 內的學校
+        },
+      },
+    });
   });
 
   console.log('Partnership periods migrated successfully.');
