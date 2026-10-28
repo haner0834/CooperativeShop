@@ -100,7 +100,7 @@ export class InstaPostImageService {
         html: htmlTemplate,
         content,
         type: 'png',
-        waitUntil: 'domcontentloaded',
+        waitUntil: 'load',
         puppeteerArgs: {
           executablePath:
             process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
