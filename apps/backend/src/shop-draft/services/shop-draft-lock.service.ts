@@ -23,52 +23,66 @@ export class ShopDraftLockService {
 
   async acquireLock(draftId: string, userId: string): Promise<string> {
     const lockKey = this.getLockKey(draftId);
-
-    // 1. 檢查 Redis 中是否已有鎖
-    const existingLockStr = await this.redis.get(lockKey);
-    if (existingLockStr) {
-      const existingLock = JSON.parse(existingLockStr);
-      // 如果鎖存在，且不是自己的，就拒絕
-      if (existingLock.userId !== userId) {
-        throw new ConflictError('LOCKED_BY_OTHERS', 'Locked by others.');
-      }
-    }
-
-    // 2. 檢查草稿狀態與轉換 Stage (保留原本 DB 對草稿本身的狀態更新)
-    await this.prisma.$transaction(async (tx) => {
-      const draft = await tx.shopDraft.findUnique({
-        where: { id: draftId },
-      });
-
-      if (!draft) {
-        throw new NotFoundError('DRAFT');
-      }
-
-      // if (draft.stage === 'SUBMITTED') {
-      //   throw new ConflictError(
-      //     `CANNOT_EDIT_IN_SUBMITTED`,
-      //     `Cannot edit the draft when it's submitted.`,
-      //   );
-      // }
-
-      // 轉換 draft stage
-      if (draft.stage === 'RESERVED') {
-        await tx.shopDraft.update({
-          where: { id: draftId },
-          data: {
-            stage: 'EDITING',
-            reservedUntil: null,
-          },
-        });
-      }
-    });
-
-    // 3. 發放 Token 並寫入 Redis (儲存 userId 與 lockToken 以供後續驗證)
     const lockToken: string = crypto.randomUUID();
     const lockData = JSON.stringify({ userId, lockToken });
 
-    // 設定鎖的過期時間
-    await this.redis.set(lockKey, lockData, 'EX', LOCK_TTL_SECONDS);
+    // 1. 利用 Redis 的 NX (Not eXists) 進行原子性加鎖
+    // 如果這把鎖已經存在且未過期，redis.set 會回傳 null (或非 'OK')
+    const result = await this.redis.set(
+      lockKey,
+      lockData,
+      'EX',
+      LOCK_TTL_SECONDS,
+      'NX',
+    );
+
+    if (!result) {
+      // 鎖已經存在，檢查是不是同一個使用者嘗試重複拿鎖（例如重新整理或重複點擊）
+      const existingLockStr = await this.redis.get(lockKey);
+      if (existingLockStr) {
+        const existingLock = JSON.parse(existingLockStr);
+        if (existingLock.userId !== userId) {
+          throw new ConflictError('LOCKED_BY_OTHERS', 'Locked by others.');
+        }
+        // 如果是同一個人重複拿鎖，我們可以選擇直接回傳他原本的 token，或者更新 token
+        // 這裡直接回傳現有的 token，或更新都可以。為了安全起見，若同用戶重複請求，可回傳舊 token 或刷新。
+        return existingLock.lockToken;
+      } else {
+        // 剛好在 get 的瞬間鎖過期被釋放了，可以再試一次或直接拋錯
+        throw new ConflictError(
+          'LOCK_ACQUIRE_FAILED',
+          'Failed to acquire lock, please try again.',
+        );
+      }
+    }
+
+    // 2. 成功取得 Redis 鎖後，才去處理資料庫的狀態轉換
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        const draft = await tx.shopDraft.findUnique({
+          where: { id: draftId },
+        });
+
+        if (!draft) {
+          throw new NotFoundError('DRAFT');
+        }
+
+        // 轉換 draft stage
+        if (draft.stage === 'RESERVED') {
+          await tx.shopDraft.update({
+            where: { id: draftId },
+            data: {
+              stage: 'EDITING',
+              reservedUntil: null,
+            },
+          });
+        }
+      });
+    } catch (error) {
+      // 如果 DB 查詢或更新失敗（例如草稿不存在），必須把剛剛拿到 Redis 鎖釋放掉，才不會造成死鎖
+      await this.redis.del(lockKey);
+      throw error;
+    }
 
     return lockToken;
   }
@@ -83,15 +97,16 @@ export class ShopDraftLockService {
 
     const lock = JSON.parse(lockStr);
 
-    // 確保持有鎖的人是該 user，且 Token 相符
     if (lock.userId !== userId || lock.lockToken !== lockToken) {
       throw new UnauthorizedError('INVALID_OR_EXPIRED_TOKEN');
     }
   }
 
   async refreshToken(draftId: string, userId: string, lockToken: string) {
+    // 延長壽命前，必須先驗證這個人確實持有這把鎖，避免任何人都可以幫忙刷 token
+    await this.verifyLock(draftId, userId, lockToken);
+
     const lockKey = this.getLockKey(draftId);
-    // 直接延長 Redis Key 的壽命
     await this.redis.expire(lockKey, LOCK_TTL_SECONDS);
   }
 
@@ -100,8 +115,7 @@ export class ShopDraftLockService {
     userId: string,
     lockToken: string,
   ) {
-    await this.verifyLock(draftId, userId, lockToken);
-    // If failed it would throw an error so the following won't be executed
+    // 由於 refreshToken 內已經包含了 verifyLock，這裡直接呼叫 refreshToken 即可
     await this.refreshToken(draftId, userId, lockToken);
   }
 
@@ -111,7 +125,7 @@ export class ShopDraftLockService {
 
     if (lockStr) {
       const lock = JSON.parse(lockStr);
-      // 安全機制：確認這把鎖目前確實是該使用者的，才能將其刪除 (避免把別人的鎖誤刪)
+      // 安全機制：確認這把鎖目前確實是該使用者的，才能將其刪除
       if (lock.userId === userId) {
         await this.redis.del(lockKey);
       }
